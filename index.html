@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Exam Paper Creator - Fast Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Core Google Web Fonts pre-loaded for instant switching -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --card: #ffffff;
+      --card-subtle: #f8fafc;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      
+      --danger-bg: #fee2e2;
+      --danger-border: #fca5a5;
+      --danger-text: #b91c1c;
+      
+      --paper-bg: #ffffff;
+      --paper-text: #111827;
+      --paper-shadow: rgba(15, 23, 42, 0.12);
+
+      --paper-font: 'Tinos', 'Noto Serif', 'Times New Roman', serif;
+      --paper-size: 10.5pt;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-subtle: #273549;
+      --border: #334155;
+      --border-subtle: #1e293b;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #131d2e;
+      
+      --danger-bg: #451a1a;
+      --danger-border: #7f1d1d;
+      --danger-text: #fca5a5;
+      
+      --paper-bg: #ffffff;
+      --paper-text: #111827;
+      --paper-shadow: rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body, input, select, button, textarea {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Kannada", "Noto Sans Devanagari", "Noto Naskh Arabic", sans-serif;
+    }
+    
+    body { background-color: var(--bg); color: var(--text); padding: 24px 16px; transition: background-color 0.25s, color 0.25s; }
+    .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+    /* AUTH OVERLAY MODAL */
+    #authOverlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 9999;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px);
+    }
+    .auth-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 28px 24px; width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .auth-card h2 { font-size: 1.4rem; color: var(--primary); text-align: center; margin-bottom: 6px; }
+    .auth-card p { font-size: 0.88rem; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
+    
+    .auth-nav {
+      display: flex; gap: 8px; background: var(--card-subtle); padding: 4px; border-radius: 8px; margin-bottom: 18px; border: 1px solid var(--border);
+    }
+    .auth-nav button {
+      flex: 1; padding: 8px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
+    }
+    .auth-nav button.active { background: var(--primary); color: #fff; }
+
+    .auth-type-pill { display: flex; gap: 10px; margin-bottom: 14px; }
+    .auth-type-pill button {
+      flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--card-subtle);
+      border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: var(--text);
+    }
+    .auth-type-pill button.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .auth-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.3; }
+
+    /* App Header */
+    .app-header {
+      background: var(--card); padding: 18px 24px; border-radius: 12px;
+      border: 1px solid var(--border-subtle); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .app-header h1 { font-size: 1.85rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; text-align: center; }
+    .app-header h1 span { color: var(--primary); }
+
+    .staff-badge-row {
+      display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid var(--border-subtle); padding-top: 10px; font-size: 0.88rem;
+    }
+
+    .nav-tabs { display: flex; gap: 10px; background: var(--card-subtle); padding: 5px; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
+    .nav-tab {
+      background: transparent; color: var(--text-muted); border: none; padding: 8px 18px;
+      font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-tab.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    .header-controls { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .btn-action {
+      background: var(--card-subtle); color: var(--text); border: 1px solid var(--border);
+      padding: 7px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-action:hover { border-color: var(--primary); color: var(--primary); }
+
+    .page-view { display: flex; flex-direction: column; gap: 16px; }
+    .page-view.hidden { display: none; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border-subtle); border-radius: 12px;
+      padding: 22px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    h2 { font-size: 1.1rem; margin-bottom: 14px; color: var(--text); font-weight: 700; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+
+    label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    input[type="text"], input[type="password"], input[type="number"], input[type="file"], select, textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.9rem; background-color: var(--input-bg); color: var(--text); outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2); }
+
+    .checkbox-group { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; text-transform: none; color: var(--text); }
+
+    .section-box {
+      border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+      margin-bottom: 12px; background: var(--card-subtle);
+    }
+    .section-header-edit {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px;
+    }
+    .section-header-edit .left-block { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .editable-sec-title {
+      font-weight: 700; font-size: 0.95rem; border: 1px solid transparent; background: transparent; color: var(--text);
+      padding: 4px 6px; border-radius: 4px; outline: none; width: 100%;
+    }
+    .editable-sec-title:focus { border-color: var(--primary); background: var(--input-bg); }
+
+    .btn-add-sec {
+      background: var(--card-subtle); color: var(--primary); border: 1px dashed var(--primary);
+      width: 100%; padding: 11px; border-radius: 8px; font-weight: 700; cursor: pointer;
+      font-size: 0.9rem; margin-top: 6px; transition: background 0.2s;
+    }
+    .btn-add-sec:hover { background: rgba(2, 132, 199, 0.08); }
+
+    #marksValidationBox {
+      display: none;
+      padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; margin-top: 14px;
+      background-color: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger-text);
+      justify-content: space-between; align-items: center;
+    }
+
+    .btn-generate {
+      background-color: var(--primary); color: #ffffff; border: none; padding: 13px 24px;
+      border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%;
+    }
+    .btn-generate:hover:not(:disabled) { background-color: var(--primary-hover); }
+    .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #statusMessage { font-size: 0.88rem; color: var(--text-muted); font-weight: 500; margin-top: 10px; text-align: center; }
+
+    .paper-toolbar {
+      display: flex; flex-direction: column; gap: 12px;
+      background: var(--card); border: 1px solid var(--border); padding: 14px 18px;
+      border-radius: 8px; margin-bottom: 14px;
+    }
+    .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .toolbar-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .toolbar-group label { margin: 0; text-transform: none; font-size: 0.85rem; color: var(--text); }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #94a3b8; transition: .25s; border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px;
+      background-color: white; transition: .25s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* A4 Paper Layout */
+    .a4-page {
+      background: #ffffff !important; color: #111827 !important;
+      width: 210mm; min-height: 297mm; padding: 16mm 18mm; margin: 0 auto;
+      box-shadow: 0 6px 24px var(--paper-shadow); border-radius: 2px;
+      line-height: 1.35; outline: none;
+      font-family: var(--paper-font) !important; font-size: var(--paper-size) !important;
+    }
+    .a4-page, .a4-page * { font-family: var(--paper-font) !important; }
+    .a4-page[contenteditable="true"] { box-shadow: 0 0 0 3px var(--primary); }
+
+    .paper-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; }
+    .paper-header h1 { font-size: 1.35em !important; text-transform: uppercase; margin-bottom: 2px; font-weight: bold; }
+    .paper-header h3 { font-size: 1.1em !important; font-weight: normal; margin-bottom: 5px; }
+    .meta-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 3px; font-size: 0.95em !important; }
+    .student-fields { display: flex; justify-content: space-between; border-top: 1px dashed #444; padding-top: 4px; margin-top: 4px; font-size: 0.9em !important; }
+
+    .general-instructions { border: 1px solid #777; padding: 4px 8px; margin: 8px 0 10px; font-size: 0.88em !important; font-style: italic; }
+
+    .sec-block { page-break-inside: auto; margin-top: 18px !important; margin-bottom: 8px !important; }
+    .sec-title { 
+      font-weight: bold; text-decoration: underline; margin-bottom: 6px !important;
+      font-size: 1em !important; display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .sec-marks-total { font-weight: bold; text-decoration: none; white-space: nowrap; margin-left: 12px; }
+
+    .q-item { page-break-inside: avoid; margin-bottom: 5px !important; display: block; text-align: left; }
+    .q-line { display: block; line-height: 1.3 !important; }
+    .q-num { font-weight: bold; margin-right: 6px; display: inline; white-space: nowrap; }
+    .q-text { display: inline; }
+
+    .mcq-options { 
+      margin-top: 3px !important; margin-bottom: 4px !important;
+      padding-left: 20px; font-size: 0.95em !important;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; 
+    }
+
+    .diagram-container { text-align: center; margin: 6px 0; page-break-inside: avoid; }
+    .diagram-container img { max-width: 85%; max-height: 220px; object-fit: contain; border: 1px solid #666; padding: 3px; }
+
+    .history-item {
+      background: var(--card-subtle); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px;
+    }
+    .history-meta h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .history-meta p { font-size: 0.85rem; color: var(--text-muted); }
+    .history-actions { display: flex; gap: 8px; }
+
+    .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: var(--card-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-card span { font-size: 0.82rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+    .stat-card h3 { font-size: 1.8rem; color: var(--primary); margin-top: 6px; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
+    .data-table th, .data-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
+    .data-table th { background: var(--card-subtle); font-weight: bold; color: var(--text); }
+    .data-table tr:hover { background: rgba(2, 132, 199, 0.04); }
+
+    @media print {
+      body { background: #fff; padding: 0; margin: 0; }
+      .no-print { display: none !important; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      .a4-page { box-shadow: none !important; border: none; width: 100%; min-height: auto; padding: 0; margin: 0; }
+      @page { size: A4 portrait; margin: 15mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="authOverlay">
+  <div class="auth-card">
+    <h2 id="authHeading">Staff Sign In</h2>
+    <p>Sign in with your username & credentials.</p>
+
+    <div class="auth-nav">
+      <button class="active" id="navSignIn" onclick="setAuthMode('signin')">Sign In</button>
+      <button id="navSignUp" onclick="setAuthMode('signup')">Sign Up</button>
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label>Username</label>
+      <input type="text" id="authUsernameInput" value="" placeholder="" oninput="sanitizeUsername(this)">
+      <span class="auth-hint">Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters allowed.</span>
+    </div>
+
+    <div id="signUpFields" style="display: none; margin-bottom: 12px;">
+      <label>Subject</label>
+      <input type="text" id="regSubject" value="" placeholder="">
+    </div>
+
+    <label>Credential Type</label>
+    <div class="auth-type-pill">
+      <button class="active" id="btnAuthPassword" onclick="setAuthType('password')">🔏 Password</button>
+      <button id="btnAuthPin" onclick="setAuthType('pin')">🔢 PIN Code</button>
+    </div>
+
+    <div id="authInputPassword">
+      <label>Password</label>
+      <input type="password" id="authPassword" value="" placeholder="">
+      <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
+    </div>
+
+    <div id="authInputPin" style="display: none;">
+      <label>PIN Code</label>
+      <input type="password" id="authPin" maxlength="10" value="" placeholder="" oninput="sanitizePin(this)">
+      <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
+    </div>
+
+    <button onclick="handleAuthSubmit()" id="authSubmitBtn" class="btn-generate" style="margin-top: 18px;">Sign In</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="app-header no-print">
+    <h1>Exam Paper <span>Creator</span></h1>
+
+    <div class="staff-badge-row">
+      <div>
+        <span>Logged in: <strong id="sessionStaffName"></strong></span>
+        <span id="sessionStaffDivider" style="display: none;"> | </span>
+        <span><strong id="sessionStaffSubject"></strong></span>
+      </div>
+      <button onclick="logoutStaff()" style="background: transparent; border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer;">🚪 Logout / Lock</button>
+    </div>
+    
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabCreate" onclick="switchPage('create')">📝 Create Paper</button>
+      <button class="nav-tab" id="tabHistory" onclick="switchPage('history')">📚 My Saved Papers (<span id="historyCountBadge">0</span>)</button>
+      <button class="nav-tab" id="tabAdmin" onclick="switchPage('admin')" style="display: none;">🛡️ Admin Dashboard</button>
+    </div>
+
+    <div class="header-controls">
+      <button class="btn-action" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span> <span id="themeLabel">Night Mode</span>
+      </button>
+
+      <button class="btn-action" onclick="shareApp()">
+        🔗 Share App
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE 1: CREATE PAPER VIEW -->
+  <div id="pageCreate" class="page-view">
+    
+    <div class="card no-print">
+      <h2>1. Examination Details & Header Settings</h2>
+      <div class="grid-2">
+        <div>
+          <label>Institution / School / College Name</label>
+          <input type="text" id="instName" value="" placeholder="">
+        </div>
+        <div>
+          <label>Examination Title</label>
+          <input type="text" id="examTitle" value="" placeholder="">
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-top: 12px;">
+        <div>
+          <label>Subject</label>
+          <input type="text" id="subject" value="" placeholder="">
+        </div>
+        <div>
+          <label>Class / Grade</label>
+          <input type="text" id="grade" value="" placeholder="">
+        </div>
+        <div>
+          <label>Time Allowed</label>
+          <input type="text" id="duration" value="" placeholder="">
+        </div>
+        <div>
+          <label>Total Max Marks (Target)</label>
+          <input type="number" id="maxMarks" value="25" min="1" oninput="calculateAndValidateMarks()">
+        </div>
+      </div>
+
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="incName" checked> Name Line</label>
+        <label><input type="checkbox" id="incRoll" checked> Register / Roll No</label>
+        <label><input type="checkbox" id="incSec" checked> Section</label>
+        <label><input type="checkbox" id="incDate" checked> Date</label>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label>General Instructions for Students (Optional):</label>
+        <input type="text" id="genInst" value="" placeholder="">
+      </div>
+    </div>
+
+    <div class="card no-print">
+      <h2>2. Upload Questions (Photos / Scans / PDFs in Any Language)</h2>
+      <label>Select images (JPG, PNG) or PDFs containing question banks:</label>
+      <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+    </div>
+
+    <div class="card no-print">
+      <h2>3. Question Paper Structure & Sections (Click Any Name To Edit)</h2>
+
+      <div id="dynamicSectionsContainer">
+        <div class="section-box" id="sec_card_mcq">
+          <div class="section-header-edit">
+            <div class="left-block">
+              <input type="checkbox" id="use_mcq" checked onchange="toggleSec('mcq')">
+              <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
+            </div>
+          </div>
+          <div id="box_mcq" class="grid-4">
+            <div>
+              <label>Question Count</label>
+              <input type="number" id="count_mcq" value="4" min="0" oninput="calculateAndValidateMarks()">
+            </div>
+            <div>
+              <label>Marks Each</label>
+              <input type="number" id="marks_mcq" value="1" min="1" oninput="calculateAndValidateMarks()">
+            </div>
+            <div style="grid-column: span 2;">
+              <label>Instructions Heading</label>
+              <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box" id="sec_card_1m">
+          <div class="section-header-edit">
+            <div class="left-block">
+              <input type="checkbox" id="use_1m" checked onchange="toggleSec('1m')">
+              <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
+            </div>
+          </div>
+          <div id="box_1m" class="grid-4">
+            <div>
+              <label>Question Count</label>
+              <input type="number" id="count_1m" value="3" min="0" oninput="calculateAndValidateMarks()">
+            </div>
+            <div>
+              <label>Marks Each</label>
+              <input type="number" id="marks_1m" value="1" min="1" oninput="calculateAndValidateMarks()">
+            </div>
+            <div style="grid-column: span 2;">
+              <label>Instructions Heading</label>
+              <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box" id="sec_card_2m">
+          <div class="section-header-edit">
+            <div class="left-block">
+              <input type="checkbox" id="use_2m" checked onchange="toggleSec('2m')">
+              <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
+            </div>
+          </div>
+          <div id="box_2m" class="grid-4">
+            <div>
+              <label>Question Count</label>
+              <input type="number" id="count_2m" value="3" min="0" oninput="calculateAndValidateMarks()">
+            </div>
+            <div>
+              <label>Marks Each</label>
+              <input type="number" id="marks_2m" value="2" min="1" oninput="calculateAndValidateMarks()">
+            </div>
+            <div style="grid-column: span 2;">
+              <label>Instructions Heading</label>
+              <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box" id="sec_card_3m">
+          <div class="section-header-edit">
+            <div class="left-block">
+              <input type="checkbox" id="use_3m" checked onchange="toggleSec('3m')">
+              <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
+            </div>
+          </div>
+          <div id="box_3m" class="grid-4">
+            <div>
+              <label>Question Count</label>
+              <input type="number" id="count_3m" value="2" min="0" oninput="calculateAndValidateMarks()">
+            </div>
+            <div>
+              <label>Marks Each</label>
+              <input type="number" id="marks_3m" value="3" min="1" oninput="calculateAndValidateMarks()">
+            </div>
+            <div style="grid-column: span 2;">
+              <label>Instructions Heading</label>
+              <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box" id="sec_card_4m">
+          <div class="section-header-edit">
+            <div class="left-block">
+              <input type="checkbox" id="use_4m" checked onchange="toggleSec('4m')">
+              <input type="text" class="editable-sec-title" id="title_4m" value="Section E: Long Answers / Detailed Questions">
+            </div>
+          </div>
+          <div id="box_4m" class="grid-4">
+            <div>
+              <label>Question Count</label>
+              <input type="number" id="count_4m" value="1" min="0" oninput="calculateAndValidateMarks()">
+            </div>
+            <div>
+              <label>Marks Each</label>
+              <input type="number" id="marks_4m" value="4" min="1" oninput="calculateAndValidateMarks()">
+            </div>
+            <div style="grid-column: span 2;">
+              <label>Instructions Heading</label>
+              <input type="text" id="inst_4m" value="V. Answer the following questions in detail:">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box" id="sec_card_diag">
+          <div class="section-header-edit">
+            <div class="left-block">
+              <input type="checkbox" id="use_diag" checked onchange="toggleSec('diag')">
+              <input type="text" class="editable-sec-title" id="title_diag" value="Section F: Map / Diagram / Graph Question">
+            </div>
+          </div>
+          <div id="box_diag" class="grid-2">
+            <div>
+              <label>Upload Map Outline, Diagram, or Graph Photo</label>
+              <input type="file" id="diagImage" accept="image/*">
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Question Marks</label>
+                <input type="number" id="marks_diag" value="2" min="1" oninput="calculateAndValidateMarks()">
+              </div>
+              <div>
+                <label>Section Heading</label>
+                <input type="text" id="inst_diag" value="VI. Map / Diagram Based Question:">
+              </div>
+            </div>
+            <div style="grid-column: span 2;">
+              <label>Question Description / Sub-points</label>
+              <textarea id="diagDesc" rows="2" placeholder=""></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-add-sec" onclick="addNewCustomSection()">➕ Add Extra Custom Section (With Photo / Graph / Diagram Option)</button>
+
+      <div id="marksValidationBox">
+        <span id="marksSummaryText"></span>
+        <span>❌ Check Marks</span>
+      </div>
+
+      <div style="margin-top: 18px;">
+        <button id="genBtn" class="btn-generate" onclick="startGeneration()">⚡ Generate Exam Paper</button>
+        <div id="statusMessage"></div>
+      </div>
+    </div>
+
+    <!-- Paper Toolbar & Preview -->
+    <div class="card" id="paperCard" style="display: none;">
+      <div class="paper-toolbar no-print">
+        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+          <label style="min-width: 175px;"><b>📝 Paper / File Name:</b></label>
+          <input type="text" id="paperCustomName" placeholder="" style="font-weight: 700; color: var(--primary);">
+        </div>
+
+        <div class="toolbar-row">
+          <div class="toolbar-group">
+            <div style="display: flex; align-items: center; gap: 8px; border-right: 1px solid var(--border); padding-right: 14px;">
+              <span style="font-size: 0.85rem; font-weight: 600;">Direct Edit:</span>
+              <label class="switch">
+                <input type="checkbox" id="editToggle" onchange="toggleEditMode(this.checked)">
+                <span class="slider"></span>
+              </label>
+              <span id="editBadge" style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">Locked</span>
+            </div>
+
+            <div>
+              <label><b>Font:</b></label>
+              <select id="fontSelector" onchange="changePaperFont(this.value)" style="width: auto; min-width: 180px;">
+                <optgroup label="Academic & Standard Serifs">
+                  <option value="'Tinos', 'Noto Serif', serif" selected>Academic Serif (Default)</option>
+                  <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                  <option value="'EB Garamond', serif">EB Garamond</option>
+                  <option value="'Merriweather', serif">Merriweather</option>
+                  <option value="'Lora', serif">Lora</option>
+                  <option value="'PT Serif', serif">PT Serif</option>
+                  <option value="'Playfair Display', serif">Playfair Display</option>
+                  <option value="'Cinzel', serif">Cinzel (Classical)</option>
+                </optgroup>
+                <optgroup label="Languages (Indian & Arabic)">
+                  <option value="'Noto Sans Kannada', sans-serif">Kannada (ಕನ್ನಡ)</option>
+                  <option value="'Noto Sans Devanagari', sans-serif">Hindi / Sanskrit (हिंदी)</option>
+                  <option value="'Noto Naskh Arabic', serif">Arabic / Urdu (العربية)</option>
+                </optgroup>
+                <optgroup label="Modern Sans (Science / Maths)">
+                  <option value="'Roboto', sans-serif">Roboto</option>
+                  <option value="'Open Sans', sans-serif">Open Sans</option>
+                  <option value="'Poppins', sans-serif">Poppins</option>
+                  <option value="'Montserrat', sans-serif">Montserrat</option>
+                </optgroup>
+                <optgroup label="Monospace / Technical">
+                  <option value="'Courier New', Courier, monospace">Courier New</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label><b>Size:</b></label>
+              <input type="range" id="fontSizeSlider" min="8" max="16" step="0.5" value="10.5" oninput="changePaperFontSize(this.value)" style="width: 90px;">
+              <span id="fontSizeDisplay" style="font-size: 0.85rem; font-weight: bold; width: 45px;">10.5pt</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button onclick="saveCurrentPaperToHistory()" style="background-color: #0284c7; color: #fff; padding: 9px 16px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer;">💾 Save to My Vault</button>
+            <button onclick="printCurrentPaper()" style="background-color: #059669; color: #fff; padding: 9px 18px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer;">🖨️ Print / Save as PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="a4-page" id="paperPreview" contenteditable="false" spellcheck="false"></div>
+    </div>
+
+  </div>
+
+  <!-- PAGE 2: SAVED PAPERS VIEW -->
+  <div id="pageHistory" class="page-view hidden">
+    <div class="card no-print">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
+        <h2 style="border: none; margin: 0; padding: 0;">📚 Saved Exam Papers History</h2>
+        <button onclick="clearMyHistory()" style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer;">Clear My History</button>
+      </div>
+
+      <div id="historyListContainer"></div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: ADMIN MASTER DASHBOARD -->
+  <div id="pageAdmin" class="page-view hidden">
+    <div class="card no-print">
+      <h2>🛡️ Administrator Central Control</h2>
+      
+      <div class="admin-stats-grid">
+        <div class="stat-card">
+          <span>Registered Staff</span>
+          <h3 id="admStatStaff">0</h3>
+        </div>
+        <div class="stat-card">
+          <span>Total Sign-Ins</span>
+          <h3 id="admStatLogins">0</h3>
+        </div>
+        <div class="stat-card">
+          <span>Total Papers Created</span>
+          <h3 id="admStatPapers">0</h3>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 15px; margin-bottom: 8px;">Registered Staff Accounts & Credentials</h3>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Subject</th>
+              <th>Auth Type</th>
+              <th>Registered Date</th>
+              <th>Vault Papers</th>
+            </tr>
+          </thead>
+          <tbody id="admStaffTableBody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content: space-between; align-items: baseline; margin-top: 25px; margin-bottom: 8px;">
+        <h3>Login & Access Audit Logs</h3>
+        <button onclick="clearAdminLogs()" style="background: transparent; border: none; font-size: 0.8rem; color: var(--primary); cursor: pointer; text-decoration: underline;">Clear Audit Log</button>
+      </div>
+      <div style="overflow-x: auto; max-height: 250px; overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Username</th>
+              <th>Action Event</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="admLogsTableBody"></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 25px; margin-bottom: 8px;">Master Question Paper Directory</h3>
+      <div id="admPapersContainer"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // =========================================================================
+  // 🔑 FULL LIVE GEMINI ACTIVE ENGINE
+  // =========================================================================
+  const EMBEDDED_API_KEY = "AQ.Ab8RN6LsaYAFaXLy7gcweBjutD0t5Gq-vokui73GP9ADXmj9Pg";
+
+  // Production-active models only:
+  const CANDIDATE_MODELS = [
+    "gemini-3.5-flash-lite", // Fastest token generation
+    "gemini-3.8-flash",      // High accuracy multimodal
+    "gemini-3.5-flash"       // High capacity fallback
+  ];
+
+  const ADMIN_CREDENTIALS = {
+    username: "admin",
+    secret: "Admin@2026"
+  };
+
+  let currentAuthMode = 'signin';
+  let currentAuthType = 'password';
+  let activeUser = null;
+  let customSectionCount = 0;
+
+  function sanitizeUsername(input) {
+    input.value = input.value.replace(/[^a-z]/g, '');
+  }
+
+  function sanitizePin(input) {
+    input.value = input.value.replace(/[^0-9]/g, '');
+  }
+
+  function getStaffRegistry() {
+    return JSON.parse(localStorage.getItem('exam_staff_registry')) || [];
+  }
+
+  function saveStaffRegistry(registry) {
+    localStorage.setItem('exam_staff_registry', JSON.stringify(registry));
+  }
+
+  function getAuditLogs() {
+    return JSON.parse(localStorage.getItem('exam_audit_logs')) || [];
+  }
+
+  function logAuditEvent(username, action, status) {
+    const logs = getAuditLogs();
+    logs.unshift({
+      time: new Date().toLocaleString(),
+      username: username || "anonymous",
+      action: action,
+      status: status
+    });
+    if (logs.length > 100) logs.pop();
+    localStorage.setItem('exam_audit_logs', JSON.stringify(logs));
+  }
+
+  function setAuthMode(mode) {
+    currentAuthMode = mode;
+    document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
+    document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
+    document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
+    document.getElementById('signUpFields').style.display = mode === 'signup' ? 'block' : 'none';
+    document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register & Enter';
+    resetAuthInputs();
+  }
+
+  function setAuthType(type) {
+    currentAuthType = type;
+    document.getElementById('btnAuthPassword').classList.toggle('active', type === 'password');
+    document.getElementById('btnAuthPin').classList.toggle('active', type === 'pin');
+
+    document.getElementById('authInputPassword').style.display = type === 'password' ? 'block' : 'none';
+    document.getElementById('authInputPin').style.display = type === 'pin' ? 'block' : 'none';
+  }
+
+  function resetAuthInputs() {
+    document.getElementById('authUsernameInput').value = '';
+    document.getElementById('authPassword').value = '';
+    document.getElementById('authPin').value = '';
+    document.getElementById('regSubject').value = '';
+  }
+
+  function countWords(str) {
+    if (!str) return 0;
+    return str.trim().split(/\s+/).filter(word => word.length > 0).length;
+  }
+
+  function handleAuthSubmit() {
+    const registry = getStaffRegistry();
+    const typedUsername = document.getElementById('authUsernameInput').value;
+
+    const usernameRegex = /^[a-z]+$/;
+    if (!typedUsername || !usernameRegex.test(typedUsername)) {
+      alert("Username Error: Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters allowed.");
+      return;
+    }
+
+    let enteredSecret = currentAuthType === 'password' 
+      ? document.getElementById('authPassword').value 
+      : document.getElementById('authPin').value;
+
+    if (currentAuthMode === 'signin' && typedUsername === ADMIN_CREDENTIALS.username) {
+      if (enteredSecret === ADMIN_CREDENTIALS.secret) {
+        const adminUser = {
+          id: 'admin_root',
+          name: 'admin',
+          subject: 'All Subjects (Admin)',
+          role: 'admin',
+          authType: 'password'
+        };
+        logAuditEvent("admin", "Admin Login", "Success");
+        loginSuccess(adminUser);
+        return;
+      } else {
+        logAuditEvent("admin", "Admin Login Attempt", "Failed: Wrong Credential");
+        alert("Incorrect Admin Credentials.");
+        return;
+      }
+    }
+
+    if (currentAuthType === 'password') {
+      const wordCount = countWords(enteredSecret);
+      if (wordCount <= 5) {
+        alert(`Password Error: Compulsory more than 5 words (current: ${wordCount} words). Please enter at least 6 separate words.`);
+        return;
+      }
+    }
+
+    if (currentAuthType === 'pin') {
+      if (!enteredSecret || enteredSecret.length <= 4 || !/^\d+$/.test(enteredSecret)) {
+        alert("PIN Error: Compulsory more than 4 numbers (minimum 5 digits).");
+        return;
+      }
+    }
+
+    if (currentAuthMode === 'signup') {
+      const subject = document.getElementById('regSubject').value.trim();
+
+      if (typedUsername === 'admin') {
+        alert("Username 'admin' is reserved. Choose another name.");
+        return;
+      }
+
+      const exists = registry.some(s => s.name === typedUsername);
+      if (exists) {
+        alert("This username already exists. Please choose a different username.");
+        return;
+      }
+
+      const newStaff = {
+        id: 'staff_' + Date.now(),
+        name: typedUsername,
+        subject: subject || "General",
+        authType: currentAuthType,
+        secret: btoa(enteredSecret),
+        createdAt: new Date().toLocaleDateString()
+      };
+
+      registry.push(newStaff);
+      saveStaffRegistry(registry);
+      logAuditEvent(typedUsername, "Staff Account Registered", "Success");
+      loginSuccess(newStaff);
+
+    } else {
+      const staff = registry.find(s => s.name === typedUsername);
+      if (!staff) {
+        logAuditEvent(typedUsername, "Staff Login Attempt", "Failed: User Not Found");
+        alert("Username not found. Please verify spelling or Sign Up.");
+        return;
+      }
+
+      if (currentAuthType !== staff.authType) {
+        alert(`This user account requires ${staff.authType.toUpperCase()}. Switched input type.`);
+        setAuthType(staff.authType);
+        return;
+      }
+
+      if (btoa(enteredSecret) === staff.secret) {
+        logAuditEvent(typedUsername, "Staff Login", "Success");
+        loginSuccess(staff);
+      } else {
+        logAuditEvent(typedUsername, "Staff Login Attempt", "Failed: Incorrect Credential");
+        alert("Incorrect credential. Access Denied.");
+      }
+    }
+  }
+
+  function loginSuccess(user) {
+    activeUser = user;
+    sessionStorage.setItem('active_exam_user', JSON.stringify(user));
+    document.getElementById('authOverlay').style.display = 'none';
+
+    document.getElementById('sessionStaffName').innerText = user.name || "";
+    document.getElementById('sessionStaffSubject').innerText = user.subject || "";
+    document.getElementById('sessionStaffDivider').style.display = (user.name && user.subject) ? "inline" : "none";
+    
+    const isAdmin = user.role === 'admin';
+    document.getElementById('tabAdmin').style.display = isAdmin ? 'block' : 'none';
+
+    if (user.subject && !isAdmin) {
+      document.getElementById('subject').value = user.subject;
+    }
+
+    updateBadge();
+    resetAuthInputs();
+
+    if (isAdmin) switchPage('admin');
+  }
+
+  function logoutStaff() {
+    sessionStorage.removeItem('active_exam_user');
+    activeUser = null;
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('tabAdmin').style.display = 'none';
+    setAuthMode('signin');
+  }
+
+  function addNewCustomSection() {
+    customSectionCount++;
+    const secId = `custom_${customSectionCount}`;
+    const container = document.getElementById('dynamicSectionsContainer');
+
+    const secDiv = document.createElement('div');
+    secDiv.className = 'section-box';
+    secDiv.id = `sec_card_${secId}`;
+
+    secDiv.innerHTML = `
+      <div class="section-header-edit">
+        <div class="left-block">
+          <input type="checkbox" id="use_${secId}" checked onchange="toggleSec('${secId}')">
+          <input type="text" class="editable-sec-title" id="title_${secId}" value="Section Custom ${customSectionCount}">
+        </div>
+        <button onclick="removeCustomSection('${secId}')" style="background: transparent; border: none; color: var(--danger-text); font-weight: bold; cursor: pointer;">✕ Remove</button>
+      </div>
+      <div id="box_${secId}" class="grid-2">
+        <div class="grid-2">
+          <div>
+            <label>Question Count</label>
+            <input type="number" id="count_${secId}" value="1" min="1" oninput="calculateAndValidateMarks()">
+          </div>
+          <div>
+            <label>Marks Each</label>
+            <input type="number" id="marks_${secId}" value="2" min="1" oninput="calculateAndValidateMarks()">
+          </div>
+        </div>
+        <div>
+          <label>Attach Optional Diagram / Photo / Graph</label>
+          <input type="file" id="file_${secId}" accept="image/*">
+        </div>
+        <div style="grid-column: span 2;">
+          <label>Section Instructions Heading</label>
+          <input type="text" id="inst_${secId}" value="Answer the following based on the instructions:">
+        </div>
+        <div style="grid-column: span 2;">
+          <label>Question Description (Optional)</label>
+          <input type="text" id="desc_${secId}" placeholder="">
+        </div>
+      </div>
+    `;
+
+    container.appendChild(secDiv);
+    calculateAndValidateMarks();
+  }
+
+  function removeCustomSection(secId) {
+    const el = document.getElementById(`sec_card_${secId}`);
+    if (el) el.remove();
+    calculateAndValidateMarks();
+  }
+
+  function calculateAndValidateMarks() {
+    const maxMarks = parseInt(document.getElementById('maxMarks').value) || 0;
+    let calculatedTotal = 0;
+
+    const presetSecs = ['mcq', '1m', '2m', '3m', '4m'];
+    presetSecs.forEach(sec => {
+      const chk = document.getElementById('use_' + sec);
+      if (chk && chk.checked) {
+        const count = parseInt(document.getElementById('count_' + sec).value) || 0;
+        const marks = parseInt(document.getElementById('marks_' + sec).value) || 0;
+        calculatedTotal += (count * marks);
+      }
+    });
+
+    const diagChk = document.getElementById('use_diag');
+    if (diagChk && diagChk.checked) {
+      calculatedTotal += parseInt(document.getElementById('marks_diag').value) || 0;
+    }
+
+    for (let i = 1; i <= customSectionCount; i++) {
+      const chk = document.getElementById(`use_custom_${i}`);
+      if (chk && chk.checked) {
+        const count = parseInt(document.getElementById(`count_custom_${i}`).value) || 0;
+        const marks = parseInt(document.getElementById(`marks_custom_${i}`).value) || 0;
+        calculatedTotal += (count * marks);
+      }
+    }
+
+    const box = document.getElementById('marksValidationBox');
+    const summaryText = document.getElementById('marksSummaryText');
+    const genBtn = document.getElementById('genBtn');
+
+    if (calculatedTotal === maxMarks) {
+      box.style.display = "none";
+      genBtn.disabled = false;
+    } else {
+      box.style.display = "flex";
+      const diff = calculatedTotal - maxMarks;
+      summaryText.innerText = `Error: Total sections sum (${calculatedTotal}) ${diff > 0 ? 'exceeds' : 'is less than'} Target (${maxMarks}) by ${Math.abs(diff)} marks!`;
+      genBtn.disabled = true;
+    }
+  }
+
+  function toggleSec(id) {
+    const chk = document.getElementById('use_' + id);
+    const box = document.getElementById('box_' + id);
+    if (box && chk) box.style.display = chk.checked ? 'grid' : 'none';
+    calculateAndValidateMarks();
+  }
+
+  function getStaffSpecificKey() {
+    return activeUser ? `exam_vault_${activeUser.id}` : 'exam_vault_default';
+  }
+
+  function getMySavedPapers() {
+    try {
+      return JSON.parse(localStorage.getItem(getStaffSpecificKey())) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function updateBadge() {
+    const papers = getMySavedPapers();
+    document.getElementById('historyCountBadge').innerText = papers.length;
+  }
+
+  function saveCurrentPaperToHistory(autoNotify = true) {
+    const preview = document.getElementById('paperPreview');
+    const htmlContent = preview.innerHTML;
+    if (!htmlContent.trim()) {
+      alert("No question paper content to save!");
+      return;
+    }
+
+    const customNameInput = document.getElementById('paperCustomName');
+    const paperName = customNameInput.value.trim() || document.getElementById('examTitle').value || "Exam Paper";
+    const subject = document.getElementById('subject').value || "";
+    const dateStr = new Date().toLocaleString();
+
+    const newEntry = {
+      id: Date.now(),
+      paperName: paperName,
+      title: document.getElementById('examTitle').value || "",
+      subject: subject,
+      staffId: activeUser ? activeUser.id : '',
+      staffName: activeUser ? activeUser.name : 'unknown',
+      date: dateStr,
+      font: document.getElementById('fontSelector').value,
+      fontSize: document.getElementById('fontSizeSlider').value,
+      content: htmlContent
+    };
+
+    const papers = getMySavedPapers();
+    papers.unshift(newEntry);
+    localStorage.setItem(getStaffSpecificKey(), JSON.stringify(papers));
+    updateBadge();
+
+    logAuditEvent(activeUser ? activeUser.name : 'unknown', `Created Paper: ${paperName}`, "Success");
+    if (autoNotify) alert("Paper saved to history.");
+  }
+
+  function renderHistoryList() {
+    const container = document.getElementById('historyListContainer');
+    const papers = getMySavedPapers();
+
+    if (papers.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+          <p style="font-size: 1.1rem; margin-bottom: 6px;">No saved question papers in this account.</p>
+          <small>Create an exam paper and save it to access it anytime.</small>
+        </div>
+      `;
+      return;
+    }
+
+    let html = "";
+    papers.forEach(item => {
+      const displayName = item.paperName || `${item.title} ${item.subject}`.trim() || "Question Paper";
+      html += `
+        <div class="history-item">
+          <div class="history-meta">
+            <h3>${displayName}</h3>
+            <p>${item.subject ? `Subject: ${item.subject} | ` : ''}Saved: ${item.date}</p>
+          </div>
+          <div class="history-actions">
+            <button onclick="loadPaperFromHistory(${item.id})" style="background: var(--primary); color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">👁️ View / Edit</button>
+            <button onclick="printPaperFromHistory(${item.id})" style="background: #059669; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">🖨️ Print</button>
+            <button onclick="deletePaperFromHistory(${item.id})" style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️</button>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function loadPaperFromHistory(id, customKey = null) {
+    const key = customKey || getStaffSpecificKey();
+    const papers = JSON.parse(localStorage.getItem(key)) || [];
+    const paper = papers.find(p => p.id === id);
+    if (!paper) return;
+
+    const preview = document.getElementById('paperPreview');
+    preview.innerHTML = paper.content;
+
+    document.getElementById('paperCustomName').value = paper.paperName || '';
+    document.getElementById('fontSelector').value = paper.font;
+    changePaperFont(paper.font);
+
+    document.getElementById('fontSizeSlider').value = paper.fontSize;
+    changePaperFontSize(paper.fontSize);
+
+    document.getElementById('paperCard').style.display = "block";
+    switchPage('create');
+    document.getElementById('paperCard').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function printPaperFromHistory(id, customKey = null) {
+    loadPaperFromHistory(id, customKey);
+    setTimeout(() => { printCurrentPaper(); }, 300);
+  }
+
+  function deletePaperFromHistory(id) {
+    if (!confirm("Delete this saved paper?")) return;
+    let papers = getMySavedPapers();
+    papers = papers.filter(p => p.id !== id);
+    localStorage.setItem(getStaffSpecificKey(), JSON.stringify(papers));
+    updateBadge();
+    renderHistoryList();
+  }
+
+  function clearMyHistory() {
+    if (!confirm("Clear your question paper history?")) return;
+    localStorage.removeItem(getStaffSpecificKey());
+    updateBadge();
+    renderHistoryList();
+  }
+
+  function renderAdminDashboard() {
+    const registry = getStaffRegistry();
+    const logs = getAuditLogs();
+
+    const totalStaff = registry.length;
+    const totalLogins = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
+
+    let allPapersCount = 0;
+    registry.forEach(s => {
+      const papers = JSON.parse(localStorage.getItem(`exam_vault_${s.id}`)) || [];
+      allPapersCount += papers.length;
+    });
+
+    document.getElementById('admStatStaff').innerText = totalStaff;
+    document.getElementById('admStatLogins').innerText = totalLogins;
+    document.getElementById('admStatPapers').innerText = allPapersCount;
+
+    const staffTbody = document.getElementById('admStaffTableBody');
+    if (registry.length === 0) {
+      staffTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No staff registered yet.</td></tr>`;
+    } else {
+      let staffHtml = "";
+      registry.forEach(staff => {
+        const staffPapers = JSON.parse(localStorage.getItem(`exam_vault_${staff.id}`)) || [];
+        staffHtml += `
+          <tr>
+            <td><strong>${staff.name}</strong></td>
+            <td>${staff.subject}</td>
+            <td><span style="background: var(--card); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; font-size: 0.78rem;">${staff.authType.toUpperCase()}</span></td>
+            <td>${staff.createdAt || "N/A"}</td>
+            <td><strong>${staffPapers.length}</strong> saved</td>
+          </tr>
+        `;
+      });
+      staffTbody.innerHTML = staffHtml;
+    }
+
+    const logsTbody = document.getElementById('admLogsTableBody');
+    if (logs.length === 0) {
+      logsTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No logs recorded.</td></tr>`;
+    } else {
+      let logsHtml = "";
+      logs.forEach(log => {
+        const isSuccess = log.status === "Success";
+        logsHtml += `
+          <tr>
+            <td><small>${log.time}</small></td>
+            <td><strong>${log.username}</strong></td>
+            <td>${log.action}</td>
+            <td><span style="color: ${isSuccess ? '#16a34a' : '#dc2626'}; font-weight: bold;">${log.status}</span></td>
+          </tr>
+        `;
+      });
+      logsTbody.innerHTML = logsHtml;
+    }
+
+    const papersContainer = document.getElementById('admPapersContainer');
+    let allPapersHtml = "";
+    let papersFound = false;
+
+    registry.forEach(staff => {
+      const papers = JSON.parse(localStorage.getItem(`exam_vault_${staff.id}`)) || [];
+      if (papers.length > 0) {
+        papersFound = true;
+        papers.forEach(p => {
+          allPapersHtml += `
+            <div class="history-item">
+              <div class="history-meta">
+                <h3>${p.paperName || p.title}</h3>
+                <p>Teacher: <strong>${staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
+              </div>
+              <div class="history-actions">
+                <button onclick="loadPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: var(--primary); color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">👁️ Inspect</button>
+                <button onclick="printPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: #059669; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">🖨️ Print</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+    });
+
+    papersContainer.innerHTML = papersFound ? allPapersHtml : `<p style="padding: 16px; color: var(--text-muted); font-size: 0.9rem;">No question papers generated yet.</p>`;
+  }
+
+  function clearAdminLogs() {
+    if (!confirm("Clear audit logs?")) return;
+    localStorage.removeItem('exam_audit_logs');
+    renderAdminDashboard();
+  }
+
+  function switchPage(page) {
+    document.getElementById('tabCreate').classList.toggle('active', page === 'create');
+    document.getElementById('tabHistory').classList.toggle('active', page === 'history');
+    document.getElementById('tabAdmin').classList.toggle('active', page === 'admin');
+
+    document.getElementById('pageCreate').classList.toggle('hidden', page !== 'create');
+    document.getElementById('pageHistory').classList.toggle('hidden', page !== 'history');
+    document.getElementById('pageAdmin').classList.toggle('hidden', page !== 'admin');
+
+    if (page === 'history') renderHistoryList();
+    if (page === 'admin') renderAdminDashboard();
+  }
+
+  function printCurrentPaper() {
+    const customNameInput = document.getElementById('paperCustomName');
+    const originalDocTitle = document.title;
+    if (customNameInput && customNameInput.value.trim()) {
+      document.title = customNameInput.value.trim();
+    }
+    window.print();
+    setTimeout(() => { document.title = originalDocTitle; }, 1000);
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const nextTheme = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', nextTheme);
+    document.getElementById('themeIcon').innerText = isDark ? '🌙' : '☀️';
+    document.getElementById('themeLabel').innerText = isDark ? 'Night Mode' : 'Light Mode';
+  }
+
+  function changePaperFont(fontVal) {
+    const root = document.documentElement;
+    root.style.setProperty('--paper-font', fontVal);
+    const preview = document.getElementById('paperPreview');
+    if (preview) {
+      preview.style.setProperty('font-family', fontVal, 'important');
+      preview.querySelectorAll('*').forEach(el => el.style.setProperty('font-family', fontVal, 'important'));
+    }
+  }
+
+  function changePaperFontSize(sizeVal) {
+    const root = document.documentElement;
+    const ptString = sizeVal + 'pt';
+    document.getElementById('fontSizeDisplay').innerText = ptString;
+    root.style.setProperty('--paper-size', ptString);
+    const preview = document.getElementById('paperPreview');
+    if (preview) preview.style.setProperty('font-size', ptString, 'important');
+  }
+
+  function toggleEditMode(enable) {
+    const paper = document.getElementById('paperPreview');
+    const badge = document.getElementById('editBadge');
+    paper.setAttribute('contenteditable', enable ? "true" : "false");
+    badge.innerText = enable ? "Editable" : "Locked";
+    badge.style.color = enable ? "var(--primary)" : "var(--text-muted)";
+  }
+
+  async function shareApp() {
+    const shareData = {
+      title: 'Exam Paper Creator',
+      text: 'Standardized exam paper creator with customizable sections, diagram integration, and teacher data vaults.',
+      url: window.location.href
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch (err) {}
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard.");
+    }
+  }
+
+  // --- CLIENT-SIDE IMAGE AUTO-DOWNSCALE & LIGHTWEIGHT COMPRESSION ---
+  function processAndCompressImage(file) {
+    return new Promise((resolve, reject) => {
+      if (file.type === "application/pdf") {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ data: reader.result.split(',')[1], mimeType: file.type });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target.result; };
+      reader.onerror = reject;
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1400; // Optimal speed & readability
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+        resolve({ data: dataUrl.split(',')[1], mimeType: 'image/jpeg' });
+      };
+      
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function buildDiagramSectionHtml(qNum) {
+    let outHtml = "";
+
+    const isDiagEnabled = document.getElementById('use_diag') && document.getElementById('use_diag').checked;
+    if (isDiagEnabled) {
+      const heading = document.getElementById('inst_diag').value;
+      const marks = document.getElementById('marks_diag').value;
+      const desc = document.getElementById('diagDesc').value;
+      const file = document.getElementById('diagImage').files[0];
+      
+      let imgSrc = "";
+      if (file) {
+        const compressed = await processAndCompressImage(file);
+        imgSrc = `data:${compressed.mimeType};base64,${compressed.data}`;
+      }
+
+      outHtml += `
+        <div class="sec-block">
+          <div class="sec-title">
+            <span>${heading}</span>
+            <span class="sec-marks-total">[1 × ${marks} = ${marks}]</span>
+          </div>
+          <div class="q-item">
+            <div class="q-line">
+              <span class="q-num">${qNum}.</span>
+              <span class="q-text">${desc}</span>
+            </div>
+            ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Exam Diagram"></div>` : ''}
+          </div>
+        </div>
+      `;
+      qNum++;
+    }
+
+    for (let i = 1; i <= customSectionCount; i++) {
+      const chk = document.getElementById(`use_custom_${i}`);
+      if (chk && chk.checked) {
+        const fileInput = document.getElementById(`file_custom_${i}`);
+        const file = fileInput ? fileInput.files[0] : null;
+        const descInput = document.getElementById(`desc_custom_${i}`);
+        const desc = descInput ? descInput.value.trim() : "";
+        
+        if (file || desc) {
+          const heading = document.getElementById(`inst_custom_${i}`).value;
+          const count = document.getElementById(`count_custom_${i}`).value;
+          const marks = document.getElementById(`marks_custom_${i}`).value;
+          
+          let imgSrc = "";
+          if (file) {
+            const compressed = await processAndCompressImage(file);
+            imgSrc = `data:${compressed.mimeType};base64,${compressed.data}`;
+          }
+
+          outHtml += `
+            <div class="sec-block">
+              <div class="sec-title">
+                <span>${heading}</span>
+                <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
+              </div>
+              <div class="q-item">
+                <div class="q-line">
+                  <span class="q-num">${qNum}.</span>
+                  <span class="q-text">${desc || "Study the diagram/graph provided and answer:"}</span>
+                </div>
+                ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Diagram"></div>` : ''}
+              </div>
+            </div>
+          `;
+          qNum++;
+        }
+      }
+    }
+
+    return outHtml;
+  }
+
+  // --- FAST RESILIENT DISPATCH USING STRICT ACTIVE MODELS ONLY ---
+  async function generateWithFallback(parts, statusElem) {
+    let lastError = null;
+
+    for (let i = 0; i < CANDIDATE_MODELS.length; i++) {
+      const model = CANDIDATE_MODELS[i];
+      statusElem.innerText = `Connecting via ${model}...`;
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${EMBEDDED_API_KEY}`;
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 35000);
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json", 
+            "x-goog-api-key": EMBEDDED_API_KEY 
+          },
+          body: JSON.stringify({ 
+            contents: [{ parts }],
+            generationConfig: { 
+              temperature: 0.1,
+              thinkingConfig: { thinkingBudget: 0 } // Skip deep reasoning for sub-second generation
+            }
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        const data = await response.json();
+
+        if (data.error) {
+          const errMsg = data.error.message || "";
+          console.warn(`Model ${model} returned error: ${errMsg}. Shifting to fallback...`);
+          lastError = new Error(errMsg);
+          continue;
+        }
+
+        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!generatedText) throw new Error("Empty response received.");
+        return generatedText;
+
+      } catch (err) {
+        lastError = err;
+        if (i < CANDIDATE_MODELS.length - 1) continue;
+      }
+    }
+
+    throw lastError || new Error("All endpoints busy. Please click Generate once more.");
+  }
+
+  async function startGeneration() {
+    calculateAndValidateMarks();
+    if (document.getElementById('genBtn').disabled) {
+      alert("Please balance marks before generating the exam paper.");
+      return;
+    }
+
+    const files = document.getElementById('fileInput').files;
+    const btn = document.getElementById('genBtn');
+    const status = document.getElementById('statusMessage');
+    const paperCard = document.getElementById('paperCard');
+    const paperPreview = document.getElementById('paperPreview');
+
+    if (files.length === 0) {
+      alert("Please upload at least one question image or PDF in Section 2.");
+      return;
+    }
+
+    btn.disabled = true;
+    paperCard.style.display = "none";
+    status.innerText = "Compressing upload and preparing payload...";
+
+    try {
+      const parts = [];
+      for (let i = 0; i < files.length; i++) {
+        status.innerText = `Optimizing file (${i + 1}/${files.length})...`;
+        const res = await processAndCompressImage(files[i]);
+        parts.push({
+          inlineData: { data: res.data, mimeType: res.mimeType }
+        });
+      }
+
+      const sectionsConfig = [];
+      const presetSecKeys = [
+        { id: 'mcq', desc: 'Multiple Choice Questions with 4 options' },
+        { id: '1m', desc: 'One-word or single-sentence short answer questions' },
+        { id: '2m', desc: 'Short conceptual questions' },
+        { id: '3m', desc: 'Brief descriptive questions' },
+        { id: '4m', desc: 'Long answer/detailed questions' }
+      ];
+
+      presetSecKeys.forEach(s => {
+        const chk = document.getElementById('use_' + s.id);
+        if (chk && chk.checked) {
+          const count = document.getElementById('count_' + s.id).value;
+          const marks = document.getElementById('marks_' + s.id).value;
+          const inst = document.getElementById('inst_' + s.id).value;
+          const secTitle = document.getElementById('title_' + s.id).value;
+          sectionsConfig.push(`- Section: "${secTitle}"\n  Type: ${s.desc}\n  Instructions: "${inst}"\n  Question count: ${count}\n  Marks each: ${marks}\n  Total section marks: [${count} × ${marks} = ${count * marks}]`);
+        }
+      });
+
+      for (let i = 1; i <= customSectionCount; i++) {
+        const chk = document.getElementById(`use_custom_${i}`);
+        const fileInput = document.getElementById(`file_custom_${i}`);
+        const descInput = document.getElementById(`desc_custom_${i}`);
+        const hasManual = (fileInput && fileInput.files.length > 0) || (descInput && descInput.value.trim().length > 0);
+
+        if (chk && chk.checked && !hasManual) {
+          const count = document.getElementById(`count_custom_${i}`).value;
+          const marks = document.getElementById(`marks_custom_${i}`).value;
+          const inst = document.getElementById(`inst_custom_${i}`).value;
+          const secTitle = document.getElementById(`title_custom_${i}`).value;
+          sectionsConfig.push(`- Section: "${secTitle}"\n  Instructions: "${inst}"\n  Question count: ${count}\n  Marks each: ${marks}\n  Total section marks: [${count} × ${marks} = ${count * marks}]`);
+        }
+      }
+
+      const instName = document.getElementById('instName').value;
+      const examTitle = document.getElementById('examTitle').value;
+      const subject = document.getElementById('subject').value;
+      const grade = document.getElementById('grade').value;
+      const duration = document.getElementById('duration').value;
+      const maxMarks = document.getElementById('maxMarks').value;
+      const genInst = document.getElementById('genInst').value;
+
+      const incName = document.getElementById('incName').checked;
+      const incRoll = document.getElementById('incRoll').checked;
+      const incSec = document.getElementById('incSec').checked;
+      const incDate = document.getElementById('incDate').checked;
+
+      const promptText = `
+You are an expert academic paper setter. Read all attached questions and generate a standard examination question paper.
+
+Strict Spacing & Layout Guidelines:
+1. Blueprint:
+${sectionsConfig.join('\n\n')}
+
+2. General instructions: "${genInst}"
+
+3. MARKS RULE:
+- DO NOT display individual marks at the end of each question line.
+- ONLY display total calculation of marks on the Roman numeral section heading line using class="sec-marks-total", like: [Count × Marks = Total].
+- Maintain clean Roman numbers: I., II., III., IV., V., VI...
+
+4. TIGHT SAME-LINE NUMBERING:
+- Every question MUST have the number and question text on the exact same line with no big gaps:
+  <div class="q-item">
+    <div class="q-line">
+      <span class="q-num">[Q.No].</span>
+      <span class="q-text">[Question Text]</span>
+    </div>
+    <div class="mcq-options">
+      <span>(A) [Opt A]</span>
+      <span>(B) [Opt B]</span>
+      <span>(C) [Opt C]</span>
+      <span>(D) [Opt D]</span>
+    </div>
+  </div>
+
+5. Return ONLY clean semantic HTML for insertion inside an A4 sheet. No markdown backticks:
+<div class="paper-header">
+  <h1>${instName}</h1>
+  <h3>${examTitle}</h3>
+  <div class="meta-row">
+    <span>Subject: ${subject}</span>
+    <span>Class: ${grade}</span>
+    <span>Time: ${duration}</span>
+    <span>Max Marks: ${maxMarks}</span>
+  </div>
+  <div class="student-fields">
+    ${incName ? '<span>Name: _______________________________</span>' : ''}
+    ${incRoll ? '<span>Reg/Roll No: ____________</span>' : ''}
+    ${incSec ? '<span>Sec: ____</span>' : ''}
+    ${incDate ? '<span>Date: _________</span>' : ''}
+  </div>
+</div>
+
+${genInst ? `<div class="general-instructions"><strong>General Instructions:</strong> ${genInst}</div>` : ''}
+
+For each section:
+<div class="sec-block">
+  <div class="sec-title">
+    <span>[Section Heading]</span>
+    <span class="sec-marks-total">[[Count] × [Marks] = [Total]]</span>
+  </div>
+</div>
+
+Continuous numbering (1, 2, 3...) across sections. Preserve mathematical notations and languages accurately.
+`;
+
+      parts.push({ text: promptText });
+
+      const generatedRaw = await generateWithFallback(parts, status);
+      let htmlOutput = generatedRaw.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
+
+      const totalQCount = (htmlOutput.match(/class="q-item"/g) || []).length;
+      htmlOutput += await buildDiagramSectionHtml(totalQCount + 1);
+
+      paperPreview.innerHTML = htmlOutput;
+      paperCard.style.display = "block";
+      status.innerText = "Exam paper generated successfully!";
+
+      const defaultName = [subject, grade, examTitle].filter(Boolean).join('_').replace(/[\/\s]+/g, '_');
+      document.getElementById('paperCustomName').value = defaultName;
+
+      const selectedFont = document.getElementById('fontSelector').value;
+      changePaperFont(selectedFont);
+
+      document.getElementById('editToggle').checked = false;
+      toggleEditMode(false);
+
+      saveCurrentPaperToHistory(false);
+      paperCard.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+      alert("Notice: " + err.message);
+      status.innerText = "Error: " + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  window.addEventListener('load', () => {
+    calculateAndValidateMarks();
+
+    const savedSession = sessionStorage.getItem('active_exam_user');
+    if (savedSession) {
+      loginSuccess(JSON.parse(savedSession));
+    } else {
+      setAuthMode('signin');
+    }
+  });
+</script>
+
+</body>
+</html>
