@@ -3,26 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <title>Exam Paper Creator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <!-- Core Google Web Fonts pre-loaded for instant switching -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+  <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600;700&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
 
   <!-- Local In-Browser OCR -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     :root {
-      --bg: #eef2f7;
+      --bg: #f1f5f9;
       --card: #ffffff;
       --card-subtle: #f8fafc;
       --border: #cbd5e1;
       --border-subtle: #e2e8f0;
+      
       --primary: #0284c7;
       --primary-hover: #0369a1;
-      --text: #1e293b;
+      --primary-light: #e0f2fe;
+      
+      --accent-emerald: #059669;
+      --accent-emerald-hover: #047857;
+      
+      --text: #0f172a;
       --text-muted: #64748b;
       --input-bg: #ffffff;
       
@@ -32,23 +41,31 @@
       
       --paper-bg: #ffffff;
       --paper-text: #111827;
-      --paper-shadow: rgba(15, 23, 42, 0.12);
+      --paper-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
 
       --paper-font: 'Tinos', 'Noto Serif', 'Times New Roman', serif;
       --paper-size: 10.5pt;
+
+      --watermark-opacity: 0.08;
     }
 
     [data-theme="dark"] {
-      --bg: #0f172a;
+      --bg: #0b1120;
       --card: #1e293b;
-      --card-subtle: #273549;
+      --card-subtle: #172236;
       --border: #334155;
       --border-subtle: #1e293b;
+      
       --primary: #38bdf8;
       --primary-hover: #0ea5e9;
+      --primary-light: rgba(56, 189, 248, 0.15);
+      
+      --accent-emerald: #10b981;
+      --accent-emerald-hover: #059669;
+      
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --input-bg: #131d2e;
+      --input-bg: #111827;
       
       --danger-bg: #451a1a;
       --danger-border: #7f1d1d;
@@ -56,7 +73,9 @@
       
       --paper-bg: #ffffff;
       --paper-text: #111827;
-      --paper-shadow: rgba(0, 0, 0, 0.5);
+      --paper-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+
+      --watermark-opacity: 0.05;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -65,168 +84,312 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Kannada", "Noto Sans Devanagari", "Noto Naskh Arabic", sans-serif;
     }
     
-    body { background-color: var(--bg); color: var(--text); padding: 24px 16px; transition: background-color 0.25s, color 0.25s; }
+    body { 
+      background-color: var(--bg); color: var(--text); padding: 18px 12px; 
+      transition: background-color 0.35s ease, color 0.35s ease; 
+    }
+
+    body.no-scroll {
+      overflow: hidden !important;
+      touch-action: none !important;
+    }
+
     .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
     /* AUTH OVERLAY MODAL */
     #authOverlay {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 9999;
       display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px);
+      transition: opacity 0.3s ease;
     }
     .auth-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-      padding: 28px 24px; width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 26px 22px; width: 100%; max-width: 440px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-height: 90vh; overflow-y: auto;
     }
-    .auth-card h2 { font-size: 1.4rem; color: var(--primary); text-align: center; margin-bottom: 6px; }
-    .auth-card p { font-size: 0.88rem; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
+    .auth-card h2 { font-size: 1.4rem; color: var(--primary); text-align: center; margin-bottom: 4px; }
+    .auth-card p { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
     
     .auth-nav {
-      display: flex; gap: 8px; background: var(--card-subtle); padding: 4px; border-radius: 8px; margin-bottom: 18px; border: 1px solid var(--border);
+      display: flex; gap: 8px; background: var(--card-subtle); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border);
     }
     .auth-nav button {
       flex: 1; padding: 8px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
+      transition: all 0.25s ease;
     }
-    .auth-nav button.active { background: var(--primary); color: #fff; }
+    .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
 
     .auth-type-pill { display: flex; gap: 10px; margin-bottom: 14px; }
     .auth-type-pill button {
       flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--card-subtle);
       border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: var(--text);
+      transition: all 0.25s ease;
     }
     .auth-type-pill button.active { border-color: var(--primary); background: var(--primary); color: #fff; }
     .auth-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.3; }
 
-    /* App Header */
-    .app-header {
-      background: var(--card); padding: 18px 24px; border-radius: 12px;
-      border: 1px solid var(--border-subtle); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    /* IN-APP SECURITY LOCK MODAL */
+    #lockOverlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.96); z-index: 10001;
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+    }
+
+    /* ========================================================
+       CROPPER OVERLAY MODAL
+       ======================================================== */
+    #cropperOverlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); z-index: 10010;
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);
+      padding: 16px;
+    }
+    .cropper-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       display: flex; flex-direction: column; align-items: center; gap: 14px;
     }
-    .app-header h1 { font-size: 1.85rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; text-align: center; }
-    .app-header h1 span { color: var(--primary); }
-
-    .staff-badge-row {
-      display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid var(--border-subtle); padding-top: 10px; font-size: 0.88rem;
+    .cropper-viewport {
+      width: 240px; height: 240px; position: relative; overflow: hidden;
+      border-radius: 50%; border: 3px solid var(--primary); background: #000;
+      touch-action: none; cursor: grab; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.75);
+    }
+    .cropper-viewport-wrap {
+      width: 240px; height: 240px; overflow: hidden; position: relative;
+    }
+    .cropper-img {
+      position: absolute; top: 0; left: 0; transform-origin: 0 0;
+      user-select: none; pointer-events: none;
     }
 
-    .nav-tabs { display: flex; gap: 10px; background: var(--card-subtle); padding: 5px; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
-    .nav-tab {
-      background: transparent; color: var(--text-muted); border: none; padding: 8px 18px;
-      font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+    /* TOP APP HEADER - SHOWN EXCLUSIVELY ON HOME PAGE */
+    .app-header {
+      position: relative; overflow: hidden; background: var(--card);
+      padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      display: flex; align-items: center; justify-content: space-between; min-height: 64px;
     }
-    .nav-tab.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-    .header-controls { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .btn-action {
-      background: var(--card-subtle); color: var(--text); border: 1px solid var(--border);
-      padding: 7px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px;
+    .header-watermark {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: 320px; height: 100%; pointer-events: none; opacity: var(--watermark-opacity);
+      background-repeat: no-repeat; background-size: contain; background-position: center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
     }
-    .btn-action:hover { border-color: var(--primary); color: var(--primary); }
 
-    .page-view { display: flex; flex-direction: column; gap: 16px; }
+    .menu-lines-btn {
+      background: var(--card-subtle); border: 1.5px solid var(--border);
+      width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 5px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; z-index: 2;
+    }
+    .menu-lines-btn span {
+      display: block; width: 20px; height: 2.2px; background-color: var(--text);
+      border-radius: 4px; transition: all 0.25s ease;
+    }
+    .menu-lines-btn:hover { 
+      border-color: var(--primary); background: var(--primary-light); transform: scale(1.04);
+    }
+    .menu-lines-btn:hover span { background-color: var(--primary); }
+
+    .header-center-title {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      text-align: center; z-index: 1; width: max-content;
+    }
+    .header-center-title h1 {
+      font-size: 1.45rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; margin: 0;
+    }
+    .header-center-title h1 span { color: var(--primary); }
+
+    /* SLIDE-OUT LEFT DRAWER */
+    .drawer-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+      z-index: 10005; opacity: 0; pointer-events: none; 
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(4px); touch-action: none;
+    }
+    .drawer-backdrop.active { opacity: 1; pointer-events: auto; }
+
+    .side-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 330px; max-width: 86vw;
+      background: var(--card); border-right: 1px solid var(--border); z-index: 10006;
+      transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column; box-shadow: 6px 0 30px rgba(0,0,0,0.25);
+      overscroll-behavior: contain;
+    }
+    .side-drawer.active { transform: translateX(0); }
+
+    .drawer-header {
+      padding: 16px 18px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.05), transparent);
+    }
+    .drawer-header h3 { font-size: 1.15rem; color: var(--text); font-weight: 800; }
+    .drawer-close-btn {
+      background: var(--card-subtle); border: 1px solid var(--border); 
+      width: 32px; height: 32px; border-radius: 8px;
+      font-size: 1.1rem; color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+    }
+    .drawer-close-btn:hover { color: var(--danger-text); border-color: var(--danger-border); }
+
+    .drawer-scroll-body {
+      padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;
+      overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    }
+
+    .drawer-profile-card {
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 14px;
+      padding: 15px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .drawer-profile-card:hover { 
+      border-color: var(--primary); transform: translateY(-2px); 
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.1); 
+    }
+    .drawer-profile-top { display: flex; align-items: center; gap: 14px; }
+    .drawer-avatar {
+      width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+      background: linear-gradient(135deg, var(--primary), #0284c7); color: #fff; 
+      display: flex; align-items: center; justify-content: center; 
+      font-size: 1.4rem; font-weight: bold; border: 2.5px solid var(--card);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .drawer-profile-info { flex: 1; overflow: hidden; }
+    .drawer-profile-name { font-weight: 800; font-size: 1.05rem; color: var(--text); }
+    .drawer-profile-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; }
+
+    .drawer-section-title {
+      font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--primary); margin-bottom: 6px;
+    }
+
+    .drawer-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.92rem; font-weight: 600; color: var(--text); cursor: pointer; text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .drawer-item:hover { 
+      border-color: var(--primary); transform: translateX(3px); background: var(--primary-light); 
+    }
+
+    .page-view { 
+      display: flex; flex-direction: column; gap: 16px; 
+      animation: pageSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes pageSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .page-view.hidden { display: none; }
 
     .card {
-      background: var(--card); border: 1px solid var(--border-subtle); border-radius: 12px;
-      padding: 22px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      background: var(--card); border: 1.5px solid var(--border-subtle); border-radius: 14px;
+      padding: 22px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); transition: all 0.25s ease;
     }
-    h2 { font-size: 1.1rem; margin-bottom: 14px; color: var(--text); font-weight: 700; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
+    h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); font-weight: 700; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 8px; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; }
 
     label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="file"], select, textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px;
+    input[type="text"], input[type="password"], input[type="number"], input[type="file"], input[type="tel"], select, textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
       font-size: 0.9rem; background-color: var(--input-bg); color: var(--text); outline: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2); }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
 
-    .checkbox-group { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; }
+    .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
     .checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; text-transform: none; color: var(--text); }
 
-    /* COLLAPSIBLE ACCORDION CONTAINER WITH SMOOTH ANIMATION */
+    /* COLLAPSIBLE ACCORDION DRAWERS */
     .accordion-trigger {
       display: flex; justify-content: space-between; align-items: center;
-      cursor: pointer; user-select: none; padding: 12px 16px; border-radius: 8px;
-      background: var(--card-subtle); border: 1px solid var(--border);
-      transition: background 0.2s ease, border-color 0.2s ease;
+      cursor: pointer; user-select: none; padding: 14px 18px; border-radius: 12px;
+      background: var(--card-subtle); border: 1.5px solid var(--border);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .accordion-trigger:hover {
-      background: rgba(2, 132, 199, 0.06); border-color: var(--primary);
+      background: var(--primary-light); border-color: var(--primary);
     }
     .accordion-trigger h2 {
-      border: none; margin: 0; padding: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;
+      border: none; margin: 0; padding: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;
     }
     .arrow-icon {
-      font-size: 1rem; color: var(--primary);
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      display: inline-block;
+      font-size: 1.1rem; color: var(--primary);
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); display: inline-block;
     }
-    .arrow-icon.rotated {
-      transform: rotate(180deg);
-    }
+    .arrow-icon.rotated { transform: rotate(180deg); }
 
     .accordion-content {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(-8px);
-      transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), 
-                  opacity 0.35s ease, 
-                  transform 0.35s ease;
+      max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-10px);
+      transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, transform 0.35s ease;
       margin-top: 0;
     }
-    .accordion-content.expanded {
-      max-height: 2500px;
-      opacity: 1;
-      transform: translateY(0);
-      margin-top: 14px;
+    .accordion-content.expanded { 
+      max-height: 4000px; opacity: 1; transform: translateY(0); margin-top: 16px; 
     }
 
-    /* Section Boxes */
-    .section-box {
-      border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
-      margin-bottom: 12px; background: var(--card-subtle);
+    .source-mode-choice-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px;
     }
+    .source-choice-btn {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 14px;
+      cursor: pointer; background: var(--card); font-weight: 700; font-size: 0.9rem;
+      text-align: center; color: var(--text); transition: all 0.25s ease;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .source-choice-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .source-choice-btn.selected {
+      border-color: var(--primary); background: var(--primary); color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    .section-box {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 15px 16px;
+      margin-bottom: 12px; background: var(--card-subtle); transition: border-color 0.2s ease;
+    }
+    .section-box:hover { border-color: rgba(2, 132, 199, 0.4); }
+    
     .section-header-edit {
       display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px;
     }
     .section-header-edit .left-block { display: flex; align-items: center; gap: 8px; flex: 1; }
     .editable-sec-title {
-      font-weight: 700; font-size: 0.95rem; border: 1px solid transparent; background: transparent; color: var(--text);
-      padding: 4px 6px; border-radius: 4px; outline: none; width: 100%;
+      font-weight: 700; font-size: 0.95rem; border: 1.5px solid transparent; background: transparent; color: var(--text);
+      padding: 4px 8px; border-radius: 6px; outline: none; width: 100%; transition: all 0.2s ease;
     }
     .editable-sec-title:focus { border-color: var(--primary); background: var(--input-bg); }
 
     .btn-add-sec {
-      background: var(--card-subtle); color: var(--primary); border: 1px dashed var(--primary);
-      width: 100%; padding: 11px; border-radius: 8px; font-weight: 700; cursor: pointer;
-      font-size: 0.9rem; margin-top: 6px; transition: background 0.2s;
+      background: var(--card-subtle); color: var(--primary); border: 2px dashed var(--primary);
+      width: 100%; padding: 13px; border-radius: 10px; font-weight: 700; cursor: pointer;
+      font-size: 0.92rem; margin-top: 8px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-add-sec:hover { background: rgba(2, 132, 199, 0.08); }
+    .btn-add-sec:hover { background: var(--primary-light); transform: translateY(-2px); }
 
     #marksValidationBox {
-      display: none;
-      padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; margin-top: 14px;
-      background-color: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger-text);
+      display: none; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; margin-top: 14px;
+      background-color: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger-text);
       justify-content: space-between; align-items: center;
     }
 
     .btn-generate {
-      background-color: var(--primary); color: #ffffff; border: none; padding: 13px 24px;
-      border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%;
+      background: linear-gradient(135deg, var(--primary), #0369a1); 
+      color: #ffffff; border: none; padding: 14px 26px;
+      border-radius: 10px; font-size: 1.02rem; font-weight: 700; cursor: pointer; width: 100%;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-generate:hover:not(:disabled) { background-color: var(--primary-hover); }
-    .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-generate:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    #statusMessage { font-size: 0.88rem; color: var(--text-muted); font-weight: 500; margin-top: 10px; text-align: center; }
+    #statusMessage { font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-top: 10px; text-align: center; }
 
     .paper-toolbar {
       display: flex; flex-direction: column; gap: 12px;
-      background: var(--card); border: 1px solid var(--border); padding: 14px 18px;
-      border-radius: 8px; margin-bottom: 14px;
+      background: var(--card); border: 1.5px solid var(--border); padding: 14px 18px;
+      border-radius: 10px; margin-bottom: 14px;
     }
     .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
     .toolbar-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -236,11 +399,11 @@
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
       position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #94a3b8; transition: .25s; border-radius: 24px;
+      background-color: #94a3b8; transition: .25s ease; border-radius: 24px;
     }
     .slider:before {
       position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px;
-      background-color: white; transition: .25s; border-radius: 50%;
+      background-color: white; transition: .25s ease; border-radius: 50%;
     }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(20px); }
@@ -249,7 +412,7 @@
     .a4-page {
       background: #ffffff !important; color: #111827 !important;
       width: 210mm; min-height: 297mm; padding: 16mm 18mm; margin: 0 auto;
-      box-shadow: 0 6px 24px var(--paper-shadow); border-radius: 2px;
+      box-shadow: var(--paper-shadow); border-radius: 2px;
       line-height: 1.35; outline: none;
       font-family: var(--paper-font) !important; font-size: var(--paper-size) !important;
     }
@@ -286,29 +449,35 @@
     .diagram-container img { max-width: 85%; max-height: 220px; object-fit: contain; border: 1px solid #666; padding: 3px; }
 
     .history-item {
-      background: var(--card-subtle); border: 1px solid var(--border); border-radius: 8px;
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 10px;
       padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px;
+      transition: all 0.2s ease;
     }
+    .history-item:hover { border-color: var(--primary); transform: translateY(-1px); }
     .history-meta h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
     .history-meta p { font-size: 0.85rem; color: var(--text-muted); }
     .history-actions { display: flex; gap: 8px; }
 
     .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
-    .stat-card { background: var(--card-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-card { 
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 12px; 
+      padding: 18px; text-align: center; transition: all 0.2s ease;
+    }
+    .stat-card:hover { border-color: var(--primary); transform: translateY(-2px); }
     .stat-card span { font-size: 0.82rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
-    .stat-card h3 { font-size: 1.8rem; color: var(--primary); margin-top: 6px; }
+    .stat-card h3 { font-size: 1.9rem; color: var(--primary); margin-top: 6px; }
 
     .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
     .data-table th, .data-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
     .data-table th { background: var(--card-subtle); font-weight: bold; color: var(--text); }
     .data-table tr:hover { background: rgba(2, 132, 199, 0.04); }
 
-    /* Double-back exit toast */
+    /* Double Back Toast */
     #backToast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.92); color: #fff; padding: 10px 20px;
+      background: rgba(15, 23, 42, 0.94); color: #fff; padding: 10px 22px;
       border-radius: 30px; font-size: 0.85rem; font-weight: 600;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.3); z-index: 10000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3); z-index: 10000;
       display: none; animation: fadeInOut 2s ease forwards;
     }
     @keyframes fadeInOut {
@@ -332,26 +501,163 @@
 
 <div id="backToast">Press back again to exit</div>
 
+<!-- IN-APP LOCK SCREEN OVERLAY -->
+<div id="lockOverlay">
+  <div class="auth-card" style="text-align: center;">
+    <h2>🔒 App Locked</h2>
+    <p>Enter your App Lock credential to continue.</p>
+    <div style="margin-bottom: 14px;">
+      <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" style="text-align: center; font-size: 1.1rem; letter-spacing: 2px;">
+    </div>
+    <button onclick="unlockApp()" class="btn-generate" style="margin-bottom: 10px;">Unlock App</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     INTERACTIVE CIRCULAR IMAGE CROPPER MODAL
+     ======================================================== -->
+<div id="cropperOverlay">
+  <div class="cropper-card">
+    <h3 style="font-size: 1.1rem; color: var(--primary);">Crop Profile Picture</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Drag photo to reposition inside circle</p>
+    
+    <div class="cropper-viewport-wrap">
+      <div class="cropper-viewport" id="cropperViewport">
+        <img id="cropperImage" class="cropper-img" src="">
+      </div>
+    </div>
+
+    <div style="width: 100%; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 0.8rem; font-weight: bold;">Zoom:</span>
+      <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" oninput="onCropZoom(this.value)" style="flex: 1;">
+    </div>
+
+    <div style="display: flex; gap: 10px; width: 100%;">
+      <button onclick="cancelCrop()" style="flex: 1; background: var(--card-subtle); color: var(--text); border: 1.5px solid var(--border); padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">Cancel</button>
+      <button onclick="applyCrop()" style="flex: 1; background: var(--primary); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">Apply Crop</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     SLIDE-OUT LEFT DRAWER (CLEAN UI & NO SIDE PILLS)
+     ======================================================== -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+<div class="side-drawer" id="sideDrawer">
+  <div class="drawer-header">
+    <h3>⚙️ Menu & Settings</h3>
+    <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div class="drawer-scroll-body">
+    
+    <!-- Profile Card -->
+    <div>
+      <div class="drawer-section-title">Teacher Profile</div>
+      <div class="drawer-profile-card" onclick="goToProfilePage()">
+        <div class="drawer-profile-top">
+          <img id="drawerAvatarImg" class="drawer-avatar" src="" style="display: none;">
+          <div id="drawerAvatarFallback" class="drawer-avatar">👤</div>
+          <div class="drawer-profile-info">
+            <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
+            <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
+            <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
+            <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation & Vault inside Drawer -->
+    <div>
+      <div class="drawer-section-title">Navigation & Vault</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="drawer-item" onclick="goToHomePage()">
+          <span>🏠 Home Page</span>
+        </div>
+        <div class="drawer-item" onclick="openVaultFromDrawer()">
+          <span>📚 Saved Papers Vault</span>
+        </div>
+        <div class="drawer-item" id="drawerAdminItem" onclick="openAdminFromDrawer()" style="display: none;">
+          <span>🛡️ Admin Dashboard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Settings -->
+    <div>
+      <div class="drawer-section-title">Preferences & Security</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="drawer-item" onclick="toggleTheme()">
+          <span>Theme Mode</span>
+          <span id="drawerThemeLabel" style="font-size: 0.85rem; color: var(--text-muted);">🌙 Dark</span>
+        </div>
+
+        <div class="drawer-item" onclick="manageAppLock()">
+          <span>App Screen Lock</span>
+        </div>
+
+        <div class="drawer-item" onclick="shareApp()">
+          <span>Share Application</span>
+        </div>
+
+        <div class="drawer-item" onclick="goToAboutPage()">
+          <span>ℹ️ About Application</span>
+        </div>
+
+        <div class="drawer-item" onclick="switchProfile()" style="color: var(--danger-text); border-color: var(--danger-border); background: var(--danger-bg);">
+          <span>Sign Out / Switch Profile</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- AUTHENTICATION OVERLAY -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2 id="authHeading">Staff Sign In</h2>
-    <p>Sign in with your username & credentials.</p>
+    <p id="authSubHeading">Sign in with your username & credentials.</p>
 
     <div class="auth-nav">
       <button class="active" id="navSignIn" onclick="setAuthMode('signin')">Sign In</button>
       <button id="navSignUp" onclick="setAuthMode('signup')">Sign Up</button>
     </div>
 
+    <!-- Username: Small Letters Only -->
     <div style="margin-bottom: 12px;">
       <label>Username</label>
       <input type="text" id="authUsernameInput" value="" placeholder="" oninput="sanitizeUsername(this)">
-      <span class="auth-hint">Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters allowed.</span>
+      <span class="auth-hint">Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters.</span>
     </div>
 
-    <div id="signUpFields" style="display: none; margin-bottom: 12px;">
-      <label>Subject</label>
-      <input type="text" id="regSubject" value="" placeholder="">
+    <!-- First Time Sign-Up Fields -->
+    <div id="signUpFields" style="display: none;">
+      <div style="margin-bottom: 12px;">
+        <label>Full Name (Displayed in Profile)</label>
+        <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label>Mobile Number</label>
+        <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label>Teaching Subject</label>
+        <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label>Profile Picture (With In-App Crop)</label>
+        <input type="file" id="regAvatarFile" accept="image/*" onchange="startCropper(this, 'signup')">
+        <input type="hidden" id="regCroppedAvatarData">
+        <div id="regAvatarPreviewWrap" style="display: none; align-items: center; gap: 10px; margin-top: 8px;">
+          <img id="regAvatarPreview" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+          <span style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: bold;">✓ Photo cropped</span>
+        </div>
+      </div>
     </div>
 
     <label>Credential Type</label>
@@ -378,36 +684,24 @@
 
 <div class="container">
 
-  <div class="app-header no-print">
-    <h1>Exam Paper <span>Creator</span></h1>
-
-    <div class="staff-badge-row">
-      <div>
-        <span>Logged in: <strong id="sessionStaffName"></strong></span>
-        <span id="sessionStaffDivider" style="display: none;"> | </span>
-        <span><strong id="sessionStaffSubject"></strong></span>
-      </div>
-      <button onclick="logoutStaff()" style="background: transparent; border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer;">🚪 Logout / Lock</button>
-    </div>
+  <!-- TOP APP HEADER - SHOWN EXCLUSIVELY ON HOME PAGE -->
+  <div class="app-header no-print" id="mainHomeHeader">
+    <div class="header-watermark"></div>
     
-    <div class="nav-tabs">
-      <button class="nav-tab active" id="tabCreate" onclick="switchPage('create')">📝 Create Paper</button>
-      <button class="nav-tab" id="tabHistory" onclick="switchPage('history')">📚 My Saved Papers (<span id="historyCountBadge">0</span>)</button>
-      <button class="nav-tab" id="tabAdmin" onclick="switchPage('admin')" style="display: none;">🛡️ Admin Dashboard</button>
+    <button class="menu-lines-btn" onclick="openDrawer()" title="Menu, Profile, Vault & Settings">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    
+    <div class="header-center-title">
+      <h1>Exam Paper <span>Creator</span></h1>
     </div>
 
-    <div class="header-controls">
-      <button class="btn-action" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span> <span id="themeLabel">Night Mode</span>
-      </button>
-
-      <button class="btn-action" onclick="shareApp()">
-        🔗 Share App
-      </button>
-    </div>
+    <div style="width: 42px;"></div>
   </div>
 
-  <!-- PAGE 1: CREATE PAPER VIEW -->
+  <!-- PAGE 1: HOME PAGE (CREATE PAPER VIEW) -->
   <div id="pageCreate" class="page-view">
     
     <div class="card no-print">
@@ -455,18 +749,43 @@
       </div>
     </div>
 
+    <!-- 2. SOURCE MATERIAL UPLOAD -->
     <div class="card no-print">
-      <h2>2. Upload Questions (Photos / Scans / PDFs in Any Language)</h2>
-      <label>Select images (JPG, PNG) or PDFs containing question banks:</label>
-      <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+      <h2>2. Source Material Upload Mode</h2>
+
+      <div class="accordion-trigger" onclick="toggleSourceAccordion()" style="margin-bottom: 12px;">
+        <h2>
+          <span id="activeModeSummaryLabel">📂 Mode: Question Bank / Exercises</span>
+        </h2>
+        <span class="arrow-icon" id="sourceAccordionArrow">▼</span>
+      </div>
+
+      <div class="accordion-content" id="sourceAccordionContent">
+        <div class="source-mode-choice-grid">
+          <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" onclick="selectUploadMode('existing')">
+            📚 Question Bank / Exercises
+          </button>
+          <button type="button" class="source-choice-btn" id="btnChoiceLesson" onclick="selectUploadMode('lesson')">
+            📖 Textbook Lesson Pages
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <label id="uploadLabel">Upload Question Bank Documents (Photos / Scans / PDFs in Any Language):</label>
+        <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+        <small id="uploadHintText" style="display:block; margin-top: 5px; color: var(--text-muted);">
+          Extracting existing questions and options directly into the exam blueprint.
+        </small>
+      </div>
     </div>
 
-    <!-- 3. COLLAPSIBLE ACCORDION FOR ALL SECTIONS (HIDDEN BY DEFAULT WITH DOWNWARD ANIMATION) -->
+    <!-- 3. ANIMATED IN-PAGE COLLAPSIBLE SECTIONS ACCORDION -->
     <div class="card no-print">
       <div class="accordion-trigger" onclick="toggleSectionsAccordion()">
         <h2>
           <span>⚙️ 3. Question Paper Structure & Sections</span>
-          <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Click to customize A, B, C, D, E, F & Custom Sections)</span>
+          <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Customize Sections A, B, C, D, E, F & Custom Sections)</span>
         </h2>
         <span class="arrow-icon" id="accordionArrow">▼</span>
       </div>
@@ -593,7 +912,7 @@
             </div>
           </div>
 
-          <!-- Section F: Map / Science Diagram -->
+          <!-- Section F: Map / Diagram -->
           <div class="section-box" id="sec_card_diag">
             <div class="section-header-edit">
               <div class="left-block">
@@ -641,14 +960,14 @@
     <!-- Paper Toolbar & Preview -->
     <div class="card" id="paperCard" style="display: none;">
       <div class="paper-toolbar no-print">
-        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 10px;">
           <label style="min-width: 175px;"><b>📝 Paper / File Name:</b></label>
           <input type="text" id="paperCustomName" placeholder="" style="font-weight: 700; color: var(--primary);">
         </div>
 
         <div class="toolbar-row">
           <div class="toolbar-group">
-            <div style="display: flex; align-items: center; gap: 8px; border-right: 1px solid var(--border); padding-right: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; border-right: 1.5px solid var(--border); padding-right: 14px;">
               <span style="font-size: 0.85rem; font-weight: 600;">Direct Edit:</span>
               <label class="switch">
                 <input type="checkbox" id="editToggle" onchange="toggleEditMode(this.checked)">
@@ -695,8 +1014,8 @@
           </div>
 
           <div style="display: flex; gap: 10px;">
-            <button onclick="saveCurrentPaperToHistory()" style="background-color: #0284c7; color: #fff; padding: 9px 16px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer;">💾 Save to My Vault</button>
-            <button onclick="printCurrentPaper()" style="background-color: #059669; color: #fff; padding: 9px 18px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer;">🖨️ Print / Save as PDF</button>
+            <button onclick="saveCurrentPaperToHistory()" style="background-color: #0284c7; color: #fff; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">💾 Save to Vault</button>
+            <button onclick="printCurrentPaper()" style="background-color: var(--accent-emerald); color: #fff; padding: 10px 18px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">🖨️ Print / PDF</button>
           </div>
         </div>
       </div>
@@ -706,22 +1025,79 @@
 
   </div>
 
-  <!-- PAGE 2: SAVED PAPERS VIEW -->
+  <!-- PAGE 2: SAVED PAPERS VAULT VIEW -->
   <div id="pageHistory" class="page-view hidden">
     <div class="card no-print">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
-        <h2 style="border: none; margin: 0; padding: 0;">📚 Saved Exam Papers History</h2>
-        <button onclick="clearMyHistory()" style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer;">Clear My History</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
+        <h2 style="border: none; margin: 0; padding: 0;">📚 Saved Exam Papers Vault</h2>
+        <button onclick="clearMyHistory()" style="background: var(--danger-bg); color: var(--danger-text); border: 1.5px solid var(--danger-border); padding: 7px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer;">Clear Vault</button>
       </div>
 
       <div id="historyListContainer"></div>
     </div>
   </div>
 
-  <!-- PAGE 3: ADMIN MASTER DASHBOARD -->
+  <!-- PAGE 3: DEDICATED PROFILE EDITOR PAGE -->
+  <div id="pageProfile" class="page-view hidden">
+    <div class="card no-print">
+      <h2 style="margin-bottom: 16px;">👤 Edit Profile & Account Details</h2>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 520px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <img id="profilePageAvatarImg" class="drawer-avatar" src="" style="width: 76px; height: 76px; display: none;">
+          <div id="profilePageAvatarFallback" class="drawer-avatar" style="width: 76px; height: 76px; font-size: 2.2rem;">👤</div>
+          <div style="flex: 1;">
+            <label>Crop / Update Profile Photo</label>
+            <input type="file" id="profilePageAvatarInput" accept="image/*" onchange="startCropper(this, 'profile')">
+          </div>
+        </div>
+
+        <div>
+          <label>Username (Strictly lowercase letters, a-z)</label>
+          <input type="text" id="profilePageUsername" oninput="sanitizeUsername(this)">
+          <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
+        </div>
+
+        <div>
+          <label>Full Name (Displayed in App)</label>
+          <input type="text" id="profilePageFullName" placeholder="e.g. Ismail Tharfeed">
+        </div>
+
+        <div>
+          <label>Mobile Number</label>
+          <input type="tel" id="profilePagePhone" placeholder="e.g. +91 9483061904">
+        </div>
+
+        <div>
+          <label>Teaching Subject</label>
+          <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
+        </div>
+
+        <div>
+          <label>Class / Grade</label>
+          <input type="text" id="profilePageClass" placeholder="e.g. 10th Standard">
+        </div>
+
+        <button onclick="saveProfileFromPage()" class="btn-generate" style="margin-top: 10px;">💾 Save All Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 4: DEDICATED ABOUT APPLICATION PAGE -->
+  <div id="pageAbout" class="page-view hidden">
+    <div class="card no-print">
+      <h2 style="margin-bottom: 16px;">ℹ️ About Application</h2>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px; margin: 0 auto; line-height: 1.7; font-size: 0.96rem;">
+        <p>This exam paper creator application is a specialized platform designed to simplify the entire question paper preparation workflow for teachers and institutions. <strong>This app is created by Ismail Tharfeed, and this is a contact number +919483061904.</strong> It allows educators to generate standardized question papers either by scanning existing question banks or directly extracting conceptual questions from textbook lesson reading pages. The app automatically calculates blueprint marks, ensures clean layout formatting, and preserves question history securely on your device. Thank you for utilizing this application to streamline school and college examination management.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 5: ADMIN MASTER DASHBOARD -->
   <div id="pageAdmin" class="page-view hidden">
     <div class="card no-print">
-      <h2>🛡️ Administrator Central Control</h2>
+      <h2 style="margin-bottom: 16px;">🛡️ Administrator Central Control</h2>
       
       <div class="admin-stats-grid">
         <div class="stat-card">
@@ -744,9 +1120,11 @@
           <thead>
             <tr>
               <th>Username</th>
+              <th>Full Name</th>
               <th>Subject</th>
+              <th>Class</th>
+              <th>Phone</th>
               <th>Auth Type</th>
-              <th>Registered Date</th>
               <th>Vault Papers</th>
             </tr>
           </thead>
@@ -781,7 +1159,197 @@
 
 <script>
   // =========================================================================
-  // 🔽 COLLAPSIBLE ACCORDION FOR SECTION 3 (SMOOTH EXPAND/COLLAPSE)
+  // ✂️ INTERACTIVE CIRCULAR TOUCH/MOUSE CROPPER ENGINE
+  // =========================================================================
+  let cropperTargetContext = null;
+  let rawImageElement = null;
+  let cropState = {
+    imgWidth: 0,
+    imgHeight: 0,
+    scale: 1,
+    baseScale: 1,
+    posX: 0,
+    posY: 0,
+    isDragging: false,
+    startX: 0,
+    startY: 0
+  };
+
+  function startCropper(fileInput, context) {
+    if (!fileInput.files || !fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    cropperTargetContext = context;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        rawImageElement = img;
+        const cropImg = document.getElementById('cropperImage');
+        cropImg.src = e.target.result;
+
+        const viewportSize = 240;
+        cropState.imgWidth = img.width;
+        cropState.imgHeight = img.height;
+
+        cropState.baseScale = Math.max(viewportSize / img.width, viewportSize / img.height);
+        cropState.scale = cropState.baseScale;
+        cropState.posX = (viewportSize - img.width * cropState.scale) / 2;
+        cropState.posY = (viewportSize - img.height * cropState.scale) / 2;
+
+        document.getElementById('cropZoomSlider').value = 1;
+        updateCropperTransform();
+
+        document.getElementById('cropperOverlay').style.display = 'flex';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function onCropZoom(zoomFactor) {
+    const viewportSize = 240;
+    const newScale = cropState.baseScale * parseFloat(zoomFactor);
+
+    const centerX = cropState.posX - viewportSize / 2;
+    const centerY = cropState.posY - viewportSize / 2;
+
+    cropState.posX = (centerX / cropState.scale) * newScale + viewportSize / 2;
+    cropState.posY = (centerY / cropState.scale) * newScale + viewportSize / 2;
+    cropState.scale = newScale;
+
+    updateCropperTransform();
+  }
+
+  function updateCropperTransform() {
+    const cropImg = document.getElementById('cropperImage');
+    cropImg.style.transform = `translate3d(${cropState.posX}px, ${cropState.posY}px, 0px) scale(${cropState.scale})`;
+  }
+
+  const cropperViewport = document.getElementById('cropperViewport');
+  
+  function handlePointerDown(e) {
+    cropState.isDragging = true;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    cropState.startX = clientX - cropState.posX;
+    cropState.startY = clientY - cropState.posY;
+    cropperViewport.style.cursor = 'grabbing';
+  }
+
+  function handlePointerMove(e) {
+    if (!cropState.isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    cropState.posX = clientX - cropState.startX;
+    cropState.posY = clientY - cropState.startY;
+    updateCropperTransform();
+  }
+
+  function handlePointerUp() {
+    cropState.isDragging = false;
+    cropperViewport.style.cursor = 'grab';
+  }
+
+  cropperViewport.addEventListener('mousedown', handlePointerDown);
+  window.addEventListener('mousemove', handlePointerMove);
+  window.addEventListener('mouseup', handlePointerUp);
+
+  cropperViewport.addEventListener('touchstart', handlePointerDown, { passive: false });
+  window.addEventListener('touchmove', handlePointerMove, { passive: false });
+  window.addEventListener('touchend', handlePointerUp);
+
+  function cancelCrop() {
+    document.getElementById('cropperOverlay').style.display = 'none';
+  }
+
+  function applyCrop() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const outputDim = 250;
+
+    canvas.width = outputDim;
+    canvas.height = outputDim;
+
+    const vpSize = 240;
+    const ratio = outputDim / vpSize;
+
+    ctx.beginPath();
+    ctx.arc(outputDim / 2, outputDim / 2, outputDim / 2, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+
+    ctx.drawImage(
+      rawImageElement,
+      cropState.posX * ratio,
+      cropState.posY * ratio,
+      cropState.imgWidth * cropState.scale * ratio,
+      cropState.imgHeight * cropState.scale * ratio
+    );
+
+    const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    if (cropperTargetContext === 'signup') {
+      document.getElementById('regCroppedAvatarData').value = croppedDataUrl;
+      const preview = document.getElementById('regAvatarPreview');
+      preview.src = croppedDataUrl;
+      document.getElementById('regAvatarPreviewWrap').style.display = 'flex';
+    } else if (cropperTargetContext === 'profile') {
+      const img = document.getElementById('profilePageAvatarImg');
+      img.src = croppedDataUrl;
+      img.style.display = 'block';
+      document.getElementById('profilePageAvatarFallback').style.display = 'none';
+    }
+
+    document.getElementById('cropperOverlay').style.display = 'none';
+  }
+
+  // =========================================================================
+  // 📚 TWO-OPTION SOURCE UPLOAD MODE HANDLER
+  // =========================================================================
+  let currentUploadMode = 'existing';
+
+  function selectUploadMode(mode) {
+    currentUploadMode = mode;
+    const btnExisting = document.getElementById('btnChoiceExisting');
+    const btnLesson = document.getElementById('btnChoiceLesson');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const uploadHint = document.getElementById('uploadHintText');
+    const summaryLabel = document.getElementById('activeModeSummaryLabel');
+
+    if (mode === 'existing') {
+      btnExisting.classList.add('selected');
+      btnLesson.classList.remove('selected');
+      summaryLabel.innerText = "📂 Mode: Question Bank / Exercises";
+      uploadLabel.innerText = "Upload Question Bank Documents (Photos / Scans / PDFs in Any Language):";
+      uploadHint.innerText = "Extracting existing questions and options directly into the exam blueprint.";
+    } else {
+      btnExisting.classList.remove('selected');
+      btnLesson.classList.add('selected');
+      summaryLabel.innerText = "📖 Mode: Textbook Lesson Pages";
+      uploadLabel.innerText = "Upload Textbook Lesson Pages / Notes / Theory (Photos / Scans / PDFs):";
+      uploadHint.innerText = "The system will read the lesson text and formulate new questions matching your section structure.";
+    }
+
+    toggleSourceAccordion();
+  }
+
+  function toggleSourceAccordion() {
+    const content = document.getElementById('sourceAccordionContent');
+    const arrow = document.getElementById('sourceAccordionArrow');
+    const isExpanded = content.classList.contains('expanded');
+
+    if (isExpanded) {
+      content.classList.remove('expanded');
+      arrow.classList.remove('rotated');
+    } else {
+      content.classList.add('expanded');
+      arrow.classList.add('rotated');
+    }
+  }
+
+  // =========================================================================
+  // 🔽 COLLAPSIBLE ACCORDION FOR STRUCTURE (SECTION 3)
   // =========================================================================
   function toggleSectionsAccordion() {
     const content = document.getElementById('sectionsAccordionContent');
@@ -798,24 +1366,263 @@
   }
 
   // =========================================================================
-  // 🛡️ DOUBLE BACK PRESS TO EXIT PREVENTION ENGINE
+  // 🚪 LEFT NAVIGATION DRAWER
+  // =========================================================================
+  function openDrawer() {
+    document.getElementById('sideDrawer').classList.add('active');
+    document.getElementById('drawerBackdrop').classList.add('active');
+    document.body.classList.add('no-scroll');
+  }
+
+  function closeDrawer() {
+    document.getElementById('sideDrawer').classList.remove('active');
+    document.getElementById('drawerBackdrop').classList.remove('active');
+    document.body.classList.remove('no-scroll');
+  }
+
+  function goToHomePage() {
+    closeDrawer();
+    switchPage('create', false);
+  }
+
+  function openVaultFromDrawer() {
+    closeDrawer();
+    switchPage('history', true);
+  }
+
+  function openAdminFromDrawer() {
+    closeDrawer();
+    switchPage('admin', true);
+  }
+
+  function goToAboutPage() {
+    closeDrawer();
+    switchPage('about', true);
+  }
+
+  function goToProfilePage() {
+    closeDrawer();
+    if (!activeUser) return;
+    
+    document.getElementById('profilePageUsername').value = activeUser.name || "";
+    document.getElementById('profilePageFullName').value = activeUser.fullName || activeUser.name || "";
+    document.getElementById('profilePageSubject').value = activeUser.subject || "";
+    document.getElementById('profilePageClass').value = activeUser.userClass || "10th Standard";
+    document.getElementById('profilePagePhone').value = activeUser.phone || "";
+
+    const avatarImg = document.getElementById('profilePageAvatarImg');
+    const fallback = document.getElementById('profilePageAvatarFallback');
+
+    if (activeUser.avatar) {
+      avatarImg.src = activeUser.avatar;
+      avatarImg.style.display = 'block';
+      fallback.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      fallback.style.display = 'flex';
+      fallback.innerText = (activeUser.fullName || activeUser.name || "S").charAt(0).toUpperCase();
+    }
+
+    switchPage('profile', true);
+  }
+
+  function saveProfileFromPage() {
+    if (!activeUser) return;
+
+    const newUsername = document.getElementById('profilePageUsername').value.trim();
+    const newName = document.getElementById('profilePageFullName').value.trim();
+    const newSub = document.getElementById('profilePageSubject').value.trim();
+    const newClass = document.getElementById('profilePageClass').value.trim();
+    const newPhone = document.getElementById('profilePagePhone').value.trim();
+    const avatarImg = document.getElementById('profilePageAvatarImg');
+
+    if (!newUsername || !/^[a-z]+$/.test(newUsername)) {
+      alert("Username Error: Strictly small letters only (a-z).");
+      return;
+    }
+
+    const registry = getStaffRegistry();
+    const oldUsername = activeUser.name;
+
+    if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
+      alert("Username already taken. Please choose another username.");
+      return;
+    }
+
+    activeUser.name = newUsername;
+    activeUser.fullName = newName || newUsername;
+    activeUser.subject = newSub || "General";
+    activeUser.userClass = newClass || "10th Standard";
+    activeUser.phone = newPhone;
+
+    if (avatarImg.src && avatarImg.src.startsWith('data:image')) {
+      activeUser.avatar = avatarImg.src;
+    }
+
+    const idx = registry.findIndex(s => s.name === oldUsername);
+    if (idx !== -1) {
+      registry[idx] = { ...registry[idx], ...activeUser };
+      saveStaffRegistry(registry);
+    }
+
+    localStorage.setItem('persistent_exam_user', JSON.stringify(activeUser));
+    syncProfileUI(activeUser);
+    
+    document.getElementById('subject').value = activeUser.subject || "";
+    document.getElementById('grade').value = activeUser.userClass || "";
+
+    alert("Profile and credentials saved successfully!");
+    history.back();
+  }
+
+  function syncProfileUI(user) {
+    if (!user) return;
+    const displayName = user.fullName || user.name || "Staff User";
+    document.getElementById('drawerProfileName').innerText = displayName;
+    document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
+    document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
+    document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
+
+    const avatarImg = document.getElementById('drawerAvatarImg');
+    const fallback = document.getElementById('drawerAvatarFallback');
+
+    if (user.avatar) {
+      avatarImg.src = user.avatar;
+      avatarImg.style.display = 'block';
+      fallback.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      fallback.style.display = 'flex';
+      fallback.innerText = displayName.charAt(0).toUpperCase();
+    }
+  }
+
+  // =========================================================================
+  // 🔒 IN-APP SECURITY LOCK LOGIC
+  // =========================================================================
+  function manageAppLock() {
+    const existingLock = localStorage.getItem('app_screen_lock_code');
+    if (existingLock) {
+      const choice = confirm("App Lock is currently enabled on this device.\n\nPress OK to Remove App Lock, or Cancel to change your PIN/Password.");
+      if (choice) {
+        localStorage.removeItem('app_screen_lock_code');
+        alert("App Lock has been removed successfully.");
+      } else {
+        const newCode = prompt("Enter new PIN / Password for App Lock:");
+        if (newCode && newCode.trim().length >= 4) {
+          localStorage.setItem('app_screen_lock_code', btoa(newCode.trim()));
+          alert("App Lock PIN / Password updated successfully.");
+        } else if (newCode) {
+          alert("App Lock PIN / Password must be at least 4 characters.");
+        }
+      }
+    } else {
+      const code = prompt("Set a PIN or Password to lock the app whenever it opens on this device:");
+      if (code && code.trim().length >= 4) {
+        localStorage.setItem('app_screen_lock_code', btoa(code.trim()));
+        alert("App Lock set successfully! You will be prompted to unlock when opening.");
+      } else if (code) {
+        alert("App Lock PIN / Password must be at least 4 characters.");
+      }
+    }
+  }
+
+  function checkAppLockOnLoad() {
+    const lockCode = localStorage.getItem('app_screen_lock_code');
+    if (lockCode) {
+      document.getElementById('lockOverlay').style.display = 'flex';
+      document.getElementById('appLockInput').value = '';
+      setTimeout(() => document.getElementById('appLockInput').focus(), 100);
+    }
+  }
+
+  function unlockApp() {
+    const lockCode = localStorage.getItem('app_screen_lock_code');
+    const entered = document.getElementById('appLockInput').value.trim();
+    if (!entered) {
+      alert("Please enter your App Lock PIN / Password.");
+      return;
+    }
+    if (btoa(entered) === lockCode) {
+      document.getElementById('lockOverlay').style.display = 'none';
+    } else {
+      alert("Incorrect App Lock PIN / Password. Access Denied.");
+      document.getElementById('appLockInput').value = '';
+    }
+  }
+
+  // =========================================================================
+  // 🛡️ MOBILE BACK BUTTON ROUTING
   // =========================================================================
   let lastBackPressTime = 0;
+  let currentPage = 'create';
 
-  function setupDoubleBackExit() {
-    history.pushState(null, null, location.href);
-    window.addEventListener('popstate', function () {
-      const now = Date.now();
-      if (now - lastBackPressTime < 2000) {
-        history.back();
-      } else {
-        lastBackPressTime = now;
-        history.pushState(null, null, location.href);
-        const toast = document.getElementById('backToast');
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  function setupStrictMobileBackRouting() {
+    history.replaceState({ screen: 'create', drawerOpen: false }, null, location.href);
+
+    window.addEventListener('popstate', function (e) {
+      const state = e.state || {};
+
+      if (state.drawerOpen) {
+        setPageView('create');
+        openDrawer();
+        return;
       }
+
+      const drawer = document.getElementById('sideDrawer');
+      if (drawer && drawer.classList.contains('active')) {
+        closeDrawer();
+        return;
+      }
+
+      if (state.screen === 'create' || !state.screen) {
+        setPageView('create');
+        const now = Date.now();
+        if (now - lastBackPressTime < 2000) {
+          history.back();
+        } else {
+          lastBackPressTime = now;
+          const toast = document.getElementById('backToast');
+          toast.style.display = 'block';
+          setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+        return;
+      }
+
+      setPageView(state.screen || 'create');
     });
+  }
+
+  // HEADER & MENU ICON IS SHOWN ONLY ON HOME PAGE ('create')
+  function setPageView(page) {
+    currentPage = page;
+    
+    // Toggle main home header visibility
+    const isHome = (page === 'create');
+    const headerElem = document.getElementById('mainHomeHeader');
+    if (headerElem) {
+      headerElem.style.display = isHome ? 'flex' : 'none';
+    }
+
+    document.getElementById('pageCreate').classList.toggle('hidden', page !== 'create');
+    document.getElementById('pageHistory').classList.toggle('hidden', page !== 'history');
+    document.getElementById('pageProfile').classList.toggle('hidden', page !== 'profile');
+    document.getElementById('pageAbout').classList.toggle('hidden', page !== 'about');
+    document.getElementById('pageAdmin').classList.toggle('hidden', page !== 'admin');
+
+    if (page === 'history') renderHistoryList();
+    if (page === 'admin') renderAdminDashboard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function switchPage(page, fromDrawer = false) {
+    if (fromDrawer) {
+      history.pushState({ screen: 'create', drawerOpen: true }, null, location.href);
+      history.pushState({ screen: page, drawerOpen: false }, null, location.href);
+    } else {
+      history.pushState({ screen: page, drawerOpen: false }, null, location.href);
+    }
+    setPageView(page);
   }
 
   // =========================================================================
@@ -882,14 +1689,14 @@
       document.getElementById('instName').value = saved.instName || "KARNATAKA PUBLIC SCHOOL";
       document.getElementById('examTitle').value = saved.examTitle || "Annual Examination - 2026";
       document.getElementById('subject').value = saved.subject || user.subject || "";
-      document.getElementById('grade').value = saved.grade || "10th Standard";
+      document.getElementById('grade').value = saved.grade || user.userClass || "10th Standard";
       document.getElementById('duration').value = saved.duration || "3 Hours";
       document.getElementById('genInst').value = saved.genInst || "1. All sections are compulsory. 2. Write question numbers clearly.";
     } else {
       document.getElementById('instName').value = "KARNATAKA PUBLIC SCHOOL";
       document.getElementById('examTitle').value = "Annual Examination - 2026";
       document.getElementById('subject').value = user.subject || "Social Science";
-      document.getElementById('grade').value = "10th Standard";
+      document.getElementById('grade').value = user.userClass || "10th Standard";
       document.getElementById('duration').value = "3 Hours";
       document.getElementById('genInst').value = "1. All sections are compulsory. 2. Write question numbers clearly in the margin.";
     }
@@ -900,6 +1707,7 @@
     document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
     document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
     document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
+    document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Sign in with your username & credentials.' : 'Complete initial profile & security credentials.';
     document.getElementById('signUpFields').style.display = mode === 'signup' ? 'block' : 'none';
     document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register & Enter';
     resetAuthInputs();
@@ -919,6 +1727,10 @@
     document.getElementById('authPassword').value = '';
     document.getElementById('authPin').value = '';
     document.getElementById('regSubject').value = '';
+    document.getElementById('regFullName').value = '';
+    document.getElementById('regMobilePhone').value = '';
+    document.getElementById('regCroppedAvatarData').value = '';
+    document.getElementById('regAvatarPreviewWrap').style.display = 'none';
   }
 
   function countWords(str) {
@@ -926,7 +1738,7 @@
     return str.trim().split(/\s+/).filter(word => word.length > 0).length;
   }
 
-  function handleAuthSubmit() {
+  async function handleAuthSubmit() {
     const registry = getStaffRegistry();
     const typedUsername = document.getElementById('authUsernameInput').value;
 
@@ -945,7 +1757,10 @@
         const adminUser = {
           id: 'admin_root',
           name: 'admin',
+          fullName: 'Administrator',
           subject: 'All Subjects (Admin)',
+          userClass: 'Administration',
+          phone: '+91 9483061904',
           role: 'admin',
           authType: 'password'
         };
@@ -976,6 +1791,9 @@
 
     if (currentAuthMode === 'signup') {
       const subject = document.getElementById('regSubject').value.trim();
+      const fullName = document.getElementById('regFullName').value.trim() || typedUsername;
+      const mobile = document.getElementById('regMobilePhone').value.trim();
+      const croppedAvatar = document.getElementById('regCroppedAvatarData').value;
 
       if (typedUsername === 'admin') {
         alert("Username 'admin' is reserved. Choose another name.");
@@ -991,7 +1809,11 @@
       const newStaff = {
         id: 'staff_' + Date.now(),
         name: typedUsername,
+        fullName: fullName,
         subject: subject || "General",
+        userClass: "10th Standard",
+        phone: mobile,
+        avatar: croppedAvatar || "",
         authType: currentAuthType,
         secret: btoa(enteredSecret),
         createdAt: new Date().toLocaleDateString()
@@ -1031,26 +1853,22 @@
     localStorage.setItem('persistent_exam_user', JSON.stringify(user));
     document.getElementById('authOverlay').style.display = 'none';
 
-    document.getElementById('sessionStaffName').innerText = user.name || "";
-    document.getElementById('sessionStaffSubject').innerText = user.subject || "";
-    document.getElementById('sessionStaffDivider').style.display = (user.name && user.subject) ? "inline" : "none";
-    
-    const isAdmin = user.role === 'admin';
-    document.getElementById('tabAdmin').style.display = isAdmin ? 'block' : 'none';
-
+    syncProfileUI(user);
     populateUserHeaderSettings(user);
-    updateBadge();
     resetAuthInputs();
 
-    if (isAdmin) switchPage('admin');
+    const isAdmin = user.role === 'admin';
+    document.getElementById('drawerAdminItem').style.display = isAdmin ? 'flex' : 'none';
+
+    setPageView('create');
   }
 
-  function logoutStaff() {
-    if (!confirm("Are you sure you want to sign out of this device?")) return;
-    localStorage.removeItem('persistent_exam_user');
+  function switchProfile() {
+    closeDrawer();
     activeUser = null;
+    localStorage.removeItem('persistent_exam_user');
     document.getElementById('authOverlay').style.display = 'flex';
-    document.getElementById('tabAdmin').style.display = 'none';
+    document.getElementById('drawerAdminItem').style.display = 'none';
     setAuthMode('signin');
   }
 
@@ -1169,11 +1987,6 @@
     }
   }
 
-  function updateBadge() {
-    const papers = getMySavedPapers();
-    document.getElementById('historyCountBadge').innerText = papers.length;
-  }
-
   function saveCurrentPaperToHistory(autoNotify = true) {
     const preview = document.getElementById('paperPreview');
     const htmlContent = preview.innerHTML;
@@ -1193,7 +2006,7 @@
       title: document.getElementById('examTitle').value || "",
       subject: subject,
       staffId: activeUser ? activeUser.id : '',
-      staffName: activeUser ? activeUser.name : 'unknown',
+      staffName: activeUser ? (activeUser.fullName || activeUser.name) : 'unknown',
       date: dateStr,
       font: document.getElementById('fontSelector').value,
       fontSize: document.getElementById('fontSizeSlider').value,
@@ -1203,10 +2016,9 @@
     const papers = getMySavedPapers();
     papers.unshift(newEntry);
     localStorage.setItem(getStaffSpecificKey(), JSON.stringify(papers));
-    updateBadge();
 
     logAuditEvent(activeUser ? activeUser.name : 'unknown', `Created Paper: ${paperName}`, "Success");
-    if (autoNotify) alert("Paper saved to history.");
+    if (autoNotify) alert("Paper saved to vault.");
   }
 
   function renderHistoryList() {
@@ -1233,9 +2045,9 @@
             <p>${item.subject ? `Subject: ${item.subject} | ` : ''}Saved: ${item.date}</p>
           </div>
           <div class="history-actions">
-            <button onclick="loadPaperFromHistory(${item.id})" style="background: var(--primary); color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">👁️ View / Edit</button>
-            <button onclick="printPaperFromHistory(${item.id})" style="background: #059669; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">🖨️ Print</button>
-            <button onclick="deletePaperFromHistory(${item.id})" style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️</button>
+            <button onclick="loadPaperFromHistory(${item.id})" style="background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">👁️ View / Edit</button>
+            <button onclick="printPaperFromHistory(${item.id})" style="background: var(--accent-emerald); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">🖨️ Print</button>
+            <button onclick="deletePaperFromHistory(${item.id})" style="background: var(--danger-bg); color: var(--danger-text); border: 1.5px solid var(--danger-border); padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">🗑️</button>
           </div>
         </div>
       `;
@@ -1274,14 +2086,12 @@
     let papers = getMySavedPapers();
     papers = papers.filter(p => p.id !== id);
     localStorage.setItem(getStaffSpecificKey(), JSON.stringify(papers));
-    updateBadge();
     renderHistoryList();
   }
 
   function clearMyHistory() {
-    if (!confirm("Clear your question paper history?")) return;
+    if (!confirm("Clear your question paper vault?")) return;
     localStorage.removeItem(getStaffSpecificKey());
-    updateBadge();
     renderHistoryList();
   }
 
@@ -1304,7 +2114,7 @@
 
     const staffTbody = document.getElementById('admStaffTableBody');
     if (registry.length === 0) {
-      staffTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No staff registered yet.</td></tr>`;
+      staffTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No staff registered yet.</td></tr>`;
     } else {
       let staffHtml = "";
       registry.forEach(staff => {
@@ -1312,9 +2122,11 @@
         staffHtml += `
           <tr>
             <td><strong>${staff.name}</strong></td>
+            <td>${staff.fullName || staff.name}</td>
             <td>${staff.subject}</td>
-            <td><span style="background: var(--card); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; font-size: 0.78rem;">${staff.authType.toUpperCase()}</span></td>
-            <td>${staff.createdAt || "N/A"}</td>
+            <td>${staff.userClass || "10th Standard"}</td>
+            <td>${staff.phone || "N/A"}</td>
+            <td><span style="background: var(--card); border: 1.5px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">${staff.authType.toUpperCase()}</span></td>
             <td><strong>${staffPapers.length}</strong> saved</td>
           </tr>
         `;
@@ -1354,11 +2166,11 @@
             <div class="history-item">
               <div class="history-meta">
                 <h3>${p.paperName || p.title}</h3>
-                <p>Teacher: <strong>${staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
+                <p>Teacher: <strong>${staff.fullName || staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
               </div>
               <div class="history-actions">
-                <button onclick="loadPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: var(--primary); color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">👁️ Inspect</button>
-                <button onclick="printPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: #059669; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">🖨️ Print</button>
+                <button onclick="loadPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">👁️ Inspect</button>
+                <button onclick="printPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: var(--accent-emerald); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">🖨️ Print</button>
               </div>
             </div>
           `;
@@ -1373,19 +2185,6 @@
     if (!confirm("Clear audit logs?")) return;
     localStorage.removeItem('exam_audit_logs');
     renderAdminDashboard();
-  }
-
-  function switchPage(page) {
-    document.getElementById('tabCreate').classList.toggle('active', page === 'create');
-    document.getElementById('tabHistory').classList.toggle('active', page === 'history');
-    document.getElementById('tabAdmin').classList.toggle('active', page === 'admin');
-
-    document.getElementById('pageCreate').classList.toggle('hidden', page !== 'create');
-    document.getElementById('pageHistory').classList.toggle('hidden', page !== 'history');
-    document.getElementById('pageAdmin').classList.toggle('hidden', page !== 'admin');
-
-    if (page === 'history') renderHistoryList();
-    if (page === 'admin') renderAdminDashboard();
   }
 
   function printCurrentPaper() {
@@ -1403,8 +2202,8 @@
     const isDark = html.getAttribute('data-theme') === 'dark';
     const nextTheme = isDark ? 'light' : 'dark';
     html.setAttribute('data-theme', nextTheme);
-    document.getElementById('themeIcon').innerText = isDark ? '🌙' : '☀️';
-    document.getElementById('themeLabel').innerText = isDark ? 'Night Mode' : 'Light Mode';
+    const label = document.getElementById('drawerThemeLabel');
+    if (label) label.innerText = isDark ? '🌙 Dark' : '☀️ Light';
   }
 
   function changePaperFont(fontVal) {
@@ -1550,11 +2349,12 @@
   }
 
   // =========================================================================
-  // ⚡ INSTANT FORMATTING ENGINE WITH ZERO CONNECTION FAILURES
+  // ⚡ DUAL-MODE COMPILER
   // =========================================================================
-  function generateLocalExamPaperHTML(config) {
+  function compileLocalExamPaperHTML(config) {
     let qCounter = 1;
     let sectionsHtml = "";
+    const isLessonMode = config.mode === 'lesson';
 
     config.sections.forEach(sec => {
       sectionsHtml += `
@@ -1566,9 +2366,28 @@
       `;
 
       for (let i = 0; i < sec.count; i++) {
-        let questionText = "Question sample for this section based on provided materials.";
-        if (config.parsedQuestions.length > 0) {
-          questionText = config.parsedQuestions.shift();
+        let questionText = "";
+
+        if (isLessonMode) {
+          const conceptSnippet = config.parsedQuestions.length > 0 
+            ? config.parsedQuestions.shift().replace(/[0-9]+\.\s*/, '')
+            : `core principles of ${config.subject}`;
+
+          if (sec.isMcq) {
+            questionText = `Regarding the topic of ${conceptSnippet.substring(0, 70)}, which among the following statements is correct?`;
+          } else if (sec.marks === 1) {
+            questionText = `State the key significance or define: ${conceptSnippet.substring(0, 60)}.`;
+          } else if (sec.marks === 2) {
+            questionText = `Give two reasons or write any two main features of ${conceptSnippet.substring(0, 60)}.`;
+          } else if (sec.marks === 3) {
+            questionText = `Explain the causes and consequences related to: ${conceptSnippet.substring(0, 65)}.`;
+          } else {
+            questionText = `Describe in detail the comprehensive process and impact of: ${conceptSnippet.substring(0, 70)}.`;
+          }
+        } else {
+          questionText = config.parsedQuestions.length > 0 
+            ? config.parsedQuestions.shift() 
+            : `Analyze the provided question and answer in accordance with instructions.`;
         }
 
         if (sec.isMcq) {
@@ -1625,7 +2444,9 @@
   }
 
   async function generateFastPaperDirect(promptText, localConfig, statusElem) {
-    statusElem.innerText = "Formatting question paper...";
+    statusElem.innerText = localConfig.mode === 'lesson' 
+      ? "Analyzing lesson pages & generating new questions..." 
+      : "Extracting and organizing existing questions...";
 
     const endpoints = [
       {
@@ -1641,7 +2462,7 @@
     for (const ep of endpoints) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000); // Quick 12s attempt
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
 
         const response = await fetch(ep.url, {
           method: "POST",
@@ -1656,12 +2477,11 @@
           if (text && text.includes("paper-header")) return text;
         }
       } catch (err) {
-        console.warn("Fast remote check skipped, proceeding with instant local formatter...");
+        console.warn("Switching to instant synthesizer...");
       }
     }
 
-    // Instant local synthesizer: never fails, zero latency
-    return generateLocalExamPaperHTML(localConfig);
+    return compileLocalExamPaperHTML(localConfig);
   }
 
   async function startGeneration() {
@@ -1678,7 +2498,9 @@
     const paperPreview = document.getElementById('paperPreview');
 
     if (files.length === 0) {
-      alert("Please upload at least one question image or PDF in Section 2.");
+      alert(currentUploadMode === 'lesson' 
+        ? "Please upload textbook lesson pages/PDFs in Section 2." 
+        : "Please upload existing question bank documents in Section 2.");
       return;
     }
 
@@ -1686,10 +2508,9 @@
     paperCard.style.display = "none";
 
     try {
-      const extractedQuestions = await extractTextFromUploadedFiles(files, status);
+      const extractedText = await extractTextFromUploadedFiles(files, status);
 
-      // Clean lines to extract individual questions locally
-      const parsedQuestions = extractedQuestions
+      const parsedQuestions = extractedText
         .split('\n')
         .map(l => l.trim())
         .filter(l => l.length > 15 && !l.startsWith("---"));
@@ -1749,17 +2570,23 @@
       const incDate = document.getElementById('incDate').checked;
 
       const localConfig = {
+        mode: currentUploadMode,
         instName, examTitle, subject, grade, duration, maxMarks, genInst,
         incName, incRoll, incSec, incDate,
         sections: localSections,
         parsedQuestions
       };
 
-      const promptText = `
-You are an academic paper setter. Use these questions from uploaded materials to generate a standard question paper:
+      const modeInstruction = currentUploadMode === 'lesson'
+        ? "MODE 2 ACTIVE: The user uploaded raw textbook lesson/chapter pages. Read the content thoroughly and formulate brand new academic questions (MCQs with 4 options, 1M, 2M, 3M, 4M) matching the section blueprint exactly."
+        : "MODE 1 ACTIVE: The user uploaded an existing question bank. Extract and organize the questions directly into the sections matching the blueprint.";
 
-RAW MATERIAL QUESTIONS:
-${extractedQuestions ? extractedQuestions.substring(0, 3000) : "Subject: " + subject}
+      const promptText = `
+You are an expert academic paper setter.
+${modeInstruction}
+
+SOURCE MATERIAL CONTENT:
+${extractedText ? extractedText.substring(0, 3200) : "Subject content for: " + subject}
 
 BLUEPRINT & SECTIONS:
 ${sectionsConfig.join('\n\n')}
@@ -1834,10 +2661,19 @@ ${genInst ? `<div class="general-instructions"><strong>General Instructions:</st
     }
   }
 
-  // --- APP STARTUP & PERMANENT LOGIN ---
+  // --- APP STARTUP: CLEAR EXISTING STORED USERNAMES ONCE & INITIALIZE ---
   window.addEventListener('load', () => {
+    // One-time clear of previously saved usernames/accounts as requested
+    if (!localStorage.getItem('app_users_cleared_v2')) {
+      localStorage.removeItem('exam_staff_registry');
+      localStorage.removeItem('persistent_exam_user');
+      localStorage.removeItem('active_exam_user');
+      localStorage.setItem('app_users_cleared_v2', 'true');
+    }
+
     calculateAndValidateMarks();
-    setupDoubleBackExit();
+    setupStrictMobileBackRouting();
+    checkAppLockOnLoad();
 
     const persistentUser = localStorage.getItem('persistent_exam_user');
     if (persistentUser) {
