@@ -135,9 +135,7 @@
       display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px);
     }
 
-    /* ========================================================
-       CROPPER OVERLAY MODAL
-       ======================================================== */
+    /* CROPPER OVERLAY MODAL */
     #cropperOverlay {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); z-index: 10010;
       display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);
@@ -161,7 +159,7 @@
       user-select: none; pointer-events: none;
     }
 
-    /* TOP APP HEADER - SHOWN EXCLUSIVELY ON HOME PAGE */
+    /* TOP APP HEADER */
     .app-header {
       position: relative; overflow: hidden; background: var(--card);
       padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border-subtle);
@@ -513,9 +511,7 @@
   </div>
 </div>
 
-<!-- ========================================================
-     INTERACTIVE CIRCULAR IMAGE CROPPER MODAL
-     ======================================================== -->
+<!-- INTERACTIVE CIRCULAR IMAGE CROPPER MODAL -->
 <div id="cropperOverlay">
   <div class="cropper-card">
     <h3 style="font-size: 1.1rem; color: var(--primary);">Crop Profile Picture</h3>
@@ -539,9 +535,7 @@
   </div>
 </div>
 
-<!-- ========================================================
-     SLIDE-OUT LEFT DRAWER (CLEAN UI & NO SIDE PILLS)
-     ======================================================== -->
+<!-- SLIDE-OUT LEFT DRAWER -->
 <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
 <div class="side-drawer" id="sideDrawer">
   <div class="drawer-header">
@@ -625,14 +619,12 @@
       <button id="navSignUp" onclick="setAuthMode('signup')">Sign Up</button>
     </div>
 
-    <!-- Username: Small Letters Only -->
     <div style="margin-bottom: 12px;">
       <label>Username</label>
       <input type="text" id="authUsernameInput" value="" placeholder="" oninput="sanitizeUsername(this)">
       <span class="auth-hint">Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters.</span>
     </div>
 
-    <!-- First Time Sign-Up Fields -->
     <div id="signUpFields" style="display: none;">
       <div style="margin-bottom: 12px;">
         <label>Full Name (Displayed in Profile)</label>
@@ -684,7 +676,7 @@
 
 <div class="container">
 
-  <!-- TOP APP HEADER - SHOWN EXCLUSIVELY ON HOME PAGE -->
+  <!-- TOP APP HEADER -->
   <div class="app-header no-print" id="mainHomeHeader">
     <div class="header-watermark"></div>
     
@@ -1593,11 +1585,9 @@
     });
   }
 
-  // HEADER & MENU ICON IS SHOWN ONLY ON HOME PAGE ('create')
   function setPageView(page) {
     currentPage = page;
     
-    // Toggle main home header visibility
     const isHome = (page === 'create');
     const headerElem = document.getElementById('mainHomeHeader');
     if (headerElem) {
@@ -2349,12 +2339,15 @@
   }
 
   // =========================================================================
-  // ⚡ DUAL-MODE COMPILER
+  // ⚡ IN-BROWSER PARSER & COMPILE ENGINE
   // =========================================================================
   function compileLocalExamPaperHTML(config) {
     let qCounter = 1;
     let sectionsHtml = "";
     const isLessonMode = config.mode === 'lesson';
+
+    // Work with copies of questions
+    const qPool = [...config.parsedQuestions];
 
     config.sections.forEach(sec => {
       sectionsHtml += `
@@ -2369,25 +2362,25 @@
         let questionText = "";
 
         if (isLessonMode) {
-          const conceptSnippet = config.parsedQuestions.length > 0 
-            ? config.parsedQuestions.shift().replace(/[0-9]+\.\s*/, '')
-            : `core principles of ${config.subject}`;
+          const conceptSnippet = qPool.length > 0 
+            ? qPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
+            : `principles of ${config.subject}`;
 
           if (sec.isMcq) {
-            questionText = `Regarding the topic of ${conceptSnippet.substring(0, 70)}, which among the following statements is correct?`;
+            questionText = `Regarding the topic of ${conceptSnippet.substring(0, 75)}, which among the following statements is accurate?`;
           } else if (sec.marks === 1) {
-            questionText = `State the key significance or define: ${conceptSnippet.substring(0, 60)}.`;
+            questionText = `State the main definition or significance of: ${conceptSnippet.substring(0, 65)}.`;
           } else if (sec.marks === 2) {
-            questionText = `Give two reasons or write any two main features of ${conceptSnippet.substring(0, 60)}.`;
+            questionText = `Mention any two key characteristics or causes of ${conceptSnippet.substring(0, 65)}.`;
           } else if (sec.marks === 3) {
-            questionText = `Explain the causes and consequences related to: ${conceptSnippet.substring(0, 65)}.`;
+            questionText = `Analyze and describe the major impacts and structure of ${conceptSnippet.substring(0, 70)}.`;
           } else {
-            questionText = `Describe in detail the comprehensive process and impact of: ${conceptSnippet.substring(0, 70)}.`;
+            questionText = `Critically evaluate and explain in detail the principles of ${conceptSnippet.substring(0, 75)}.`;
           }
         } else {
-          questionText = config.parsedQuestions.length > 0 
-            ? config.parsedQuestions.shift() 
-            : `Analyze the provided question and answer in accordance with instructions.`;
+          questionText = qPool.length > 0 
+            ? qPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
+            : `Analyze and explain the key concepts of ${config.subject}.`;
         }
 
         if (sec.isMcq) {
@@ -2443,47 +2436,133 @@
     `;
   }
 
+  // =========================================================================
+  // 🤖 6-TIER NO-KEY MULTI-ENGINE AI PIPELINE
+  // =========================================================================
   async function generateFastPaperDirect(promptText, localConfig, statusElem) {
     statusElem.innerText = localConfig.mode === 'lesson' 
-      ? "Analyzing lesson pages & generating new questions..." 
-      : "Extracting and organizing existing questions...";
+      ? "Formulating questions from lesson pages via multi-engine AI..." 
+      : "Extracting questions directly into blueprint...";
 
-    const endpoints = [
+    // Cleaned plain system prompt for zero-API inference
+    const systemInstruction = "You are an academic exam generator. Return ONLY clean, valid raw HTML without Markdown backticks. Must contain paper-header, sec-block, and q-item elements.";
+    const fullPrompt = `${systemInstruction}\n\nTask:\n${promptText}`;
+
+    const engines = [
       {
-        url: "https://text.pollinations.ai/openai",
-        payload: { messages: [{ role: "user", content: promptText }], model: "openai-large", seed: 42 }
+        name: "Pollinations OpenAI Engine",
+        type: "post_json",
+        url: "https://text.pollinations.ai/",
+        payload: {
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: promptText }
+          ],
+          model: "openai",
+          seed: Math.floor(Math.random() * 1000000),
+          jsonMode: false
+        },
+        timeout: 9000
       },
       {
+        name: "DeepSeek / Qwen Reasoning Engine",
+        type: "post_json",
         url: "https://text.pollinations.ai/",
-        payload: { messages: [{ role: "user", content: promptText }], model: "mistral" }
+        payload: {
+          messages: [{ role: "user", content: fullPrompt }],
+          model: "deepseek",
+          temperature: 0.3
+        },
+        timeout: 9000
+      },
+      {
+        name: "Mistral Reasoning Engine",
+        type: "post_json",
+        url: "https://text.pollinations.ai/",
+        payload: {
+          messages: [{ role: "user", content: fullPrompt }],
+          model: "mistral",
+          seed: 42
+        },
+        timeout: 8000
+      },
+      {
+        name: "Direct GET AI Gateway Stream",
+        type: "get",
+        url: `https://text.pollinations.ai/${encodeURIComponent(promptText.substring(0, 1600))}?model=searchgpt&cache=false`,
+        timeout: 8000
+      },
+      {
+        name: "Public HuggingFace Open Gateway",
+        type: "hf_post",
+        url: "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+        payload: {
+          inputs: `<s>[INST] ${promptText.substring(0, 1800)} [/INST]`,
+          parameters: { max_new_tokens: 1800, return_full_text: false }
+        },
+        timeout: 7000
       }
     ];
 
-    for (const ep of endpoints) {
+    for (let i = 0; i < engines.length; i++) {
+      const engine = engines[i];
       try {
+        statusElem.innerText = `Connecting to Engine ${i + 1}/${engines.length} (${engine.name})...`;
+
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 7000);
+        const timer = setTimeout(() => controller.abort(), engine.timeout);
 
-        const response = await fetch(ep.url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(ep.payload),
-          signal: controller.signal
-        });
+        let response;
+        if (engine.type === "get") {
+          response = await fetch(engine.url, { signal: controller.signal });
+        } else {
+          response = await fetch(engine.url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(engine.payload),
+            signal: controller.signal
+          });
+        }
 
-        clearTimeout(timeoutId);
+        clearTimeout(timer);
+
         if (response.ok) {
-          const text = await response.text();
-          if (text && text.includes("paper-header")) return text;
+          let textResult = "";
+          const contentType = response.headers.get("content-type") || "";
+
+          if (contentType.includes("application/json")) {
+            const data = await response.json();
+            if (Array.isArray(data) && data[0]?.generated_text) {
+              textResult = data[0].generated_text;
+            } else if (data.text) {
+              textResult = data.text;
+            } else if (data.choices?.[0]?.message?.content) {
+              textResult = data.choices[0].message.content;
+            } else {
+              textResult = JSON.stringify(data);
+            }
+          } else {
+            textResult = await response.text();
+          }
+
+          if (textResult && (textResult.includes("sec-block") || textResult.includes("q-item") || textResult.includes("paper-header"))) {
+            statusElem.innerText = `Paper compiled via ${engine.name}!`;
+            return textResult;
+          }
         }
       } catch (err) {
-        console.warn("Switching to instant synthesizer...");
+        console.warn(`[Failover] ${engine.name} bypassed. Error: ${err.message}`);
       }
     }
 
+    // Tier 6: Guaranteed zero-breakage local compiler
+    statusElem.innerText = "External AI streams busy. Compiled using local academic synthesis engine.";
     return compileLocalExamPaperHTML(localConfig);
   }
 
+  // =========================================================================
+  // ⚡ GENERATION WORKFLOW
+  // =========================================================================
   async function startGeneration() {
     calculateAndValidateMarks();
     if (document.getElementById('genBtn').disabled) {
@@ -2586,7 +2665,7 @@ You are an expert academic paper setter.
 ${modeInstruction}
 
 SOURCE MATERIAL CONTENT:
-${extractedText ? extractedText.substring(0, 3200) : "Subject content for: " + subject}
+${extractedText ? extractedText.substring(0, 3000) : "Subject content for: " + subject}
 
 BLUEPRINT & SECTIONS:
 ${sectionsConfig.join('\n\n')}
@@ -2661,9 +2740,8 @@ ${genInst ? `<div class="general-instructions"><strong>General Instructions:</st
     }
   }
 
-  // --- APP STARTUP: CLEAR EXISTING STORED USERNAMES ONCE & INITIALIZE ---
+  // --- APP STARTUP INITIALIZATION ---
   window.addEventListener('load', () => {
-    // One-time clear of previously saved usernames/accounts as requested
     if (!localStorage.getItem('app_users_cleared_v2')) {
       localStorage.removeItem('exam_staff_registry');
       localStorage.removeItem('persistent_exam_user');
