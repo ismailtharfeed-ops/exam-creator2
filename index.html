@@ -1,1586 +1,406 @@
-/**
- * Exam Paper Creator
- * Complete Client-Side Application Logic with High-Precision OCR & MCQ Extraction
- */
-
-// =========================================================================
-// 1. SAFE STORAGE ENGINE (QUOTA DEFENSE & ROBUST JSON HANDLING)
-// =========================================================================
-const SafeStorage = {
-  get(key, fallback = null) {
-    try {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : fallback;
-    } catch (err) {
-      console.warn(`[SafeStorage] Parse failed for key: "${key}"`, err);
-      return fallback;
-    }
-  },
-  set(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (err) {
-      console.error(`[SafeStorage] Failed to set "${key}". Quota exceeded?`, err);
-      return false;
-    }
-  },
-  remove(key) {
-    try {
-      localStorage.removeItem(key);
-    } catch (err) {
-      console.warn(`[SafeStorage] Failed to remove "${key}"`, err);
-    }
-  }
-};
-
-// =========================================================================
-// 2. VALIDATION HELPERS
-// =========================================================================
-const Validators = {
-  sanitizeUsername(val) {
-    return (val || '').toLowerCase().replace(/[^a-z]/g, '');
-  },
-  sanitizePin(val) {
-    return (val || '').replace(/[^0-9]/g, '');
-  },
-  countWords(str) {
-    if (!str) return 0;
-    return str.trim().split(/\s+/).filter(word => word.length > 0).length;
-  },
-  isValidUsername(val) {
-    return /^[a-z]+$/.test(val);
-  },
-  isValidPassword(val) {
-    return this.countWords(val) > 5;
-  },
-  isValidPin(val) {
-    return /^\d{5,10}$/.test(val);
-  }
-};
-
-// =========================================================================
-// 3. APPLICATION STATE
-// =========================================================================
-const AppState = {
-  activeUser: null,
-  currentAuthMode: 'signin',
-  currentAuthType: 'password',
-  currentUploadMode: 'existing',
-  currentPage: 'create',
-  customSectionCount: 0,
-  lastBackPressTime: 0,
-  adminCredentials: {
-    username: "admin",
-    secret: "Admin@2026"
-  }
-};
-
-// =========================================================================
-// 4. IMAGE CROPPER ENGINE
-// =========================================================================
-const ImageCropper = {
-  targetContext: null,
-  rawImageElement: null,
-  cropState: {
-    imgWidth: 0,
-    imgHeight: 0,
-    scale: 1,
-    baseScale: 1,
-    posX: 0,
-    posY: 0,
-    isDragging: false,
-    startX: 0,
-    startY: 0
-  },
-
-  start(file, context) {
-    if (!file) return;
-    this.targetContext = context;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        this.rawImageElement = img;
-        const cropImg = document.getElementById('cropperImage');
-        cropImg.src = e.target.result;
-
-        const viewportSize = 240;
-        this.cropState.imgWidth = img.width;
-        this.cropState.imgHeight = img.height;
-        this.cropState.baseScale = Math.max(viewportSize / img.width, viewportSize / img.height);
-        this.cropState.scale = this.cropState.baseScale;
-        this.cropState.posX = (viewportSize - img.width * this.cropState.scale) / 2;
-        this.cropState.posY = (viewportSize - img.height * this.cropState.scale) / 2;
-
-        document.getElementById('cropZoomSlider').value = '1';
-        this.updateTransform();
-
-        const overlay = document.getElementById('cropperOverlay');
-        overlay.hidden = false;
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  },
-
-  onZoom(zoomFactor) {
-    const viewportSize = 240;
-    const newScale = this.cropState.baseScale * parseFloat(zoomFactor);
-    const centerX = this.cropState.posX - viewportSize / 2;
-    const centerY = this.cropState.posY - viewportSize / 2;
-
-    this.cropState.posX = (centerX / this.cropState.scale) * newScale + viewportSize / 2;
-    this.cropState.posY = (centerY / this.cropState.scale) * newScale + viewportSize / 2;
-    this.cropState.scale = newScale;
-
-    this.updateTransform();
-  },
-
-  updateTransform() {
-    const cropImg = document.getElementById('cropperImage');
-    cropImg.style.transform = `translate3d(${this.cropState.posX}px, ${this.cropState.posY}px, 0px) scale(${this.cropState.scale})`;
-  },
-
-  handlePointerDown(e) {
-    this.cropState.isDragging = true;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    this.cropState.startX = clientX - this.cropState.posX;
-    this.cropState.startY = clientY - this.cropState.posY;
-    document.getElementById('cropperViewport').style.cursor = 'grabbing';
-  },
-
-  handlePointerMove(e) {
-    if (!this.cropState.isDragging) return;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    this.cropState.posX = clientX - this.cropState.startX;
-    this.cropState.posY = clientY - this.cropState.startY;
-    this.updateTransform();
-  },
-
-  handlePointerUp() {
-    this.cropState.isDragging = false;
-    const vp = document.getElementById('cropperViewport');
-    if (vp) vp.style.cursor = 'grab';
-  },
-
-  cancel() {
-    document.getElementById('cropperOverlay').hidden = true;
-  },
-
-  apply() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const outputDim = 250;
-    const vpSize = 240;
-    const ratio = outputDim / vpSize;
-
-    canvas.width = outputDim;
-    canvas.height = outputDim;
-
-    ctx.beginPath();
-    ctx.arc(outputDim / 2, outputDim / 2, outputDim / 2, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.clip();
-
-    ctx.drawImage(
-      this.rawImageElement,
-      this.cropState.posX * ratio,
-      this.cropState.posY * ratio,
-      this.cropState.imgWidth * this.cropState.scale * ratio,
-      this.cropState.imgHeight * this.cropState.scale * ratio
-    );
-
-    const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-    if (this.targetContext === 'signup') {
-      document.getElementById('regCroppedAvatarData').value = croppedDataUrl;
-      const preview = document.getElementById('regAvatarPreview');
-      preview.src = croppedDataUrl;
-      document.getElementById('regAvatarPreviewWrap').hidden = false;
-    } else if (this.targetContext === 'profile') {
-      const img = document.getElementById('profilePageAvatarImg');
-      img.src = croppedDataUrl;
-      img.hidden = false;
-      document.getElementById('profilePageAvatarFallback').hidden = true;
-    }
-
-    document.getElementById('cropperOverlay').hidden = true;
-  }
-};
-
-// =========================================================================
-// 5. OCR & ROBUST FILE INGESTION (ADAPTIVE CANVAS PRE-PROCESSING)
-// =========================================================================
-
-/**
- * Pre-processes an image file on an off-screen canvas:
- * Resizes, grayscales, enhances contrast, and applies thresholding
- * to clear mobile-camera shadows and faint book background tones.
- */
-async function preprocessImageForOcr(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        // Optimal OCR dimension
-        const targetWidth = Math.min(Math.max(img.width, 1400), 2500);
-        const scale = targetWidth / img.width;
-        canvas.width = targetWidth;
-        canvas.height = img.height * scale;
-
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const d = imgData.data;
-
-        // Grayscale conversion and contrast enhancement
-        for (let i = 0; i < d.length; i += 4) {
-          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-          // Binarize high-contrast threshold
-          const threshold = gray > 145 ? 255 : (gray < 85 ? 0 : gray);
-          d[i] = threshold;
-          d[i + 1] = threshold;
-          d[i + 2] = threshold;
-        }
-
-        ctx.putImageData(imgData, 0, 0);
-        canvas.toBlob((blob) => resolve(blob || file), 'image/png');
-      };
-      img.onerror = () => resolve(file);
-      img.src = e.target.result;
-    };
-    reader.onerror = () => resolve(file);
-    reader.readAsDataURL(file);
-  });
-}
-
-async function extractTextFromFiles(files, statusElem) {
-  let combinedText = "";
-  const hasTesseract = typeof Tesseract !== 'undefined';
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    statusElem.innerText = `Optimizing & scanning document (${i + 1}/${files.length}): ${file.name}...`;
-
-    if (file.type.startsWith("image/") && hasTesseract) {
-      try {
-        const preprocessedBlob = await preprocessImageForOcr(file);
-
-        const { data: { text } } = await Tesseract.recognize(preprocessedBlob, 'eng', {
-          logger: m => {
-            if (m.status === 'recognizingtext') {
-              statusElem.innerText = `Reading questions (${i + 1}/${files.length}): ${Math.round(m.progress * 100)}%`;
-            }
-          }
-        });
-
-        if (text && text.trim().length > 10) {
-          combinedText += `\n--- Page ${i + 1} ---\n` + text;
-          continue;
-        }
-      } catch (err) {
-        console.warn("[OCR] Direct Tesseract scan notice:", err);
-      }
-    }
-
-    if (file.type.includes("text") || file.name.endsWith(".txt") || file.name.endsWith(".md")) {
-      try {
-        const txt = await file.text();
-        combinedText += `\n--- Document ${i + 1} ---\n` + txt;
-        continue;
-      } catch (e) {
-        console.warn("[Ingestion] File text read error:", e);
-      }
-    }
-
-    combinedText += `\n[Reference uploaded: ${file.name}]`;
-  }
-
-  return combinedText;
-}
-
-function fileToDataURL(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
-}
-
-// =========================================================================
-// 6. QUESTION & MCQ REGEX PARSER ENGINE
-// =========================================================================
-/**
- * Scans OCR/Lesson text for question stems and options (A/B/C/D, 1/2/3/4).
- */
-function parseRawQuestionsAndMCQs(rawText) {
-  const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-  const detectedMCQs = [];
-  const detectedStandard = [];
-
-  let currentMCQ = null;
-
-  // Pattern matching: (A), A), [A], A., 1), (1), etc.
-  const optRegex = /^(?:\(?([A-Da-d1-4])\)|([A-Da-d1-4])[\.\)])\s*(.+)$/;
-  // Pattern matching: 1., Q1, 1), Question 1, etc.
-  const qNumRegex = /^(?:Q\.?\s*\d+|\d+[\.\)]|\bQuestion\s*\d+)\s*(.+)$/i;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const optMatch = line.match(optRegex);
-    const qMatch = line.match(qNumRegex);
-
-    if (optMatch && currentMCQ) {
-      currentMCQ.options.push(optMatch[3].trim());
-      if (currentMCQ.options.length >= 4) {
-        detectedMCQs.push(currentMCQ);
-        currentMCQ = null;
-      }
-      continue;
-    }
-
-    if (qMatch) {
-      if (currentMCQ && currentMCQ.options.length >= 2) {
-        detectedMCQs.push(currentMCQ);
-      }
-      currentMCQ = {
-        question: qMatch[1].trim(),
-        options: []
-      };
-      detectedStandard.push(qMatch[1].trim());
-    } else if (line.length > 20 && !line.startsWith("---")) {
-      if (currentMCQ && currentMCQ.options.length === 0) {
-        currentMCQ.question += " " + line;
-      } else {
-        detectedStandard.push(line);
-      }
-    }
-  }
-
-  if (currentMCQ && currentMCQ.options.length >= 2) {
-    detectedMCQs.push(currentMCQ);
-  }
-
-  return { detectedMCQs, detectedStandard };
-}
-
-// =========================================================================
-// 7. ACADEMIC COMPILER & MULTI-ENGINE AI PIPELINE
-// =========================================================================
-function compileLocalExamPaperHTML(config) {
-  let qCounter = 1;
-  let sectionsHtml = "";
-  const isLessonMode = config.mode === 'lesson';
-
-  const { detectedMCQs, detectedStandard } = parseRawQuestionsAndMCQs(config.rawText || "");
-  const standardPool = detectedStandard.length > 0 ? [...detectedStandard] : [...config.parsedQuestions];
-  const mcqPool = [...detectedMCQs];
-
-  config.sections.forEach(sec => {
-    sectionsHtml += `
-      <div class="sec-block">
-        <div class="sec-title">
-          <span>${sec.title}</span>
-          <span class="sec-marks-total">[${sec.count} × ${sec.marks} = ${sec.count * sec.marks}]</span>
-        </div>
-    `;
-
-    for (let i = 0; i < sec.count; i++) {
-      if (sec.isMcq) {
-        let qText = "";
-        let options = [];
-
-        if (mcqPool.length > 0) {
-          const item = mcqPool.shift();
-          qText = item.question;
-          options = item.options;
-
-          while (options.length < 4) {
-            options.push(`Contextual parameter or consequence ${options.length + 1}`);
-          }
-        } else {
-          const concept = standardPool.length > 0 
-            ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-            : `principles of ${config.subject}`;
-
-          const cleanSubject = config.subject || "the syllabus";
-          qText = `Which of the following statements is most accurate regarding ${concept.substring(0, 75)}?`;
-          options = [
-            `It represents a primary factor governing ${cleanSubject}.`,
-            `It acts as an indirect secondary effect under standard conditions.`,
-            `It remains completely independent and constant throughout the process.`,
-            `It leads directly to an inverse reduction in overall efficiency.`
-          ];
-        }
-
-        sectionsHtml += `
-          <div class="q-item">
-            <div class="q-line">
-              <span class="q-num">${qCounter}.</span>
-              <span class="q-text">${qText}</span>
-            </div>
-            <div class="mcq-options">
-              <span>(A) ${options[0]}</span>
-              <span>(B) ${options[1]}</span>
-              <span>(C) ${options[2]}</span>
-              <span>(D) ${options[3]}</span>
-            </div>
-          </div>
-        `;
-      } else {
-        let questionText = "";
-
-        if (isLessonMode) {
-          const snippet = standardPool.length > 0 
-            ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-            : `principles of ${config.subject}`;
-
-          if (sec.marks === 1) {
-            questionText = `Define or clearly state the significance of: ${snippet.substring(0, 70)}.`;
-          } else if (sec.marks === 2) {
-            questionText = `Mention any two key characteristics or causes of: ${snippet.substring(0, 70)}.`;
-          } else if (sec.marks === 3) {
-            questionText = `Explain the causes, structure, and main consequences related to ${snippet.substring(0, 75)}.`;
-          } else {
-            questionText = `Critically analyze and describe in detail the process and impact of ${snippet.substring(0, 80)}.`;
-          }
-        } else {
-          questionText = standardPool.length > 0 
-            ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-            : `Explain the fundamental concepts and practical applications of ${config.subject}.`;
-        }
-
-        sectionsHtml += `
-          <div class="q-item">
-            <div class="q-line">
-              <span class="q-num">${qCounter}.</span>
-              <span class="q-text">${questionText}</span>
-            </div>
-          </div>
-        `;
-      }
-      qCounter++;
-    }
-
-    sectionsHtml += `</div>`;
-  });
-
-  return `
-    <div class="paper-header">
-      <h1>${config.instName}</h1>
-      <h3>${config.examTitle}</h3>
-      <div class="meta-row">
-        <span>Subject: ${config.subject}</span>
-        <span>Class: ${config.grade}</span>
-        <span>Time: ${config.duration}</span>
-        <span>Max Marks: ${config.maxMarks}</span>
-      </div>
-      <div class="student-fields">
-        ${config.incName ? '<span>Name: _______________________________</span>' : ''}
-        ${config.incRoll ? '<span>Reg/Roll No: ____________</span>' : ''}
-        ${config.incSec ? '<span>Sec: ____</span>' : ''}
-        ${config.incDate ? '<span>Date: _________</span>' : ''}
-      </div>
-    </div>
-    ${config.genInst ? `<div class="general-instructions"><strong>General Instructions:</strong> ${config.genInst}</div>` : ''}
-    ${sectionsHtml}
-  `;
-}
-
-async function generateFastPaperDirect(promptText, localConfig, statusElem) {
-  statusElem.innerText = localConfig.mode === 'lesson' 
-    ? "Formulating questions from lesson text via multi-engine AI..." 
-    : "Extracting questions directly into blueprint...";
-
-  const systemInstruction = "You are an academic exam generator. Return ONLY clean, valid raw HTML without Markdown backticks. Must contain paper-header, sec-block, and q-item elements. MCQs must have 4 distinct, meaningful answer choices.";
-  const fullPrompt = `${systemInstruction}\n\nTask:\n${promptText}`;
-
-  const engines = [
-    {
-      name: "Pollinations OpenAI Engine",
-      type: "post",
-      url: "https://text.pollinations.ai/",
-      payload: {
-        messages: [{ role: "system", content: systemInstruction }, { role: "user", content: promptText }],
-        model: "openai",
-        seed: Math.floor(Math.random() * 1000000),
-        jsonMode: false
-      },
-      timeout: 9000
-    },
-    {
-      name: "DeepSeek / Qwen Reasoning Engine",
-      type: "post",
-      url: "https://text.pollinations.ai/",
-      payload: {
-        messages: [{ role: "user", content: fullPrompt }],
-        model: "deepseek",
-        temperature: 0.3
-      },
-      timeout: 9000
-    },
-    {
-      name: "Mistral Reasoning Engine",
-      type: "post",
-      url: "https://text.pollinations.ai/",
-      payload: {
-        messages: [{ role: "user", content: fullPrompt }],
-        model: "mistral",
-        seed: 42
-      },
-      timeout: 8000
-    },
-    {
-      name: "Direct GET AI Gateway Stream",
-      type: "get",
-      url: `https://text.pollinations.ai/${encodeURIComponent(promptText.substring(0, 1600))}?model=searchgpt&cache=false`,
-      timeout: 8000
-    }
-  ];
-
-  for (let i = 0; i < engines.length; i++) {
-    const engine = engines[i];
-    try {
-      statusElem.innerText = `Connecting to Engine ${i + 1}/${engines.length} (${engine.name})...`;
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), engine.timeout);
-
-      const response = engine.type === "get"
-        ? await fetch(engine.url, { signal: controller.signal })
-        : await fetch(engine.url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(engine.payload),
-            signal: controller.signal
-          });
-
-      clearTimeout(timer);
-
-      if (response.ok) {
-        let textResult = "";
-        const contentType = response.headers.get("content-type") || "";
-
-        if (contentType.includes("application/json")) {
-          const data = await response.json();
-          textResult = data.choices?.[0]?.message?.content || data.text || JSON.stringify(data);
-        } else {
-          textResult = await response.text();
-        }
-
-        if (textResult && (textResult.includes("sec-block") || textResult.includes("q-item") || textResult.includes("paper-header"))) {
-          statusElem.innerText = `Paper compiled via ${engine.name}!`;
-          return textResult;
-        }
-      }
-    } catch (err) {
-      console.warn(`[Failover] ${engine.name} bypassed:`, err.message);
-    }
-  }
-
-  statusElem.innerText = "External AI streams busy. Compiled using local academic synthesis engine.";
-  return compileLocalExamPaperHTML(localConfig);
-}
-
-async function buildDiagramSectionHtml(qNum) {
-  let outHtml = "";
-  const isDiagEnabled = document.getElementById('use_diag')?.checked;
-
-  if (isDiagEnabled) {
-    const heading = document.getElementById('inst_diag').value;
-    const marks = document.getElementById('marks_diag').value;
-    const desc = document.getElementById('diagDesc').value;
-    const file = document.getElementById('diagImage').files[0];
-    const imgSrc = file ? await fileToDataURL(file) : "";
-
-    outHtml += `
-      <div class="sec-block">
-        <div class="sec-title">
-          <span>${heading}</span>
-          <span class="sec-marks-total">[1 × ${marks} = ${marks}]</span>
-        </div>
-        <div class="q-item">
-          <div class="q-line">
-            <span class="q-num">${qNum}.</span>
-            <span class="q-text">${desc}</span>
-          </div>
-          ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Exam Diagram"></div>` : ''}
-        </div>
-      </div>
-    `;
-    qNum++;
-  }
-
-  for (let i = 1; i <= AppState.customSectionCount; i++) {
-    const chk = document.getElementById(`use_custom_${i}`);
-    if (chk && chk.checked) {
-      const file = document.getElementById(`file_custom_${i}`)?.files[0];
-      const desc = document.getElementById(`desc_custom_${i}`)?.value.trim() || "";
-
-      if (file || desc) {
-        const heading = document.getElementById(`inst_custom_${i}`).value;
-        const count = document.getElementById(`count_custom_${i}`).value;
-        const marks = document.getElementById(`marks_custom_${i}`).value;
-        const imgSrc = file ? await fileToDataURL(file) : "";
-
-        outHtml += `
-          <div class="sec-block">
-            <div class="sec-title">
-              <span>${heading}</span>
-              <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
-            </div>
-            <div class="q-item">
-              <div class="q-line">
-                <span class="q-num">${qNum}.</span>
-                <span class="q-text">${desc || "Study the diagram/graph provided and answer:"}</span>
-              </div>
-              ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Diagram"></div>` : ''}
-            </div>
-          </div>
-        `;
-        qNum++;
-      }
-    }
-  }
-
-  return outHtml;
-}
-
-// =========================================================================
-// 8. BLUEPRINT & SECTION MARK CALCULATION
-// =========================================================================
-function calculateAndValidateMarks() {
-  const maxMarks = parseInt(document.getElementById('maxMarks').value, 10) || 0;
-  let calculatedTotal = 0;
-
-  ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
-    const chk = document.getElementById('use_' + sec);
-    if (chk && chk.checked) {
-      const count = parseInt(document.getElementById('count_' + sec).value, 10) || 0;
-      const marks = parseInt(document.getElementById('marks_' + sec).value, 10) || 0;
-      calculatedTotal += (count * marks);
-    }
-  });
-
-  const diagChk = document.getElementById('use_diag');
-  if (diagChk && diagChk.checked) {
-    calculatedTotal += parseInt(document.getElementById('marks_diag').value, 10) || 0;
-  }
-
-  for (let i = 1; i <= AppState.customSectionCount; i++) {
-    const chk = document.getElementById(`use_custom_${i}`);
-    if (chk && chk.checked) {
-      const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 0;
-      const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 0;
-      calculatedTotal += (count * marks);
-    }
-  }
-
-  const box = document.getElementById('marksValidationBox');
-  const summaryText = document.getElementById('marksSummaryText');
-  const genBtn = document.getElementById('genBtn');
-
-  if (calculatedTotal === maxMarks) {
-    box.hidden = true;
-    genBtn.disabled = false;
-  } else {
-    box.hidden = false;
-    const diff = calculatedTotal - maxMarks;
-    summaryText.innerText = `Error: Total sections sum (${calculatedTotal}) ${diff > 0 ? 'exceeds' : 'is less than'} Target (${maxMarks}) by ${Math.abs(diff)} marks!`;
-    genBtn.disabled = true;
-  }
-}
-
-function addNewCustomSection() {
-  AppState.customSectionCount++;
-  const secId = `custom_${AppState.customSectionCount}`;
-  const container = document.getElementById('dynamicSectionsContainer');
-
-  const secDiv = document.createElement('article');
-  secDiv.className = 'section-box';
-  secDiv.id = `sec_card_${secId}`;
-
-  secDiv.innerHTML = `
-    <div class="section-header-edit">
-      <div class="left-block">
-        <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked aria-label="Enable Custom Section ${AppState.customSectionCount}">
-        <input type="text" class="editable-sec-title" id="title_${secId}" value="Section Custom ${AppState.customSectionCount}">
-      </div>
-      <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕ Remove</button>
-    </div>
-    <div id="box_${secId}" class="grid-2 sec-body">
-      <div class="grid-2">
-        <div class="form-group">
-          <label for="count_${secId}">Question Count</label>
-          <input type="number" id="count_${secId}" class="marks-calc" value="1" min="1">
-        </div>
-        <div class="form-group">
-          <label for="marks_${secId}">Marks Each</label>
-          <input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="file_${secId}">Attach Optional Diagram / Photo</label>
-        <input type="file" id="file_${secId}" accept="image/*">
-      </div>
-      <div class="form-group span-2">
-        <label for="inst_${secId}">Section Instructions Heading</label>
-        <input type="text" id="inst_${secId}" value="Answer the following based on the instructions:">
-      </div>
-      <div class="form-group span-2">
-        <label for="desc_${secId}">Question Description (Optional)</label>
-        <input type="text" id="desc_${secId}">
-      </div>
-    </div>
-  `;
-
-  container.appendChild(secDiv);
-  calculateAndValidateMarks();
-}
-
-// =========================================================================
-// 9. VAULT & HISTORY MANAGEMENT
-// =========================================================================
-function getStaffSpecificVaultKey() {
-  return AppState.activeUser ? `exam_vault_${AppState.activeUser.id}` : 'exam_vault_default';
-}
-
-function saveCurrentPaperToHistory(notify = true) {
-  const preview = document.getElementById('paperPreview');
-  const htmlContent = preview.innerHTML;
-  if (!htmlContent.trim()) {
-    alert("No question paper content to save!");
-    return;
-  }
-
-  const paperName = document.getElementById('paperCustomName').value.trim() || document.getElementById('examTitle').value || "Exam Paper";
-  const subject = document.getElementById('subject').value || "";
-
-  const newEntry = {
-    id: Date.now(),
-    paperName,
-    title: document.getElementById('examTitle').value || "",
-    subject,
-    staffId: AppState.activeUser ? AppState.activeUser.id : '',
-    staffName: AppState.activeUser ? (AppState.activeUser.fullName || AppState.activeUser.name) : 'unknown',
-    date: new Date().toLocaleString(),
-    font: document.getElementById('fontSelector').value,
-    fontSize: document.getElementById('fontSizeSlider').value,
-    content: htmlContent
-  };
-
-  const vaultKey = getStaffSpecificVaultKey();
-  const papers = SafeStorage.get(vaultKey, []);
-  papers.unshift(newEntry);
-  SafeStorage.set(vaultKey, papers);
-
-  logAuditEvent(AppState.activeUser?.name || 'unknown', `Created Paper: ${paperName}`, "Success");
-  if (notify) alert("Paper saved to vault.");
-}
-
-function renderHistoryList() {
-  const container = document.getElementById('historyListContainer');
-  const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
-
-  if (papers.length === 0) {
-    container.innerHTML = `
-      <div class="text-center p-0 text-subtle" style="padding: 40px 0;">
-        <p class="font-bold text-sm">No saved question papers in this account.</p>
-        <small>Create an exam paper and save it to access it anytime.</small>
-      </div>
-    `;
-    return;
-  }
-
-  let html = "";
-  papers.forEach(item => {
-    const displayName = item.paperName || `${item.title} ${item.subject}`.trim() || "Question Paper";
-    html += `
-      <article class="history-item">
-        <div class="history-meta">
-          <h3>${displayName}</h3>
-          <p>${item.subject ? `Subject: ${item.subject} | ` : ''}Saved: ${item.date}</p>
-        </div>
-        <div class="history-actions">
-          <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${item.id}">👁️ View / Edit</button>
-          <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${item.id}">🖨️ Print</button>
-          <button type="button" class="btn-danger-outline" data-action="delete-vault-paper" data-id="${item.id}">🗑️</button>
-        </div>
-      </article>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function loadPaperFromHistory(id, customKey = null) {
-  const key = customKey || getStaffSpecificVaultKey();
-  const papers = SafeStorage.get(key, []);
-  const paper = papers.find(p => p.id === id);
-  if (!paper) return;
-
-  const preview = document.getElementById('paperPreview');
-  preview.innerHTML = paper.content;
-
-  document.getElementById('paperCustomName').value = paper.paperName || '';
-  document.getElementById('fontSelector').value = paper.font;
-  changePaperFont(paper.font);
-
-  document.getElementById('fontSizeSlider').value = paper.fontSize;
-  changePaperFontSize(paper.fontSize);
-
-  document.getElementById('paperCard').hidden = false;
-  switchPage('create');
-  document.getElementById('paperCard').scrollIntoView({ behavior: 'smooth' });
-}
-
-// =========================================================================
-// 10. AUDIT & ADMIN CENTRAL
-// =========================================================================
-function logAuditEvent(username, action, status) {
-  const logs = SafeStorage.get('exam_audit_logs', []);
-  logs.unshift({
-    time: new Date().toLocaleString(),
-    username: username || "anonymous",
-    action: action,
-    status: status
-  });
-  if (logs.length > 100) logs.pop();
-  SafeStorage.set('exam_audit_logs', logs);
-}
-
-function renderAdminDashboard() {
-  const registry = SafeStorage.get('exam_staff_registry', []);
-  const logs = SafeStorage.get('exam_audit_logs', []);
-
-  document.getElementById('admStatStaff').innerText = registry.length;
-  document.getElementById('admStatLogins').innerText = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
-
-  let allPapersCount = 0;
-  registry.forEach(s => {
-    const papers = SafeStorage.get(`exam_vault_${s.id}`, []);
-    allPapersCount += papers.length;
-  });
-  document.getElementById('admStatPapers').innerText = allPapersCount;
-
-  // Staff Table
-  const staffTbody = document.getElementById('admStaffTableBody');
-  if (registry.length === 0) {
-    staffTbody.innerHTML = `<tr><td colspan="7" class="text-center text-subtle">No staff registered yet.</td></tr>`;
-  } else {
-    staffTbody.innerHTML = registry.map(staff => {
-      const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
-      return `
-        <tr>
-          <td><strong>${staff.name}</strong></td>
-          <td>${staff.fullName || staff.name}</td>
-          <td>${staff.subject}</td>
-          <td>${staff.userClass || "10th Standard"}</td>
-          <td>${staff.phone || "N/A"}</td>
-          <td><span class="auth-hint p-0">${staff.authType.toUpperCase()}</span></td>
-          <td><strong>${papers.length}</strong> saved</td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  // Logs Table
-  const logsTbody = document.getElementById('admLogsTableBody');
-  if (logs.length === 0) {
-    logsTbody.innerHTML = `<tr><td colspan="4" class="text-center text-subtle">No logs recorded.</td></tr>`;
-  } else {
-    logsTbody.innerHTML = logs.map(l => `
-      <tr>
-        <td><small>${l.time}</small></td>
-        <td><strong>${l.username}</strong></td>
-        <td>${l.action}</td>
-        <td><span style="color: ${l.status === 'Success' ? 'var(--accent-emerald)' : 'var(--danger-text)'}; font-weight: bold;">${l.status}</span></td>
-      </tr>
-    `).join('');
-  }
-
-  // Papers Container
-  const papersContainer = document.getElementById('admPapersContainer');
-  let allPapersHtml = "";
-  registry.forEach(staff => {
-    const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
-    papers.forEach(p => {
-      allPapersHtml += `
-        <article class="history-item">
-          <div class="history-meta">
-            <h3>${p.paperName || p.title}</h3>
-            <p>Teacher: <strong>${staff.fullName || staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
-          </div>
-          <div class="history-actions">
-            <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${p.id}" data-custom-key="exam_vault_${staff.id}">👁️ Inspect</button>
-            <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${p.id}" data-custom-key="exam_vault_${staff.id}">🖨️ Print</button>
-          </div>
-        </article>
-      `;
-    });
-  });
-  papersContainer.innerHTML = allPapersHtml || `<p class="p-0 text-subtle text-sm">No question papers generated yet.</p>`;
-}
-
-// =========================================================================
-// 11. NAVIGATION, DRAWER & ROUTING
-// =========================================================================
-function setPageView(page) {
-  AppState.currentPage = page;
-  const isHome = (page === 'create');
-
-  document.getElementById('mainHomeHeader').style.display = isHome ? 'flex' : 'none';
-  document.getElementById('pageCreate').hidden = (page !== 'create');
-  document.getElementById('pageHistory').hidden = (page !== 'history');
-  document.getElementById('pageProfile').hidden = (page !== 'profile');
-  document.getElementById('pageAbout').hidden = (page !== 'about');
-  document.getElementById('pageAdmin').hidden = (page !== 'admin');
-
-  if (page === 'history') renderHistoryList();
-  if (page === 'admin') renderAdminDashboard();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function switchPage(page, fromDrawer = false) {
-  if (fromDrawer) {
-    history.pushState({ screen: 'create', drawerOpen: true }, null, location.href);
-    history.pushState({ screen: page, drawerOpen: false }, null, location.href);
-  } else {
-    history.pushState({ screen: page, drawerOpen: false }, null, location.href);
-  }
-  setPageView(page);
-}
-
-function openDrawer() {
-  document.getElementById('sideDrawer').classList.add('active');
-  document.getElementById('sideDrawer').setAttribute('aria-hidden', 'false');
-  document.getElementById('drawerBackdrop').classList.add('active');
-  document.body.classList.add('no-scroll');
-}
-
-function closeDrawer() {
-  document.getElementById('sideDrawer').classList.remove('active');
-  document.getElementById('sideDrawer').setAttribute('aria-hidden', 'true');
-  document.getElementById('drawerBackdrop').classList.remove('active');
-  document.body.classList.remove('no-scroll');
-}
-
-function setupMobileRouting() {
-  history.replaceState({ screen: 'create', drawerOpen: false }, null, location.href);
-  window.addEventListener('popstate', (e) => {
-    const state = e.state || {};
-    if (state.drawerOpen) {
-      setPageView('create');
-      openDrawer();
-      return;
-    }
-    const drawer = document.getElementById('sideDrawer');
-    if (drawer && drawer.classList.contains('active')) {
-      closeDrawer();
-      return;
-    }
-    if (state.screen === 'create' || !state.screen) {
-      setPageView('create');
-      const now = Date.now();
-      if (now - AppState.lastBackPressTime < 2000) {
-        history.back();
-      } else {
-        AppState.lastBackPressTime = now;
-        const toast = document.getElementById('backToast');
-        toast.hidden = false;
-        setTimeout(() => { toast.hidden = true; }, 2000);
-      }
-      return;
-    }
-    setPageView(state.screen || 'create');
-  });
-}
-
-// =========================================================================
-// 12. PROFILE & AUTHENTICATION
-// =========================================================================
-function setAuthMode(mode) {
-  AppState.currentAuthMode = mode;
-  document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
-  document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
-  document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
-  document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Sign in with your username & credentials.' : 'Complete initial profile & security credentials.';
-  document.getElementById('signUpFields').hidden = (mode !== 'signup');
-  document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register & Enter';
-}
-
-function setAuthType(type) {
-  AppState.currentAuthType = type;
-  document.getElementById('btnAuthPassword').classList.toggle('active', type === 'password');
-  document.getElementById('btnAuthPin').classList.toggle('active', type === 'pin');
-  document.getElementById('authInputPassword').hidden = (type !== 'password');
-  document.getElementById('authInputPin').hidden = (type !== 'pin');
-}
-
-function syncProfileUI(user) {
-  if (!user) return;
-  const displayName = user.fullName || user.name || "Staff User";
-  document.getElementById('drawerProfileName').innerText = displayName;
-  document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
-  document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
-  document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
-
-  const avatarImg = document.getElementById('drawerAvatarImg');
-  const fallback = document.getElementById('drawerAvatarFallback');
-
-  if (user.avatar) {
-    avatarImg.src = user.avatar;
-    avatarImg.hidden = false;
-    fallback.hidden = true;
-  } else {
-    avatarImg.hidden = true;
-    fallback.hidden = false;
-    fallback.innerText = displayName.charAt(0).toUpperCase();
-  }
-}
-
-function loginSuccess(user) {
-  AppState.activeUser = user;
-  SafeStorage.set('persistent_exam_user', user);
-  document.getElementById('authOverlay').hidden = true;
-
-  syncProfileUI(user);
-  populateHeaderSettings(user);
-
-  const isAdmin = user.role === 'admin';
-  document.getElementById('drawerAdminItem').hidden = !isAdmin;
-  setPageView('create');
-}
-
-function cacheHeaderSettings() {
-  if (!AppState.activeUser) return;
-  const settings = {
-    instName: document.getElementById('instName').value,
-    examTitle: document.getElementById('examTitle').value,
-    subject: document.getElementById('subject').value,
-    grade: document.getElementById('grade').value,
-    duration: document.getElementById('duration').value,
-    genInst: document.getElementById('genInst').value
-  };
-  SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, settings);
-}
-
-function populateHeaderSettings(user) {
-  const saved = SafeStorage.get(`exam_settings_${user.id}`, null);
-  document.getElementById('instName').value = saved?.instName || "KARNATAKA PUBLIC SCHOOL";
-  document.getElementById('examTitle').value = saved?.examTitle || "Annual Examination - 2026";
-  document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
-  document.getElementById('grade').value = saved?.grade || user.userClass || "10th Standard";
-  document.getElementById('duration').value = saved?.duration || "3 Hours";
-  document.getElementById('genInst').value = saved?.genInst || "1. All sections are compulsory. 2. Write question numbers clearly in the margin.";
-}
-
-function changePaperFont(fontVal) {
-  document.documentElement.style.setProperty('--paper-font', fontVal);
-  const preview = document.getElementById('paperPreview');
-  if (preview) {
-    preview.style.setProperty('font-family', fontVal, 'important');
-    preview.querySelectorAll('*').forEach(el => el.style.setProperty('font-family', fontVal, 'important'));
-  }
-}
-
-function changePaperFontSize(sizeVal) {
-  const ptString = `${sizeVal}pt`;
-  document.getElementById('fontSizeDisplay').innerText = ptString;
-  document.documentElement.style.setProperty('--paper-size', ptString);
-  const preview = document.getElementById('paperPreview');
-  if (preview) preview.style.setProperty('font-size', ptString, 'important');
-}
-
-function toggleTheme() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const nextTheme = isDark ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', nextTheme);
-  document.getElementById('drawerThemeLabel').innerText = isDark ? '☀️ Light' : '🌙 Dark';
-}
-
-// =========================================================================
-// 13. CENTRAL EVENT DELEGATION
-// =========================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  if (!SafeStorage.get('app_users_cleared_v3')) {
-    SafeStorage.remove('exam_staff_registry');
-    SafeStorage.remove('persistent_exam_user');
-    SafeStorage.set('app_users_cleared_v3', true);
-  }
-
-  setupMobileRouting();
-  calculateAndValidateMarks();
-
-  const lockCode = SafeStorage.get('app_screen_lock_code');
-  if (lockCode) {
-    document.getElementById('lockOverlay').hidden = false;
-  }
-
-  const persistentUser = SafeStorage.get('persistent_exam_user');
-  if (persistentUser) {
-    loginSuccess(persistentUser);
-  } else {
-    setAuthMode('signin');
-  }
-
-  // Central Click Handler
-  document.body.addEventListener('click', (e) => {
-    const target = e.target;
-
-    const actionBtn = target.closest('[data-action]');
-    if (actionBtn) {
-      const action = actionBtn.getAttribute('data-action');
-      if (action === 'nav-home') { closeDrawer(); switchPage('create', false); }
-      if (action === 'nav-vault') { closeDrawer(); switchPage('history', true); }
-      if (action === 'nav-admin') { closeDrawer(); switchPage('admin', true); }
-      if (action === 'nav-about') { closeDrawer(); switchPage('about', true); }
-      if (action === 'toggle-theme') toggleTheme();
-      if (action === 'sign-out') {
-        closeDrawer();
-        AppState.activeUser = null;
-        SafeStorage.remove('persistent_exam_user');
-        document.getElementById('authOverlay').hidden = false;
-        setAuthMode('signin');
-      }
-      if (action === 'share-app') {
-        if (navigator.share) {
-          navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
-        } else {
-          navigator.clipboard.writeText(window.location.href);
-          alert("Link copied to clipboard!");
-        }
-      }
-      if (action === 'remove-custom-sec') {
-        const secId = actionBtn.getAttribute('data-sec-id');
-        document.getElementById(`sec_card_${secId}`)?.remove();
-        calculateAndValidateMarks();
-      }
-      if (action === 'load-vault-paper') {
-        const id = parseInt(actionBtn.getAttribute('data-id'), 10);
-        const customKey = actionBtn.getAttribute('data-custom-key');
-        loadPaperFromHistory(id, customKey);
-      }
-      if (action === 'print-vault-paper') {
-        const id = parseInt(actionBtn.getAttribute('data-id'), 10);
-        const customKey = actionBtn.getAttribute('data-custom-key');
-        loadPaperFromHistory(id, customKey);
-        setTimeout(() => window.print(), 300);
-      }
-      if (action === 'delete-vault-paper') {
-        const id = parseInt(actionBtn.getAttribute('data-id'), 10);
-        if (confirm("Delete this saved paper?")) {
-          const key = getStaffSpecificVaultKey();
-          let papers = SafeStorage.get(key, []);
-          papers = papers.filter(p => p.id !== id);
-          SafeStorage.set(key, papers);
-          renderHistoryList();
-        }
-      }
-      return;
-    }
-
-    if (target.closest('#btnOpenDrawer')) { openDrawer(); return; }
-    if (target.closest('#btnCloseDrawer') || target.closest('#drawerBackdrop')) { closeDrawer(); return; }
-
-    if (target.closest('#drawerProfileCard')) {
-      closeDrawer();
-      if (AppState.activeUser) {
-        document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
-        document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
-        document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
-        document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
-        document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
-
-        const avatarImg = document.getElementById('profilePageAvatarImg');
-        const fallback = document.getElementById('profilePageAvatarFallback');
-        if (AppState.activeUser.avatar) {
-          avatarImg.src = AppState.activeUser.avatar;
-          avatarImg.hidden = false;
-          fallback.hidden = true;
-        } else {
-          avatarImg.hidden = true;
-          fallback.hidden = false;
-          fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
-        }
-      }
-      switchPage('profile', true);
-      return;
-    }
-
-    const sourceBtn = target.closest('.source-choice-btn');
-    if (sourceBtn) {
-      const mode = sourceBtn.getAttribute('data-mode');
-      AppState.currentUploadMode = mode;
-      document.querySelectorAll('.source-choice-btn').forEach(b => b.classList.remove('selected'));
-      sourceBtn.classList.add('selected');
-      document.getElementById('activeModeSummaryLabel').innerText = mode === 'existing'
-        ? "📂 Mode: Question Bank / Exercises"
-        : "📖 Mode: Textbook Lesson Pages";
-      document.getElementById('uploadLabel').innerText = mode === 'existing'
-        ? "Upload Question Bank Documents (Photos / Scans / PDFs):"
-        : "Upload Textbook Lesson Pages / Theory (Photos / Scans / PDFs):";
-      document.getElementById('uploadHintText').innerText = mode === 'existing'
-        ? "Extracting existing questions and options directly into the exam blueprint."
-        : "The system reads lesson text and formulates conceptual questions.";
-      return;
-    }
-
-    if (target.closest('#btnToggleSourceAccordion')) {
-      const content = document.getElementById('sourceAccordionContent');
-      const arrow = document.getElementById('sourceAccordionArrow');
-      const expanded = content.classList.toggle('expanded');
-      arrow.classList.toggle('rotated', expanded);
-      target.closest('#btnToggleSourceAccordion').setAttribute('aria-expanded', String(expanded));
-      return;
-    }
-
-    if (target.closest('#btnToggleSectionsAccordion')) {
-      const content = document.getElementById('sectionsAccordionContent');
-      const arrow = document.getElementById('accordionArrow');
-      const expanded = content.classList.toggle('expanded');
-      arrow.classList.toggle('rotated', expanded);
-      target.closest('#btnToggleSectionsAccordion').setAttribute('aria-expanded', String(expanded));
-      return;
-    }
-
-    if (target.closest('#btnCancelCrop')) { ImageCropper.cancel(); return; }
-    if (target.closest('#btnApplyCrop')) { ImageCropper.apply(); return; }
-    if (target.closest('#btnAddCustomSection')) { addNewCustomSection(); return; }
-    if (target.closest('#btnSaveToVault')) { saveCurrentPaperToHistory(); return; }
-
-    if (target.closest('#btnPrintPaper')) {
-      const customName = document.getElementById('paperCustomName').value.trim();
-      const prevTitle = document.title;
-      if (customName) document.title = customName;
-      window.print();
-      setTimeout(() => { document.title = prevTitle; }, 1000);
-      return;
-    }
-
-    if (target.closest('#btnClearHistory')) {
-      if (confirm("Clear your question paper vault?")) {
-        SafeStorage.remove(getStaffSpecificVaultKey());
-        renderHistoryList();
-      }
-      return;
-    }
-
-    if (target.closest('#btnClearAdminLogs')) {
-      if (confirm("Clear all audit logs?")) {
-        SafeStorage.remove('exam_audit_logs');
-        renderAdminDashboard();
-      }
-      return;
-    }
-
-    if (target.closest('#btnUnlockApp')) {
-      const stored = SafeStorage.get('app_screen_lock_code');
-      const entered = document.getElementById('appLockInput').value.trim();
-      if (btoa(entered) === stored) {
-        document.getElementById('lockOverlay').hidden = true;
-      } else {
-        alert("Incorrect PIN/Password.");
-      }
-      return;
-    }
-  });
-
-  // Central Input Validation
-  document.body.addEventListener('input', (e) => {
-    const target = e.target;
-
-    if (target.id === 'authUsernameInput' || target.id === 'profilePageUsername') {
-      target.value = Validators.sanitizeUsername(target.value);
-    }
-    if (target.id === 'authPin') {
-      target.value = Validators.sanitizePin(target.value);
-    }
-    if (target.classList.contains('marks-calc') || target.id === 'maxMarks') {
-      calculateAndValidateMarks();
-    }
-    if (target.classList.contains('cached-header')) {
-      cacheHeaderSettings();
-    }
-    if (target.id === 'cropZoomSlider') {
-      ImageCropper.onZoom(target.value);
-    }
-    if (target.id === 'fontSizeSlider') {
-      changePaperFontSize(target.value);
-    }
-  });
-
-  // Central Change Handler
-  document.body.addEventListener('change', (e) => {
-    const target = e.target;
-
-    if (target.classList.contains('sec-toggle')) {
-      const secId = target.getAttribute('data-sec');
-      const box = document.getElementById(`box_${secId}`);
-      if (box) box.style.display = target.checked ? 'grid' : 'none';
-      calculateAndValidateMarks();
-    }
-    if (target.id === 'editToggle') {
-      const paper = document.getElementById('paperPreview');
-      const badge = document.getElementById('editBadge');
-      paper.setAttribute('contenteditable', target.checked ? "true" : "false");
-      badge.innerText = target.checked ? "Editable" : "Locked";
-      badge.style.color = target.checked ? "var(--primary)" : "var(--text-muted)";
-    }
-    if (target.id === 'fontSelector') {
-      changePaperFont(target.value);
-    }
-    if (target.id === 'regAvatarFile') {
-      if (target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
-    }
-    if (target.id === 'profilePageAvatarInput') {
-      if (target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
-    }
-  });
-
-  // Central Form Submit Handler
-  document.body.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const target = e.target;
-
-    if (target.id === 'authForm') {
-      const registry = SafeStorage.get('exam_staff_registry', []);
-      const username = document.getElementById('authUsernameInput').value;
-
-      if (!Validators.isValidUsername(username)) {
-        alert("Username Error: Strictly lowercase letters (a-z) only.");
-        return;
-      }
-
-      const secret = AppState.currentAuthType === 'password'
-        ? document.getElementById('authPassword').value
-        : document.getElementById('authPin').value;
-
-      if (AppState.currentAuthMode === 'signin' && username === AppState.adminCredentials.username) {
-        if (secret === AppState.adminCredentials.secret) {
-          const adminUser = {
-            id: 'admin_root',
-            name: 'admin',
-            fullName: 'Administrator',
-            subject: 'All Subjects (Admin)',
-            userClass: 'Administration',
-            phone: '+91 9483061904',
-            role: 'admin',
-            authType: 'password'
-          };
-          logAuditEvent("admin", "Admin Login", "Success");
-          loginSuccess(adminUser);
-          return;
-        } else {
-          logAuditEvent("admin", "Admin Login Attempt", "Failed: Wrong Secret");
-          alert("Incorrect admin credential.");
-          return;
-        }
-      }
-
-      if (AppState.currentAuthType === 'password' && !Validators.isValidPassword(secret)) {
-        alert("Password must contain at least 6 separate words.");
-        return;
-      }
-      if (AppState.currentAuthType === 'pin' && !Validators.isValidPin(secret)) {
-        alert("PIN must be between 5 to 10 numeric digits.");
-        return;
-      }
-
-      if (AppState.currentAuthMode === 'signup') {
-        if (registry.some(s => s.name === username)) {
-          alert("Username is already taken.");
-          return;
-        }
-        const newStaff = {
-          id: `staff_${Date.now()}`,
-          name: username,
-          fullName: document.getElementById('regFullName').value.trim() || username,
-          subject: document.getElementById('regSubject').value.trim() || "General",
-          userClass: "10th Standard",
-          phone: document.getElementById('regMobilePhone').value.trim(),
-          avatar: document.getElementById('regCroppedAvatarData').value || "",
-          authType: AppState.currentAuthType,
-          secret: btoa(secret)
-        };
-        registry.push(newStaff);
-        SafeStorage.set('exam_staff_registry', registry);
-        logAuditEvent(username, "Staff Registration", "Success");
-        loginSuccess(newStaff);
-      } else {
-        const staff = registry.find(s => s.name === username);
-        if (!staff) {
-          alert("Username not found. Please register.");
-          return;
-        }
-        if (staff.authType !== AppState.currentAuthType) {
-          alert(`This account uses ${staff.authType.toUpperCase()}.`);
-          setAuthType(staff.authType);
-          return;
-        }
-        if (btoa(secret) === staff.secret) {
-          logAuditEvent(username, "Staff Login", "Success");
-          loginSuccess(staff);
-        } else {
-          alert("Incorrect password/PIN.");
-        }
-      }
-    }
-
-    if (target.id === 'profileForm') {
-      if (!AppState.activeUser) return;
-      const newUsername = document.getElementById('profilePageUsername').value.trim();
-      if (!Validators.isValidUsername(newUsername)) {
-        alert("Username Error: Strictly lowercase letters (a-z).");
-        return;
-      }
-
-      const registry = SafeStorage.get('exam_staff_registry', []);
-      const oldUsername = AppState.activeUser.name;
-      if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
-        alert("Username already taken.");
-        return;
-      }
-
-      AppState.activeUser.name = newUsername;
-      AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
-      AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
-      AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
-      AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
-
-      const avatarSrc = document.getElementById('profilePageAvatarImg').src;
-      if (avatarSrc.startsWith('data:image')) {
-        AppState.activeUser.avatar = avatarSrc;
-      }
-
-      const idx = registry.findIndex(s => s.name === oldUsername);
-      if (idx !== -1) {
-        registry[idx] = { ...registry[idx], ...AppState.activeUser };
-        SafeStorage.set('exam_staff_registry', registry);
-      }
-
-      SafeStorage.set('persistent_exam_user', AppState.activeUser);
-      syncProfileUI(AppState.activeUser);
-      alert("Profile updated successfully!");
-      history.back();
-    }
-  });
-
-  // Cropper Pointer Handlers
-  const cropperVp = document.getElementById('cropperViewport');
-  cropperVp.addEventListener('mousedown', (e) => ImageCropper.handlePointerDown(e));
-  window.addEventListener('mousemove', (e) => ImageCropper.handlePointerMove(e));
-  window.addEventListener('mouseup', () => ImageCropper.handlePointerUp());
-
-  cropperVp.addEventListener('touchstart', (e) => ImageCropper.handlePointerDown(e), { passive: false });
-  window.addEventListener('touchmove', (e) => ImageCropper.handlePointerMove(e), { passive: false });
-  window.addEventListener('touchend', () => ImageCropper.handlePointerUp());
-
-  // Generation Trigger Handler
-  document.getElementById('genBtn').addEventListener('click', async () => {
-    calculateAndValidateMarks();
-    const btn = document.getElementById('genBtn');
-    if (btn.disabled) {
-      alert("Please balance marks before generation.");
-      return;
-    }
-
-    const files = document.getElementById('fileInput').files;
-    if (files.length === 0) {
-      alert("Please upload at least one document or page in Section 2.");
-      return;
-    }
-
-    const status = document.getElementById('statusMessage');
-    const paperCard = document.getElementById('paperCard');
-    const paperPreview = document.getElementById('paperPreview');
-
-    btn.disabled = true;
-    paperCard.hidden = true;
-
-    try {
-      const extractedText = await extractTextFromFiles(files, status);
-      const parsedQuestions = extractedText
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 15 && !l.startsWith("---"));
-
-      const localSections = [];
-      const sectionsConfig = [];
-
-      ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
-        const chk = document.getElementById('use_' + sec);
-        if (chk && chk.checked) {
-          const count = parseInt(document.getElementById('count_' + sec).value, 10) || 0;
-          const marks = parseInt(document.getElementById('marks_' + sec).value, 10) || 0;
-          const inst = document.getElementById('inst_' + sec).value;
-          const title = document.getElementById('title_' + sec).value;
-          localSections.push({ title: inst, count, marks, isMcq: (sec === 'mcq') });
-          sectionsConfig.push(`- Section: "${title}"\n  Instructions: "${inst}"\n  Count: ${count}\n  Marks: ${marks}`);
-        }
-      });
-
-      const config = {
-        mode: AppState.currentUploadMode,
-        rawText: extractedText,
-        instName: document.getElementById('instName').value,
-        examTitle: document.getElementById('examTitle').value,
-        subject: document.getElementById('subject').value,
-        grade: document.getElementById('grade').value,
-        duration: document.getElementById('duration').value,
-        maxMarks: document.getElementById('maxMarks').value,
-        genInst: document.getElementById('genInst').value,
-        incName: document.getElementById('incName').checked,
-        incRoll: document.getElementById('incRoll').checked,
-        incSec: document.getElementById('incSec').checked,
-        incDate: document.getElementById('incDate').checked,
-        sections: localSections,
-        parsedQuestions
-      };
-
-      const promptText = `
-Subject: ${config.subject}
-Grade: ${config.grade}
-Mode: ${config.mode}
-
-CRITICAL RULES FOR MCQs & QUESTIONS:
-1. Every Multiple Choice Question MUST have 4 meaningful, distinct answer choices based directly on the text: (A), (B), (C), and (D). Never return placeholder words like "Option A" or "Option B".
-2. If Mode is "existing", extract the EXACT questions and options found in the text.
-3. If Mode is "lesson", formulate actual factual questions based on the lesson text with 1 correct option and 3 plausible distractors.
-
-SECTIONS TO GENERATE:
-${sectionsConfig.join('\n')}
-
-SOURCE TEXT EXTRACTED:
-${extractedText.substring(0, 3500)}
-`;
-
-      const generated = await generateFastPaperDirect(promptText, config, status);
-      let htmlOutput = generated.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
-      const totalQCount = (htmlOutput.match(/class="q-item"/g) || []).length;
-      htmlOutput += await buildDiagramSectionHtml(totalQCount + 1);
-
-      paperPreview.innerHTML = htmlOutput;
-      paperCard.hidden = false;
-      status.innerText = "Exam paper generated successfully!";
-
-      const defaultName = [config.subject, config.grade, config.examTitle].filter(Boolean).join('_').replace(/[\/\s]+/g, '_');
-      document.getElementById('paperCustomName').value = defaultName;
-      changePaperFont(document.getElementById('fontSelector').value);
-
-      saveCurrentPaperToHistory(false);
-      paperCard.scrollIntoView({ behavior: 'smooth' });
-    } catch (err) {
-      alert("Generation notice: " + err.message);
-      status.innerText = "Error: " + err.message;
-    } finally {
-      btn.disabled = false;
-    }
-  });
-});
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Exam Paper Creator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="description" content="Academic Exam Paper Creator with client-side OCR and multi-engine fallback.">
+
+  <!-- Core Google Web Fonts pre-loaded for instant switching -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600;700&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Optional In-Browser OCR (Gracefully ignored if unreachable) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- Accessible Toast -->
+  <div id="backToast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+    Press back again to exit
+  </div>
+
+  <!-- IN-APP LOCK SCREEN MODAL -->
+  <div id="lockOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lockTitle" hidden>
+    <div class="auth-card text-center">
+      <h2 id="lockTitle">🔒 App Locked</h2>
+      <p>Enter your App Lock credential to continue.</p>
+      <div class="form-group">
+        <label for="appLockInput" class="sr-only">App Lock PIN or Password</label>
+        <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" class="input-center tracking-wide">
+      </div>
+      <button type="button" id="btnUnlockApp" class="btn-generate">Unlock App</button>
+    </div>
+  </div>
+
+  <!-- CIRCULAR IMAGE CROPPER MODAL -->
+  <div id="cropperOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cropperTitle" hidden>
+    <div class="cropper-card">
+      <h3 id="cropperTitle" class="color-primary">Crop Profile Picture</h3>
+      <p class="text-subtle text-center text-sm">Drag photo to reposition inside circle</p>
+      
+      <div class="cropper-viewport-wrap">
+        <div class="cropper-viewport" id="cropperViewport" tabindex="0" role="region" aria-label="Image Cropping Viewport">
+          <img id="cropperImage" class="cropper-img" src="" alt="Cropping preview">
+        </div>
+      </div>
+
+      <div class="zoom-controls">
+        <label for="cropZoomSlider" class="text-sm font-bold">Zoom:</label>
+        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider">
+      </div>
+
+      <div class="button-row">
+        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1">Cancel</button>
+        <button type="button" id="btnApplyCrop" class="btn-primary flex-1">Apply Crop</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE-OUT LEFT DRAWER -->
+  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1"></div>
+  <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
+    <header class="drawer-header">
+      <h3>⚙️ Menu & Settings</h3>
+      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button>
+    </header>
+
+    <div class="drawer-scroll-body">
+      <!-- Profile Card -->
+      <section aria-labelledby="drawerProfileSection">
+        <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
+        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile">
+          <div class="drawer-profile-top">
+            <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
+            <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
+            <div class="drawer-profile-info">
+              <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
+              <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
+              <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
+              <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigation & Vault -->
+      <nav aria-label="Application Sections">
+        <h4 class="drawer-section-title">Navigation & Vault</h4>
+        <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" data-action="nav-home">
+            <span>🏠 Home Page</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="nav-vault">
+            <span>📚 Saved Papers Vault</span>
+          </button>
+          <button type="button" class="drawer-item" id="drawerAdminItem" data-action="nav-admin" hidden>
+            <span>🛡️ Admin Dashboard</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Preferences & Security -->
+      <section aria-label="Preferences">
+        <h4 class="drawer-section-title">Preferences & Security</h4>
+        <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" data-action="toggle-theme">
+            <span>Theme Mode</span>
+            <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="app-lock">
+            <span>App Screen Lock</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="share-app">
+            <span>Share Application</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="nav-about">
+            <span>ℹ️ About Application</span>
+          </button>
+          <button type="button" class="drawer-item item-danger" data-action="sign-out">
+            <span>Sign Out / Switch Profile</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- AUTHENTICATION OVERLAY -->
+  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+    <div class="auth-card">
+      <h2 id="authHeading">Staff Sign In</h2>
+      <p id="authSubHeading">Sign in with your username & credentials.</p>
+
+      <div class="auth-nav" role="tablist">
+        <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" data-auth-mode="signin">Sign In</button>
+        <button type="button" id="navSignUp" role="tab" aria-selected="false" data-auth-mode="signup">Sign Up</button>
+      </div>
+
+      <form id="authForm" novalidate>
+        <div class="form-group">
+          <label for="authUsernameInput">Username</label>
+          <input type="text" id="authUsernameInput" autocomplete="username" required>
+          <span class="auth-hint">Strictly lowercase English letters only (a-z).</span>
+        </div>
+
+        <div id="signUpFields" hidden>
+          <div class="form-group">
+            <label for="regFullName">Full Name (Displayed in Profile)</label>
+            <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+          <div class="form-group">
+            <label for="regMobilePhone">Mobile Number</label>
+            <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
+          </div>
+          <div class="form-group">
+            <label for="regSubject">Teaching Subject</label>
+            <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
+          </div>
+          <div class="form-group">
+            <label for="regAvatarFile">Profile Picture (With Crop)</label>
+            <input type="file" id="regAvatarFile" accept="image/*">
+            <input type="hidden" id="regCroppedAvatarData">
+            <div id="regAvatarPreviewWrap" class="avatar-preview-wrap" hidden>
+              <img id="regAvatarPreview" class="avatar-preview-img" alt="Avatar preview">
+              <span class="color-success font-bold text-sm">✓ Photo cropped</span>
+            </div>
+          </div>
+        </div>
+
+        <fieldset class="form-group border-none p-0">
+          <legend class="form-label">Credential Type</legend>
+          <div class="auth-type-pill">
+            <button type="button" class="active" id="btnAuthPassword" data-auth-type="password">🔏 Password</button>
+            <button type="button" id="btnAuthPin" data-auth-type="pin">🔢 PIN Code</button>
+          </div>
+        </fieldset>
+
+        <div id="authInputPassword" class="form-group">
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" autocomplete="current-password">
+          <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
+        </div>
+
+        <div id="authInputPin" class="form-group" hidden>
+          <label for="authPin">PIN Code</label>
+          <input type="password" id="authPin" maxlength="10" inputmode="numeric">
+          <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn-generate mt-md">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- TOP APP HEADER -->
+    <header class="app-header no-print" id="mainHomeHeader">
+      <div class="header-watermark" aria-hidden="true"></div>
+      
+      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <div class="header-center-title">
+        <h1>Exam Paper <span>Creator</span></h1>
+      </div>
+
+      <div class="header-spacer" aria-hidden="true"></div>
+    </header>
+
+    <!-- PAGE 1: HOME PAGE (CREATE PAPER VIEW) -->
+    <section id="pageCreate" class="page-view" aria-labelledby="createPageHeading">
+      <h2 id="createPageHeading" class="sr-only">Paper Generation Studio</h2>
+      
+      <!-- 1. Examination Details -->
+      <section class="card no-print">
+        <h2>1. Examination Details & Header Settings</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="instName">Institution / School / College Name</label>
+            <input type="text" id="instName" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="examTitle">Examination Title</label>
+            <input type="text" id="examTitle" class="cached-header">
+          </div>
+        </div>
+
+        <div class="grid-4 mt-sm">
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="grade">Class / Grade</label>
+            <input type="text" id="grade" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="duration">Time Allowed</label>
+            <input type="text" id="duration" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="maxMarks">Total Max Marks (Target)</label>
+            <input type="number" id="maxMarks" value="25" min="1">
+          </div>
+        </div>
+
+        <fieldset class="checkbox-group border-none p-0">
+          <legend class="sr-only">Header Inclusion Fields</legend>
+          <label><input type="checkbox" id="incName" checked> Name Line</label>
+          <label><input type="checkbox" id="incRoll" checked> Register / Roll No</label>
+          <label><input type="checkbox" id="incSec" checked> Section</label>
+          <label><input type="checkbox" id="incDate" checked> Date</label>
+        </fieldset>
+
+        <div class="form-group mt-sm">
+          <label for="genInst">General Instructions for Students (Optional):</label>
+          <input type="text" id="genInst" class="cached-header">
+        </div>
+      </section>
+
+      <!-- 2. Source Material Upload -->
+      <section class="card no-print">
+        <h2>2. Source Material Upload Mode</h2>
+
+        <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
+          <span id="activeModeSummaryLabel" class="font-bold">📂 Mode: Question Bank / Exercises</span>
+          <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
+        </button>
+
+        <div class="accordion-content" id="sourceAccordionContent">
+          <div class="source-mode-choice-grid">
+            <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" data-mode="existing">
+              📚 Question Bank / Exercises
+            </button>
+            <button type="button" class="source-choice-btn" id="btnChoiceLesson" data-mode="lesson">
+              📖 Textbook Lesson Pages
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group mt-sm">
+          <label id="uploadLabel" for="fileInput">Upload Question Bank Documents (Photos / Scans / PDFs):</label>
+          <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+          <small id="uploadHintText" class="text-subtle block mt-xs">
+            Extracting existing questions and options directly into the exam blueprint.
+          </small>
+        </div>
+      </section>
+
+      <!-- 3. Structure & Sections Accordion -->
+      <section class="card no-print">
+        <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" aria-expanded="false" aria-controls="sectionsAccordionContent">
+          <h2>
+            <span>⚙️ 3. Question Paper Structure & Sections</span>
+            <span class="accordion-subtext">(Sections A-F & Custom)</span>
+          </h2>
+          <span class="arrow-icon" id="accordionArrow" aria-hidden="true">▼</span>
+        </button>
+
+        <div class="accordion-content" id="sectionsAccordionContent">
+          <div id="dynamicSectionsContainer">
+            <!-- Section A: MCQs -->
+            <article class="section-box" id="sec_card_mcq">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_mcq" class="sec-toggle" data-sec="mcq" checked aria-label="Enable Section A">
+                  <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
+                </div>
+              </div>
+              <div id="box_mcq" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_mcq">Question Count</label>
+                  <input type="number" id="count_mcq" class="marks-calc" value="4" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_mcq">Marks Each</label>
+                  <input type="number" id="marks_mcq" class="marks-calc" value="1" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_mcq">Instructions Heading</label>
+                  <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
+                </div>
+              </div>
+            </article>
+
+            <!-- Section B: 1-Word / Sentence -->
+            <article class="section-box" id="sec_card_1m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_1m" class="sec-toggle" data-sec="1m" checked aria-label="Enable Section B">
+                  <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
+                </div>
+              </div>
+              <div id="box_1m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_1m">Question Count</label>
+                  <input type="number" id="count_1m" class="marks-calc" value="3" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_1m">Marks Each</label>
+                  <input type="number" id="marks_1m" class="marks-calc" value="1" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_1m">Instructions Heading</label>
+                  <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
+                </div>
+              </div>
+            </article>
+
+            <!-- Section C: Short Answers -->
+            <article class="section-box" id="sec_card_2m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_2m" class="sec-toggle" data-sec="2m" checked aria-label="Enable Section C">
+                  <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
+                </div>
+              </div>
+              <div id="box_2m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_2m">Question Count</label>
+                  <input type="number" id="count_2m" class="marks-calc" value="3" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_2m">Marks Each</label>
+                  <input type="number" id="marks_2m" class="marks-calc" value="2" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_2m">Instructions Heading</label>
+                  <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
+                </div>
+              </div>
+            </article>
+
+            <!-- Section D: Brief Explanations -->
+            <article class="section-box" id="sec_card_3m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_3m" class="sec-toggle" data-sec="3m" checked aria-label="Enable Section D">
+                  <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
+                </div>
+              </div>
+              <div id="box_3m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_3m">Question Count</label>
+                  <input type="number" id="count_3m" class="marks-calc" value="2" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_3m">Marks Each</label>
+                  <input type="number" id="marks_3m" class="marks-calc" value="3" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_3m">Instructions Heading</label>
+                  <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
+                </div>
+              </div>
+            </article>
+
+            <!--
