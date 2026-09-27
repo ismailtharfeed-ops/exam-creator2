@@ -197,7 +197,6 @@
       background-repeat: no-repeat; background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
     }
-    
     .menu-lines-btn {
       background: var(--card-subtle); border: 1.5px solid var(--border);
       width: 44px; height: 44px; border-radius: 10px; cursor: pointer; 
@@ -696,8 +695,6 @@
       </section>
 
       <section class="card no-print">
-        <h2>2. Source Material Upload Mode</h2>
-
         <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
           <span id="activeModeSummaryLabel" class="font-bold">📂 2. Source Material Upload Mode</span>
           <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
@@ -1003,7 +1000,7 @@
           const tx = this.db.transaction('assets', 'readwrite');
           tx.objectStore('assets').delete(key);
           tx.oncomplete = () => resolve(true);
-          tx.onerror = () => reject(false);
+          tx.onerror = () => resolve(false);
         });
       }
     };
@@ -1328,13 +1325,6 @@
     // =========================================================================
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
-
-      if (!SafeStorage.get('app_users_cleared_v11')) {
-        SafeStorage.remove('exam_staff_registry');
-        SafeStorage.remove('persistent_exam_user');
-        SafeStorage.set('app_users_cleared_v11', true);
-      }
-
       addNewCustomSection();
       calculateAndValidateMarks();
 
