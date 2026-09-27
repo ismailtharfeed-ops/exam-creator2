@@ -197,9 +197,10 @@
       background-repeat: no-repeat; background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
     }
+    
     .menu-lines-btn {
       background: var(--card-subtle); border: 1.5px solid var(--border);
-      width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
+      width: 44px; height: 44px; border-radius: 10px; cursor: pointer; 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 6px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative; z-index: 2;
@@ -217,7 +218,7 @@
     }
     .header-center-title h1 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin: 0; }
     .header-center-title h1 span { color: var(--primary); }
-    .header-spacer { width: 42px; }
+    .header-spacer { width: 44px; }
 
     .drawer-backdrop {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
@@ -259,9 +260,8 @@
       width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
       background: linear-gradient(135deg, var(--primary), #0284c7); color: #fff; 
       display: flex; align-items: center; justify-content: center; 
-      font-size: 1.3rem; font-weight: bold; border: 2.5px solid var(--card);
+      font-size: 1.3rem; font-weight: bold; border: 2.5px solid var(--card); flex-shrink: 0;
     }
-    .drawer-avatar.lg { width: 76px; height: 76px; font-size: 2.2rem; }
     .drawer-profile-info { flex: 1; overflow: hidden; }
     .drawer-profile-name { font-weight: 800; font-size: 1.05rem; }
     .drawer-profile-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; }
@@ -699,12 +699,12 @@
         <h2>2. Source Material Upload Mode</h2>
 
         <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
-          <span id="activeModeSummaryLabel" class="font-bold">📂 Mode: Question Bank / Exercises</span>
+          <span id="activeModeSummaryLabel" class="font-bold">📂 2. Source Material Upload Mode</span>
           <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
         </button>
 
         <div class="accordion-content" id="sourceAccordionContent">
-          <div class="source-mode-choice-grid">
+          <div class="source-mode-choice-grid mt-sm">
             <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" data-mode="existing">
               📚 Question Bank / Exercises
             </button>
@@ -712,14 +712,13 @@
               📖 Textbook Lesson Pages
             </button>
           </div>
-        </div>
-
-        <div class="form-group mt-sm">
-          <label id="uploadLabel" for="fileInput">Upload Question Bank Documents (Photos / Scans / PDFs):</label>
-          <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
-          <small id="uploadHintText" class="text-subtle block mt-xs">
-            Extracting existing questions and options directly into the exam blueprint.
-          </small>
+          <div class="form-group mt-sm">
+            <label id="uploadLabel" for="fileInput">Upload Documents (Photos / Scans / PDFs):</label>
+            <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+            <small id="uploadHintText" class="text-subtle block mt-xs">
+              Extracting existing questions and options directly into the exam blueprint.
+            </small>
+          </div>
         </div>
       </section>
 
@@ -733,8 +732,8 @@
         </button>
 
         <div class="accordion-content" id="sectionsAccordionContent">
-          <div id="dynamicSectionsContainer">
-            <!-- Starting clean with 1 default custom section ready for questions or photos -->
+          <div id="dynamicSectionsContainer" class="mt-sm">
+            <!-- Starting clean with 1 default custom section ready -->
           </div>
 
           <button type="button" class="btn-add-sec" id="btnAddCustomSection">➕ Add Custom Section (With Photo / Diagram Option)</button>
@@ -1004,7 +1003,7 @@
           const tx = this.db.transaction('assets', 'readwrite');
           tx.objectStore('assets').delete(key);
           tx.oncomplete = () => resolve(true);
-          tx.onerror = () => resolve(false);
+          tx.onerror = () => reject(false);
         });
       }
     };
@@ -1300,224 +1299,19 @@
     }
 
     // =========================================================================
-    // CUSTOM SECTION BUILDER & COMPILER
+    // EDIT PROFILE DATA HANDLER
     // =========================================================================
-    function addNewCustomSection() {
-      AppState.customSectionCount++;
-      const secId = `custom_${AppState.customSectionCount}`;
-      const container = document.getElementById('dynamicSectionsContainer');
-      const secDiv = document.createElement('article');
-      secDiv.className = 'section-box';
-      secDiv.id = `sec_card_${secId}`;
-      secDiv.innerHTML = `
-        <div class="section-header-edit">
-          <div class="left-block">
-            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked>
-            <input type="text" class="editable-sec-title" id="title_${secId}" value="Section ${String.fromCharCode(64 + AppState.customSectionCount)}: Custom Questions">
-          </div>
-          <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕</button>
-        </div>
-        <div id="box_${secId}" class="grid-2 sec-body">
-          <div class="form-group"><label>Question Count</label><input type="number" id="count_${secId}" class="marks-calc" value="2" min="1" oninput="calculateAndValidateMarks()"></div>
-          <div class="form-group"><label>Marks Each</label><input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1" oninput="calculateAndValidateMarks()"></div>
-          <div class="form-group">
-            <label>Attach Optional Photo / Diagram / Graph</label>
-            <input type="file" id="file_${secId}" accept="image/*">
-          </div>
-          <div class="form-group">
-            <label>Section Heading / Instructions</label>
-            <input type="text" id="inst_${secId}" value="Answer the following questions:">
-          </div>
-          <div class="form-group span-2">
-            <label>Question Description / Sub-points (Optional)</label>
-            <textarea id="desc_${secId}" rows="2" placeholder="e.g. Answer based on the attached diagram/map"></textarea>
-          </div>
-        </div>
-      `;
-      container.appendChild(secDiv);
-      calculateAndValidateMarks();
-    }
+    async function loadProfileFormValues() {
+      if (!AppState.activeUser) return;
+      document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
+      document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
+      document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
+      document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
+      document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
 
-    async function compileCustomExamPaperHTML(config) {
-      let qCounter = 1;
-      let sectionsHtml = "";
-
-      for (let i = 1; i <= AppState.customSectionCount; i++) {
-        const chk = document.getElementById(`use_custom_${i}`);
-        if (!chk || !chk.checked) continue;
-
-        const title = document.getElementById(`title_custom_${i}`).value || `Section ${i}`;
-        const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 1;
-        const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 1;
-        const inst = document.getElementById(`inst_custom_${i}`).value || "Answer the following:";
-        const desc = document.getElementById(`desc_custom_${i}`).value || "";
-        const fileInput = document.getElementById(`file_custom_${i}`);
-        const file = fileInput?.files?.[0];
-        
-        let imgSrc = "";
-        if (file) {
-          imgSrc = await fileToDataURL(file);
-          await AppDB.set(`sec_img_${Date.now()}`, imgSrc);
-        }
-
-        sectionsHtml += `
-          <div class="sec-block">
-            <div class="sec-title">
-              <span>${title} - ${inst}</span>
-              <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
-            </div>
-            ${desc ? `<div class="text-subtle text-sm mb-xs" style="font-style:italic;">${desc}</div>` : ''}
-            ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Section Diagram"></div>` : ''}
-        `;
-
-        for (let q = 0; q < count; q++) {
-          const qText = config.parsedQuestions.length > 0 
-            ? config.parsedQuestions.shift() 
-            : `Discuss the theoretical framework and practical implications regarding point ${q + 1}.`;
-
-          sectionsHtml += `
-            <div class="q-item">
-              <div class="q-line">
-                <span class="q-num">${qCounter}.</span>
-                <span class="q-text">${qText}</span>
-              </div>
-            </div>
-          `;
-          qCounter++;
-        }
-        sectionsHtml += `</div>`;
-      }
-
-      return `
-        <div class="paper-header">
-          <h1>${config.instName}</h1>
-          <h3>${config.examTitle}</h3>
-          <div class="meta-row">
-            <span>Subject: ${config.subject}</span>
-            <span>Class: ${config.grade}</span>
-            <span>Time: ${config.duration}</span>
-            <span>Max Marks: ${config.maxMarks}</span>
-          </div>
-          <div class="student-fields">
-            ${config.incName ? '<span>Name: _______________________________</span>' : ''}
-            ${config.incRoll ? '<span>Reg/Roll No: ____________</span>' : ''}
-            ${config.incSec ? '<span>Sec: ____</span>' : ''}
-            ${config.incDate ? '<span>Date: _________</span>' : ''}
-          </div>
-        </div>
-        ${config.genInst ? `<div class="general-instructions"><strong>General Instructions:</strong> ${config.genInst}</div>` : ''}
-        ${sectionsHtml}
-      `;
-    }
-
-    function calculateAndValidateMarks() {
-      const maxMarks = parseInt(document.getElementById('maxMarks').value, 10) || 0;
-      let calculatedTotal = 0;
-
-      for (let i = 1; i <= AppState.customSectionCount; i++) {
-        const chk = document.getElementById(`use_custom_${i}`);
-        if (chk && chk.checked) {
-          const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 0;
-          const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 0;
-          calculatedTotal += (count * marks);
-        }
-      }
-
-      const box = document.getElementById('marksValidationBox');
-      const genBtn = document.getElementById('genBtn');
-      if (AppState.customSectionCount === 0) {
-        box.hidden = false;
-        document.getElementById('marksSummaryText').innerText = `Please add at least one custom section below.`;
-        genBtn.disabled = true;
-        return;
-      }
-
-      if (calculatedTotal === maxMarks) {
-        box.hidden = true;
-        genBtn.disabled = false;
-      } else {
-        box.hidden = false;
-        document.getElementById('marksSummaryText').innerText = `Total sections sum (${calculatedTotal}) differs from Target Max Marks (${maxMarks}).`;
-        genBtn.disabled = true;
-      }
-    }
-
-    function getStaffSpecificVaultKey() {
-      return AppState.activeUser ? `exam_vault_${AppState.activeUser.id}` : 'exam_vault_default';
-    }
-
-    function saveCurrentPaperToHistory(notify = true) {
-      const preview = document.getElementById('paperPreview');
-      const htmlContent = preview.innerHTML;
-      if (!htmlContent.trim()) return;
-      const paperName = document.getElementById('paperCustomName').value.trim() || "Exam Paper";
-      const newEntry = { id: Date.now(), paperName, subject: document.getElementById('subject').value || "", date: new Date().toLocaleString(), font: document.getElementById('fontSelector').value, fontSize: document.getElementById('fontSizeSlider').value, content: htmlContent };
-      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
-      papers.unshift(newEntry);
-      SafeStorage.set(getStaffSpecificVaultKey(), papers);
-      if (notify) alert("Paper saved to vault.");
-    }
-
-    function renderHistoryList() {
-      const container = document.getElementById('historyListContainer');
-      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
-      if (papers.length === 0) {
-        container.innerHTML = `<p class="text-center text-subtle">No saved question papers.</p>`;
-        return;
-      }
-      container.innerHTML = papers.map(item => `
-        <article class="history-item">
-          <div><h3>${item.paperName}</h3><p>Saved: ${item.date}</p></div>
-          <div class="history-actions">
-            <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${item.id}">View</button>
-            <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${item.id}">Print</button>
-            <button type="button" class="btn-danger-outline" data-action="delete-vault-paper" data-id="${item.id}">🗑️</button>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function loadPaperFromHistory(id, customKey = null) {
-      const papers = SafeStorage.get(customKey || getStaffSpecificVaultKey(), []);
-      const paper = papers.find(p => p.id === id);
-      if (!paper) return;
-      document.getElementById('paperPreview').innerHTML = paper.content;
-      document.getElementById('paperCard').hidden = false;
-      setPageView('create');
-    }
-
-    function setPageView(page) {
-      AppState.currentPage = page;
-      document.getElementById('pageCreate').hidden = (page !== 'create');
-      document.getElementById('pageHistory').hidden = (page !== 'history');
-      document.getElementById('pageProfile').hidden = (page !== 'profile');
-      document.getElementById('pageAbout').hidden = (page !== 'about');
-      document.getElementById('pageAdmin').hidden = (page !== 'admin');
-      if (page === 'history') renderHistoryList();
-      if (page === 'admin') renderAdminDashboard();
-    }
-
-    function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
-    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
-
-    function setAuthMode(mode) {
-      AppState.currentAuthMode = mode;
-      showInlineError("");
-      document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
-      document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
-      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
-      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & PIN.' : 'Set up your staff account.';
-      document.getElementById('signUpFields').hidden = (mode !== 'signup');
-      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
-    }
-
-    async function syncProfileUI(user) {
-      if (!user) return;
-      document.getElementById('drawerProfileName').innerText = user.fullName || user.name;
-      document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
-      const avatarData = await AppDB.get(`avatar_${user.id}`);
-      const avatarImg = document.getElementById('drawerAvatarImg');
-      const fallback = document.getElementById('drawerAvatarFallback');
+      const avatarImg = document.getElementById('profilePageAvatarImg');
+      const fallback = document.getElementById('profilePageAvatarFallback');
+      const avatarData = await AppDB.get(`avatar_${AppState.activeUser.id}`);
       if (avatarData) {
         avatarImg.src = avatarData;
         avatarImg.hidden = false;
@@ -1525,63 +1319,24 @@
       } else {
         avatarImg.hidden = true;
         fallback.hidden = false;
-        fallback.innerText = (user.fullName || user.name || "S").charAt(0).toUpperCase();
+        fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
       }
     }
 
-    async function loginSuccess(user) {
-      AppState.activeUser = user;
-      SafeStorage.set('persistent_exam_user', user);
-      document.getElementById('authOverlay').hidden = true;
-      await syncProfileUI(user);
-      populateHeaderSettings(user);
-
-      // Secret Admin Dashboard visibility check
-      const isAdmin = (user.name === 'admin');
-      document.getElementById('drawerAdminItem').hidden = !isAdmin;
-      setPageView('create');
-    }
-
-    function cacheHeaderSettings() {
-      if (!AppState.activeUser) return;
-      SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, {
-        instName: document.getElementById('instName').value,
-        examTitle: document.getElementById('examTitle').value,
-        subject: document.getElementById('subject').value,
-        grade: document.getElementById('grade').value,
-        duration: document.getElementById('duration').value,
-        genInst: document.getElementById('genInst').value
-      });
-    }
-
-    function populateHeaderSettings(user) {
-      const saved = SafeStorage.get(`exam_settings_${user.id}`, null);
-      document.getElementById('instName').value = saved?.instName || "KARNATAKA PUBLIC SCHOOL";
-      document.getElementById('examTitle').value = saved?.examTitle || "Annual Examination - 2026";
-      document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
-      document.getElementById('grade').value = saved?.grade || "10th Standard";
-      document.getElementById('duration').value = saved?.duration || "3 Hours";
-    }
-
-    function changePaperFont(val) { document.documentElement.style.setProperty('--paper-font', val); }
-    function changePaperFontSize(val) { document.documentElement.style.setProperty('--paper-size', `${val}pt`); document.getElementById('fontSizeDisplay').innerText = `${val}pt`; }
-    function toggleTheme() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
-    }
-
+    // =========================================================================
+    // INITIALIZATION & EVENT ROUTING
+    // =========================================================================
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
 
-      if (!SafeStorage.get('app_users_cleared_v8')) {
+      if (!SafeStorage.get('app_users_cleared_v11')) {
         SafeStorage.remove('exam_staff_registry');
         SafeStorage.remove('persistent_exam_user');
-        SafeStorage.set('app_users_cleared_v8', true);
+        SafeStorage.set('app_users_cleared_v11', true);
       }
 
-      // Start with 1 default custom section ready
       addNewCustomSection();
+      calculateAndValidateMarks();
 
       window.history.replaceState({ page: 'create' }, '');
       window.addEventListener('popstate', (e) => {
@@ -1656,11 +1411,31 @@
         if (target.closest('#btnSaveToVault')) { saveCurrentPaperToHistory(); return; }
         if (target.closest('#btnPrintPaper')) { window.print(); return; }
         if (target.closest('#btnClearHistory')) { SafeStorage.remove(getStaffSpecificVaultKey()); renderHistoryList(); return; }
-        if (target.closest('#btnUnlockApp')) {
-          const stored = SafeStorage.get('app_screen_lock_code');
-          const entered = await CryptoEngine.hash(document.getElementById('appLockInput').value.trim());
-          if (entered === stored) document.getElementById('lockOverlay').hidden = true;
-          else alert("Incorrect PIN.");
+        
+        // Vault Actions Delegation
+        const actionBtn = target.closest('[data-action]');
+        if (actionBtn) {
+          const action = actionBtn.getAttribute('data-action');
+          const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+          if (action === 'load-vault-paper') { loadPaperFromHistory(id); return; }
+          if (action === 'print-vault-paper') { loadPaperFromHistory(id); setTimeout(() => window.print(), 300); return; }
+          if (action === 'delete-vault-paper') {
+            if (confirm("Delete this saved paper?")) {
+              const key = getStaffSpecificVaultKey();
+              let papers = SafeStorage.get(key, []);
+              papers = papers.filter(p => p.id !== id);
+              SafeStorage.set(key, papers);
+              renderHistoryList();
+            }
+            return;
+          }
+        }
+
+        if (target.closest('#drawerProfileCard')) {
+          closeDrawer();
+          await loadProfileFormValues();
+          window.history.pushState({ page: 'profile' }, '');
+          setPageView('profile');
           return;
         }
 
@@ -1710,11 +1485,20 @@
         const target = e.target;
         if (target.id === 'regAvatarFile' && target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
         if (target.id === 'profilePageAvatarInput' && target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
+        if (target.id === 'editToggle') {
+          const paper = document.getElementById('paperPreview');
+          const badge = document.getElementById('editBadge');
+          paper.setAttribute('contenteditable', target.checked ? "true" : "false");
+          badge.innerText = target.checked ? "Editable" : "Locked";
+          badge.style.color = target.checked ? "var(--primary)" : "var(--text-muted)";
+        }
       });
 
       document.body.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (e.target.id === 'authForm') {
+        const target = e.target;
+
+        if (target.id === 'authForm') {
           showInlineError("");
           const username = document.getElementById('authUsernameInput').value.trim().toLowerCase();
           const pin = document.getElementById('authPin').value.trim();
@@ -1731,7 +1515,6 @@
           const hashedPin = await CryptoEngine.hash(pin);
           const registry = SafeStorage.get('exam_staff_registry', []);
 
-          // Special Protected Admin Credentials
           if (username === 'admin' && pin === '2026') {
             const adminUser = {
               id: 'admin_root',
@@ -1744,7 +1527,6 @@
               secret: hashedPin
             };
             logAuditEvent("admin", "Admin Login", "Success");
-            FocusTrap.release();
             await loginSuccess(adminUser);
             return;
           }
@@ -1765,7 +1547,7 @@
               subject: document.getElementById('regSubject').value.trim() || "General",
               userClass: "10th Standard",
               phone: document.getElementById('regMobilePhone').value.trim(),
-              role: username === 'admin' ? 'admin' : 'staff',
+              role: 'staff',
               secret: hashedPin
             };
             registry.push(staff);
@@ -1783,6 +1565,40 @@
               showInlineError("Incorrect security PIN.");
             }
           }
+        }
+
+        if (target.id === 'profileForm') {
+          if (!AppState.activeUser) return;
+          const newUsername = document.getElementById('profilePageUsername').value.trim();
+          if (!Validators.isValidUsername(newUsername)) {
+            alert("Username Error: Strictly lowercase letters (a-z).");
+            return;
+          }
+
+          const registry = SafeStorage.get('exam_staff_registry', []);
+          const oldUsername = AppState.activeUser.name;
+          if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
+            alert("Username already taken.");
+            return;
+          }
+
+          AppState.activeUser.name = newUsername;
+          AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
+          AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
+          AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
+          AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
+
+          const idx = registry.findIndex(s => s.name === oldUsername);
+          if (idx !== -1) {
+            registry[idx] = { ...registry[idx], ...AppState.activeUser };
+            SafeStorage.set('exam_staff_registry', registry);
+          }
+
+          SafeStorage.set('persistent_exam_user', AppState.activeUser);
+          await syncProfileUI(AppState.activeUser);
+          alert("Profile updated successfully!");
+          window.history.pushState({ page: 'create' }, '');
+          setPageView('create');
         }
       });
 
