@@ -5,2762 +5,667 @@
   <title>Exam Paper Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0284c7">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Academic Exam Paper Creator with client-side OCR and multi-engine fallback.">
 
   <!-- Core Google Web Fonts pre-loaded for instant switching -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600;700&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
 
-  <!-- Local In-Browser OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 
-  <style>
-    :root {
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --card-subtle: #f8fafc;
-      --border: #cbd5e1;
-      --border-subtle: #e2e8f0;
-      
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --primary-light: #e0f2fe;
-      
-      --accent-emerald: #059669;
-      --accent-emerald-hover: #047857;
-      
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --input-bg: #ffffff;
-      
-      --danger-bg: #fee2e2;
-      --danger-border: #fca5a5;
-      --danger-text: #b91c1c;
-      
-      --paper-bg: #ffffff;
-      --paper-text: #111827;
-      --paper-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-
-      --paper-font: 'Tinos', 'Noto Serif', 'Times New Roman', serif;
-      --paper-size: 10.5pt;
-
-      --watermark-opacity: 0.08;
-    }
-
-    [data-theme="dark"] {
-      --bg: #0b1120;
-      --card: #1e293b;
-      --card-subtle: #172236;
-      --border: #334155;
-      --border-subtle: #1e293b;
-      
-      --primary: #38bdf8;
-      --primary-hover: #0ea5e9;
-      --primary-light: rgba(56, 189, 248, 0.15);
-      
-      --accent-emerald: #10b981;
-      --accent-emerald-hover: #059669;
-      
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --input-bg: #111827;
-      
-      --danger-bg: #451a1a;
-      --danger-border: #7f1d1d;
-      --danger-text: #fca5a5;
-      
-      --paper-bg: #ffffff;
-      --paper-text: #111827;
-      --paper-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
-
-      --watermark-opacity: 0.05;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body, input, select, button, textarea {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Kannada", "Noto Sans Devanagari", "Noto Naskh Arabic", sans-serif;
-    }
-    
-    body { 
-      background-color: var(--bg); color: var(--text); padding: 18px 12px; 
-      transition: background-color 0.35s ease, color 0.35s ease; 
-    }
-
-    body.no-scroll {
-      overflow: hidden !important;
-      touch-action: none !important;
-    }
-
-    .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-
-    /* AUTH OVERLAY MODAL */
-    #authOverlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 9999;
-      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px);
-      transition: opacity 0.3s ease;
-    }
-    .auth-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 26px 22px; width: 100%; max-width: 440px; 
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      max-height: 90vh; overflow-y: auto;
-    }
-    .auth-card h2 { font-size: 1.4rem; color: var(--primary); text-align: center; margin-bottom: 4px; }
-    .auth-card p { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
-    
-    .auth-nav {
-      display: flex; gap: 8px; background: var(--card-subtle); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border);
-    }
-    .auth-nav button {
-      flex: 1; padding: 8px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
-      transition: all 0.25s ease;
-    }
-    .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
-
-    .auth-type-pill { display: flex; gap: 10px; margin-bottom: 14px; }
-    .auth-type-pill button {
-      flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--card-subtle);
-      border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: var(--text);
-      transition: all 0.25s ease;
-    }
-    .auth-type-pill button.active { border-color: var(--primary); background: var(--primary); color: #fff; }
-    .auth-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.3; }
-
-    /* IN-APP SECURITY LOCK MODAL */
-    #lockOverlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.96); z-index: 10001;
-      display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px);
-    }
-
-    /* CROPPER OVERLAY MODAL */
-    #cropperOverlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); z-index: 10010;
-      display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);
-      padding: 16px;
-    }
-    .cropper-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-      display: flex; flex-direction: column; align-items: center; gap: 14px;
-    }
-    .cropper-viewport {
-      width: 240px; height: 240px; position: relative; overflow: hidden;
-      border-radius: 50%; border: 3px solid var(--primary); background: #000;
-      touch-action: none; cursor: grab; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.75);
-    }
-    .cropper-viewport-wrap {
-      width: 240px; height: 240px; overflow: hidden; position: relative;
-    }
-    .cropper-img {
-      position: absolute; top: 0; left: 0; transform-origin: 0 0;
-      user-select: none; pointer-events: none;
-    }
-
-    /* TOP APP HEADER */
-    .app-header {
-      position: relative; overflow: hidden; background: var(--card);
-      padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border-subtle);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-      display: flex; align-items: center; justify-content: space-between; min-height: 64px;
-    }
-    .header-watermark {
-      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-      width: 320px; height: 100%; pointer-events: none; opacity: var(--watermark-opacity);
-      background-repeat: no-repeat; background-size: contain; background-position: center;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
-    }
-
-    .menu-lines-btn {
-      background: var(--card-subtle); border: 1.5px solid var(--border);
-      width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 5px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative; z-index: 2;
-    }
-    .menu-lines-btn span {
-      display: block; width: 20px; height: 2.2px; background-color: var(--text);
-      border-radius: 4px; transition: all 0.25s ease;
-    }
-    .menu-lines-btn:hover { 
-      border-color: var(--primary); background: var(--primary-light); transform: scale(1.04);
-    }
-    .menu-lines-btn:hover span { background-color: var(--primary); }
-
-    .header-center-title {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      text-align: center; z-index: 1; width: max-content;
-    }
-    .header-center-title h1 {
-      font-size: 1.45rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; margin: 0;
-    }
-    .header-center-title h1 span { color: var(--primary); }
-
-    /* SLIDE-OUT LEFT DRAWER */
-    .drawer-backdrop {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
-      z-index: 10005; opacity: 0; pointer-events: none; 
-      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      backdrop-filter: blur(4px); touch-action: none;
-    }
-    .drawer-backdrop.active { opacity: 1; pointer-events: auto; }
-
-    .side-drawer {
-      position: fixed; top: 0; left: 0; bottom: 0; width: 330px; max-width: 86vw;
-      background: var(--card); border-right: 1px solid var(--border); z-index: 10006;
-      transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex; flex-direction: column; box-shadow: 6px 0 30px rgba(0,0,0,0.25);
-      overscroll-behavior: contain;
-    }
-    .side-drawer.active { transform: translateX(0); }
-
-    .drawer-header {
-      padding: 16px 18px; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.05), transparent);
-    }
-    .drawer-header h3 { font-size: 1.15rem; color: var(--text); font-weight: 800; }
-    .drawer-close-btn {
-      background: var(--card-subtle); border: 1px solid var(--border); 
-      width: 32px; height: 32px; border-radius: 8px;
-      font-size: 1.1rem; color: var(--text-muted); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
-    }
-    .drawer-close-btn:hover { color: var(--danger-text); border-color: var(--danger-border); }
-
-    .drawer-scroll-body {
-      padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;
-      overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
-    }
-
-    .drawer-profile-card {
-      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 14px;
-      padding: 15px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
-      transition: all 0.25s ease;
-    }
-    .drawer-profile-card:hover { 
-      border-color: var(--primary); transform: translateY(-2px); 
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.1); 
-    }
-    .drawer-profile-top { display: flex; align-items: center; gap: 14px; }
-    .drawer-avatar {
-      width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
-      background: linear-gradient(135deg, var(--primary), #0284c7); color: #fff; 
-      display: flex; align-items: center; justify-content: center; 
-      font-size: 1.4rem; font-weight: bold; border: 2.5px solid var(--card);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .drawer-profile-info { flex: 1; overflow: hidden; }
-    .drawer-profile-name { font-weight: 800; font-size: 1.05rem; color: var(--text); }
-    .drawer-profile-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; }
-
-    .drawer-section-title {
-      font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
-      color: var(--primary); margin-bottom: 6px;
-    }
-
-    .drawer-item {
-      display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;
-      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 10px;
-      font-size: 0.92rem; font-weight: 600; color: var(--text); cursor: pointer; text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .drawer-item:hover { 
-      border-color: var(--primary); transform: translateX(3px); background: var(--primary-light); 
-    }
-
-    .page-view { 
-      display: flex; flex-direction: column; gap: 16px; 
-      animation: pageSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes pageSlideIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .page-view.hidden { display: none; }
-
-    .card {
-      background: var(--card); border: 1.5px solid var(--border-subtle); border-radius: 14px;
-      padding: 22px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); transition: all 0.25s ease;
-    }
-    h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); font-weight: 700; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 8px; }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; }
-
-    label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="file"], input[type="tel"], select, textarea {
-      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-      font-size: 0.9rem; background-color: var(--input-bg); color: var(--text); outline: none;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
-
-    .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
-    .checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; text-transform: none; color: var(--text); }
-
-    /* COLLAPSIBLE ACCORDION DRAWERS */
-    .accordion-trigger {
-      display: flex; justify-content: space-between; align-items: center;
-      cursor: pointer; user-select: none; padding: 14px 18px; border-radius: 12px;
-      background: var(--card-subtle); border: 1.5px solid var(--border);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .accordion-trigger:hover {
-      background: var(--primary-light); border-color: var(--primary);
-    }
-    .accordion-trigger h2 {
-      border: none; margin: 0; padding: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;
-    }
-    .arrow-icon {
-      font-size: 1.1rem; color: var(--primary);
-      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); display: inline-block;
-    }
-    .arrow-icon.rotated { transform: rotate(180deg); }
-
-    .accordion-content {
-      max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-10px);
-      transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, transform 0.35s ease;
-      margin-top: 0;
-    }
-    .accordion-content.expanded { 
-      max-height: 4000px; opacity: 1; transform: translateY(0); margin-top: 16px; 
-    }
-
-    .source-mode-choice-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px;
-    }
-    .source-choice-btn {
-      border: 1.5px solid var(--border); border-radius: 10px; padding: 14px;
-      cursor: pointer; background: var(--card); font-weight: 700; font-size: 0.9rem;
-      text-align: center; color: var(--text); transition: all 0.25s ease;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .source-choice-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .source-choice-btn.selected {
-      border-color: var(--primary); background: var(--primary); color: #ffffff;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-    }
-
-    .section-box {
-      border: 1.5px solid var(--border); border-radius: 10px; padding: 15px 16px;
-      margin-bottom: 12px; background: var(--card-subtle); transition: border-color 0.2s ease;
-    }
-    .section-box:hover { border-color: rgba(2, 132, 199, 0.4); }
-    
-    .section-header-edit {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px;
-    }
-    .section-header-edit .left-block { display: flex; align-items: center; gap: 8px; flex: 1; }
-    .editable-sec-title {
-      font-weight: 700; font-size: 0.95rem; border: 1.5px solid transparent; background: transparent; color: var(--text);
-      padding: 4px 8px; border-radius: 6px; outline: none; width: 100%; transition: all 0.2s ease;
-    }
-    .editable-sec-title:focus { border-color: var(--primary); background: var(--input-bg); }
-
-    .btn-add-sec {
-      background: var(--card-subtle); color: var(--primary); border: 2px dashed var(--primary);
-      width: 100%; padding: 13px; border-radius: 10px; font-weight: 700; cursor: pointer;
-      font-size: 0.92rem; margin-top: 8px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .btn-add-sec:hover { background: var(--primary-light); transform: translateY(-2px); }
-
-    #marksValidationBox {
-      display: none; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; margin-top: 14px;
-      background-color: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger-text);
-      justify-content: space-between; align-items: center;
-    }
-
-    .btn-generate {
-      background: linear-gradient(135deg, var(--primary), #0369a1); 
-      color: #ffffff; border: none; padding: 14px 26px;
-      border-radius: 10px; font-size: 1.02rem; font-weight: 700; cursor: pointer; width: 100%;
-      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .btn-generate:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4); }
-    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-
-    #statusMessage { font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-top: 10px; text-align: center; }
-
-    .paper-toolbar {
-      display: flex; flex-direction: column; gap: 12px;
-      background: var(--card); border: 1.5px solid var(--border); padding: 14px 18px;
-      border-radius: 10px; margin-bottom: 14px;
-    }
-    .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .toolbar-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .toolbar-group label { margin: 0; text-transform: none; font-size: 0.85rem; color: var(--text); }
-
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #94a3b8; transition: .25s ease; border-radius: 24px;
-    }
-    .slider:before {
-      position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px;
-      background-color: white; transition: .25s ease; border-radius: 50%;
-    }
-    input:checked + .slider { background-color: var(--primary); }
-    input:checked + .slider:before { transform: translateX(20px); }
-
-    /* A4 Paper Layout */
-    .a4-page {
-      background: #ffffff !important; color: #111827 !important;
-      width: 210mm; min-height: 297mm; padding: 16mm 18mm; margin: 0 auto;
-      box-shadow: var(--paper-shadow); border-radius: 2px;
-      line-height: 1.35; outline: none;
-      font-family: var(--paper-font) !important; font-size: var(--paper-size) !important;
-    }
-    .a4-page, .a4-page * { font-family: var(--paper-font) !important; }
-    .a4-page[contenteditable="true"] { box-shadow: 0 0 0 3px var(--primary); }
-
-    .paper-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; }
-    .paper-header h1 { font-size: 1.35em !important; text-transform: uppercase; margin-bottom: 2px; font-weight: bold; }
-    .paper-header h3 { font-size: 1.1em !important; font-weight: normal; margin-bottom: 5px; }
-    .meta-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 3px; font-size: 0.95em !important; }
-    .student-fields { display: flex; justify-content: space-between; border-top: 1px dashed #444; padding-top: 4px; margin-top: 4px; font-size: 0.9em !important; }
-
-    .general-instructions { border: 1px solid #777; padding: 4px 8px; margin: 8px 0 10px; font-size: 0.88em !important; font-style: italic; }
-
-    .sec-block { page-break-inside: auto; margin-top: 18px !important; margin-bottom: 8px !important; }
-    .sec-title { 
-      font-weight: bold; text-decoration: underline; margin-bottom: 6px !important;
-      font-size: 1em !important; display: flex; justify-content: space-between; align-items: baseline;
-    }
-    .sec-marks-total { font-weight: bold; text-decoration: none; white-space: nowrap; margin-left: 12px; }
-
-    .q-item { page-break-inside: avoid; margin-bottom: 5px !important; display: block; text-align: left; }
-    .q-line { display: block; line-height: 1.3 !important; }
-    .q-num { font-weight: bold; margin-right: 6px; display: inline; white-space: nowrap; }
-    .q-text { display: inline; }
-
-    .mcq-options { 
-      margin-top: 3px !important; margin-bottom: 4px !important;
-      padding-left: 20px; font-size: 0.95em !important;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; 
-    }
-
-    .diagram-container { text-align: center; margin: 6px 0; page-break-inside: avoid; }
-    .diagram-container img { max-width: 85%; max-height: 220px; object-fit: contain; border: 1px solid #666; padding: 3px; }
-
-    .history-item {
-      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 10px;
-      padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px;
-      transition: all 0.2s ease;
-    }
-    .history-item:hover { border-color: var(--primary); transform: translateY(-1px); }
-    .history-meta h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .history-meta p { font-size: 0.85rem; color: var(--text-muted); }
-    .history-actions { display: flex; gap: 8px; }
-
-    .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
-    .stat-card { 
-      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 12px; 
-      padding: 18px; text-align: center; transition: all 0.2s ease;
-    }
-    .stat-card:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .stat-card span { font-size: 0.82rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
-    .stat-card h3 { font-size: 1.9rem; color: var(--primary); margin-top: 6px; }
-
-    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
-    .data-table th, .data-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
-    .data-table th { background: var(--card-subtle); font-weight: bold; color: var(--text); }
-    .data-table tr:hover { background: rgba(2, 132, 199, 0.04); }
-
-    /* Double Back Toast */
-    #backToast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.94); color: #fff; padding: 10px 22px;
-      border-radius: 30px; font-size: 0.85rem; font-weight: 600;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3); z-index: 10000;
-      display: none; animation: fadeInOut 2s ease forwards;
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, 10px); }
-      15% { opacity: 1; transform: translate(-50%, 0); }
-      85% { opacity: 1; transform: translate(-50%, 0); }
-      100% { opacity: 0; transform: translate(-50%, 10px); }
-    }
-
-    @media print {
-      body { background: #fff; padding: 0; margin: 0; }
-      .no-print { display: none !important; }
-      .container { max-width: 100%; margin: 0; padding: 0; }
-      .card { border: none; box-shadow: none; padding: 0; }
-      .a4-page { box-shadow: none !important; border: none; width: 100%; min-height: auto; padding: 0; margin: 0; }
-      @page { size: A4 portrait; margin: 15mm; }
-    }
-  </style>
+  <!-- Optional In-Browser OCR (Gracefully ignored if unreachable) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
 
-<div id="backToast">Press back again to exit</div>
-
-<!-- IN-APP LOCK SCREEN OVERLAY -->
-<div id="lockOverlay">
-  <div class="auth-card" style="text-align: center;">
-    <h2>🔒 App Locked</h2>
-    <p>Enter your App Lock credential to continue.</p>
-    <div style="margin-bottom: 14px;">
-      <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" style="text-align: center; font-size: 1.1rem; letter-spacing: 2px;">
-    </div>
-    <button onclick="unlockApp()" class="btn-generate" style="margin-bottom: 10px;">Unlock App</button>
-  </div>
-</div>
-
-<!-- INTERACTIVE CIRCULAR IMAGE CROPPER MODAL -->
-<div id="cropperOverlay">
-  <div class="cropper-card">
-    <h3 style="font-size: 1.1rem; color: var(--primary);">Crop Profile Picture</h3>
-    <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Drag photo to reposition inside circle</p>
-    
-    <div class="cropper-viewport-wrap">
-      <div class="cropper-viewport" id="cropperViewport">
-        <img id="cropperImage" class="cropper-img" src="">
-      </div>
-    </div>
-
-    <div style="width: 100%; display: flex; align-items: center; gap: 10px;">
-      <span style="font-size: 0.8rem; font-weight: bold;">Zoom:</span>
-      <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" oninput="onCropZoom(this.value)" style="flex: 1;">
-    </div>
-
-    <div style="display: flex; gap: 10px; width: 100%;">
-      <button onclick="cancelCrop()" style="flex: 1; background: var(--card-subtle); color: var(--text); border: 1.5px solid var(--border); padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">Cancel</button>
-      <button onclick="applyCrop()" style="flex: 1; background: var(--primary); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">Apply Crop</button>
-    </div>
-  </div>
-</div>
-
-<!-- SLIDE-OUT LEFT DRAWER -->
-<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
-<div class="side-drawer" id="sideDrawer">
-  <div class="drawer-header">
-    <h3>⚙️ Menu & Settings</h3>
-    <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
+  <!-- Accessible Toast -->
+  <div id="backToast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+    Press back again to exit
   </div>
 
-  <div class="drawer-scroll-body">
-    
-    <!-- Profile Card -->
-    <div>
-      <div class="drawer-section-title">Teacher Profile</div>
-      <div class="drawer-profile-card" onclick="goToProfilePage()">
-        <div class="drawer-profile-top">
-          <img id="drawerAvatarImg" class="drawer-avatar" src="" style="display: none;">
-          <div id="drawerAvatarFallback" class="drawer-avatar">👤</div>
-          <div class="drawer-profile-info">
-            <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
-            <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
-            <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
-            <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
-          </div>
-        </div>
+  <!-- IN-APP LOCK SCREEN MODAL -->
+  <div id="lockOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lockTitle" hidden>
+    <div class="auth-card text-center">
+      <h2 id="lockTitle">🔒 App Locked</h2>
+      <p>Enter your App Lock credential to continue.</p>
+      <div class="form-group">
+        <label for="appLockInput" class="sr-only">App Lock PIN or Password</label>
+        <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" class="input-center tracking-wide">
       </div>
-    </div>
-
-    <!-- Navigation & Vault inside Drawer -->
-    <div>
-      <div class="drawer-section-title">Navigation & Vault</div>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div class="drawer-item" onclick="goToHomePage()">
-          <span>🏠 Home Page</span>
-        </div>
-        <div class="drawer-item" onclick="openVaultFromDrawer()">
-          <span>📚 Saved Papers Vault</span>
-        </div>
-        <div class="drawer-item" id="drawerAdminItem" onclick="openAdminFromDrawer()" style="display: none;">
-          <span>🛡️ Admin Dashboard</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Application Settings -->
-    <div>
-      <div class="drawer-section-title">Preferences & Security</div>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div class="drawer-item" onclick="toggleTheme()">
-          <span>Theme Mode</span>
-          <span id="drawerThemeLabel" style="font-size: 0.85rem; color: var(--text-muted);">🌙 Dark</span>
-        </div>
-
-        <div class="drawer-item" onclick="manageAppLock()">
-          <span>App Screen Lock</span>
-        </div>
-
-        <div class="drawer-item" onclick="shareApp()">
-          <span>Share Application</span>
-        </div>
-
-        <div class="drawer-item" onclick="goToAboutPage()">
-          <span>ℹ️ About Application</span>
-        </div>
-
-        <div class="drawer-item" onclick="switchProfile()" style="color: var(--danger-text); border-color: var(--danger-border); background: var(--danger-bg);">
-          <span>Sign Out / Switch Profile</span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- AUTHENTICATION OVERLAY -->
-<div id="authOverlay">
-  <div class="auth-card">
-    <h2 id="authHeading">Staff Sign In</h2>
-    <p id="authSubHeading">Sign in with your username & credentials.</p>
-
-    <div class="auth-nav">
-      <button class="active" id="navSignIn" onclick="setAuthMode('signin')">Sign In</button>
-      <button id="navSignUp" onclick="setAuthMode('signup')">Sign Up</button>
-    </div>
-
-    <div style="margin-bottom: 12px;">
-      <label>Username</label>
-      <input type="text" id="authUsernameInput" value="" placeholder="" oninput="sanitizeUsername(this)">
-      <span class="auth-hint">Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters.</span>
-    </div>
-
-    <div id="signUpFields" style="display: none;">
-      <div style="margin-bottom: 12px;">
-        <label>Full Name (Displayed in Profile)</label>
-        <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
-      </div>
-
-      <div style="margin-bottom: 12px;">
-        <label>Mobile Number</label>
-        <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
-      </div>
-
-      <div style="margin-bottom: 12px;">
-        <label>Teaching Subject</label>
-        <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
-      </div>
-
-      <div style="margin-bottom: 12px;">
-        <label>Profile Picture (With In-App Crop)</label>
-        <input type="file" id="regAvatarFile" accept="image/*" onchange="startCropper(this, 'signup')">
-        <input type="hidden" id="regCroppedAvatarData">
-        <div id="regAvatarPreviewWrap" style="display: none; align-items: center; gap: 10px; margin-top: 8px;">
-          <img id="regAvatarPreview" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
-          <span style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: bold;">✓ Photo cropped</span>
-        </div>
-      </div>
-    </div>
-
-    <label>Credential Type</label>
-    <div class="auth-type-pill">
-      <button class="active" id="btnAuthPassword" onclick="setAuthType('password')">🔏 Password</button>
-      <button id="btnAuthPin" onclick="setAuthType('pin')">🔢 PIN Code</button>
-    </div>
-
-    <div id="authInputPassword">
-      <label>Password</label>
-      <input type="password" id="authPassword" value="" placeholder="">
-      <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
-    </div>
-
-    <div id="authInputPin" style="display: none;">
-      <label>PIN Code</label>
-      <input type="password" id="authPin" maxlength="10" value="" placeholder="" oninput="sanitizePin(this)">
-      <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
-    </div>
-
-    <button onclick="handleAuthSubmit()" id="authSubmitBtn" class="btn-generate" style="margin-top: 18px;">Sign In</button>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- TOP APP HEADER -->
-  <div class="app-header no-print" id="mainHomeHeader">
-    <div class="header-watermark"></div>
-    
-    <button class="menu-lines-btn" onclick="openDrawer()" title="Menu, Profile, Vault & Settings">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-    
-    <div class="header-center-title">
-      <h1>Exam Paper <span>Creator</span></h1>
-    </div>
-
-    <div style="width: 42px;"></div>
-  </div>
-
-  <!-- PAGE 1: HOME PAGE (CREATE PAPER VIEW) -->
-  <div id="pageCreate" class="page-view">
-    
-    <div class="card no-print">
-      <h2>1. Examination Details & Header Settings</h2>
-      <div class="grid-2">
-        <div>
-          <label>Institution / School / College Name</label>
-          <input type="text" id="instName" value="" placeholder="" oninput="cacheHeaderSettings()">
-        </div>
-        <div>
-          <label>Examination Title</label>
-          <input type="text" id="examTitle" value="" placeholder="" oninput="cacheHeaderSettings()">
-        </div>
-      </div>
-
-      <div class="grid-4" style="margin-top: 12px;">
-        <div>
-          <label>Subject</label>
-          <input type="text" id="subject" value="" placeholder="" oninput="cacheHeaderSettings()">
-        </div>
-        <div>
-          <label>Class / Grade</label>
-          <input type="text" id="grade" value="" placeholder="" oninput="cacheHeaderSettings()">
-        </div>
-        <div>
-          <label>Time Allowed</label>
-          <input type="text" id="duration" value="" placeholder="" oninput="cacheHeaderSettings()">
-        </div>
-        <div>
-          <label>Total Max Marks (Target)</label>
-          <input type="number" id="maxMarks" value="25" min="1" oninput="calculateAndValidateMarks()">
-        </div>
-      </div>
-
-      <div class="checkbox-group">
-        <label><input type="checkbox" id="incName" checked> Name Line</label>
-        <label><input type="checkbox" id="incRoll" checked> Register / Roll No</label>
-        <label><input type="checkbox" id="incSec" checked> Section</label>
-        <label><input type="checkbox" id="incDate" checked> Date</label>
-      </div>
-
-      <div style="margin-top: 12px;">
-        <label>General Instructions for Students (Optional):</label>
-        <input type="text" id="genInst" value="" placeholder="" oninput="cacheHeaderSettings()">
-      </div>
-    </div>
-
-    <!-- 2. SOURCE MATERIAL UPLOAD -->
-    <div class="card no-print">
-      <h2>2. Source Material Upload Mode</h2>
-
-      <div class="accordion-trigger" onclick="toggleSourceAccordion()" style="margin-bottom: 12px;">
-        <h2>
-          <span id="activeModeSummaryLabel">📂 Mode: Question Bank / Exercises</span>
-        </h2>
-        <span class="arrow-icon" id="sourceAccordionArrow">▼</span>
-      </div>
-
-      <div class="accordion-content" id="sourceAccordionContent">
-        <div class="source-mode-choice-grid">
-          <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" onclick="selectUploadMode('existing')">
-            📚 Question Bank / Exercises
-          </button>
-          <button type="button" class="source-choice-btn" id="btnChoiceLesson" onclick="selectUploadMode('lesson')">
-            📖 Textbook Lesson Pages
-          </button>
-        </div>
-      </div>
-
-      <div style="margin-top: 10px;">
-        <label id="uploadLabel">Upload Question Bank Documents (Photos / Scans / PDFs in Any Language):</label>
-        <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
-        <small id="uploadHintText" style="display:block; margin-top: 5px; color: var(--text-muted);">
-          Extracting existing questions and options directly into the exam blueprint.
-        </small>
-      </div>
-    </div>
-
-    <!-- 3. ANIMATED IN-PAGE COLLAPSIBLE SECTIONS ACCORDION -->
-    <div class="card no-print">
-      <div class="accordion-trigger" onclick="toggleSectionsAccordion()">
-        <h2>
-          <span>⚙️ 3. Question Paper Structure & Sections</span>
-          <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Customize Sections A, B, C, D, E, F & Custom Sections)</span>
-        </h2>
-        <span class="arrow-icon" id="accordionArrow">▼</span>
-      </div>
-
-      <div class="accordion-content" id="sectionsAccordionContent">
-        <div id="dynamicSectionsContainer">
-          <!-- Section A: MCQs -->
-          <div class="section-box" id="sec_card_mcq">
-            <div class="section-header-edit">
-              <div class="left-block">
-                <input type="checkbox" id="use_mcq" checked onchange="toggleSec('mcq')">
-                <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
-              </div>
-            </div>
-            <div id="box_mcq" class="grid-4">
-              <div>
-                <label>Question Count</label>
-                <input type="number" id="count_mcq" value="4" min="0" oninput="calculateAndValidateMarks()">
-              </div>
-              <div>
-                <label>Marks Each</label>
-                <input type="number" id="marks_mcq" value="1" min="1" oninput="calculateAndValidateMarks()">
-              </div>
-              <div style="grid-column: span 2;">
-                <label>Instructions Heading</label>
-                <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section B: 1-Word / Sentence -->
-          <div class="section-box" id="sec_card_1m">
-            <div class="section-header-edit">
-              <div class="left-block">
-                <input type="checkbox" id="use_1m" checked onchange="toggleSec('1m')">
-                <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
-              </div>
-            </div>
-            <div id="box_1m" class="grid-4">
-              <div>
-                <label>Question Count</label>
-                <input type="number" id="count_1m" value="3" min="0" oninput="calculateAndValidateMarks()">
-              </div>
-              <div>
-                <label>Marks Each</label>
-                <input type="number" id="marks_1m" value="1" min="1" oninput="calculateAndValidateMarks()">
-              </div>
-              <div style="grid-column: span 2;">
-                <label>Instructions Heading</label>
-                <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section C: Short Answers -->
-          <div class="section-box" id="sec_card_2m">
-            <div class="section-header-edit">
-              <div class="left-block">
-                <input type="checkbox" id="use_2m" checked onchange="toggleSec('2m')">
-                <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
-              </div>
-            </div>
-            <div id="box_2m" class="grid-4">
-              <div>
-                <label>Question Count</label>
-                <input type="number" id="count_2m" value="3" min="0" oninput="calculateAndValidateMarks()">
-              </div>
-              <div>
-                <label>Marks Each</label>
-                <input type="number" id="marks_2m" value="2" min="1" oninput="calculateAndValidateMarks()">
-              </div>
-              <div style="grid-column: span 2;">
-                <label>Instructions Heading</label>
-                <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section D: Brief Explanations -->
-          <div class="section-box" id="sec_card_3m">
-            <div class="section-header-edit">
-              <div class="left-block">
-                <input type="checkbox" id="use_3m" checked onchange="toggleSec('3m')">
-                <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
-              </div>
-            </div>
-            <div id="box_3m" class="grid-4">
-              <div>
-                <label>Question Count</label>
-                <input type="number" id="count_3m" value="2" min="0" oninput="calculateAndValidateMarks()">
-              </div>
-              <div>
-                <label>Marks Each</label>
-                <input type="number" id="marks_3m" value="3" min="1" oninput="calculateAndValidateMarks()">
-              </div>
-              <div style="grid-column: span 2;">
-                <label>Instructions Heading</label>
-                <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section E: Long Answers -->
-          <div class="section-box" id="sec_card_4m">
-            <div class="section-header-edit">
-              <div class="left-block">
-                <input type="checkbox" id="use_4m" checked onchange="toggleSec('4m')">
-                <input type="text" class="editable-sec-title" id="title_4m" value="Section E: Long Answers / Detailed Questions">
-              </div>
-            </div>
-            <div id="box_4m" class="grid-4">
-              <div>
-                <label>Question Count</label>
-                <input type="number" id="count_4m" value="1" min="0" oninput="calculateAndValidateMarks()">
-              </div>
-              <div>
-                <label>Marks Each</label>
-                <input type="number" id="marks_4m" value="4" min="1" oninput="calculateAndValidateMarks()">
-              </div>
-              <div style="grid-column: span 2;">
-                <label>Instructions Heading</label>
-                <input type="text" id="inst_4m" value="V. Answer the following questions in detail:">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section F: Map / Diagram -->
-          <div class="section-box" id="sec_card_diag">
-            <div class="section-header-edit">
-              <div class="left-block">
-                <input type="checkbox" id="use_diag" checked onchange="toggleSec('diag')">
-                <input type="text" class="editable-sec-title" id="title_diag" value="Section F: Map / Diagram / Graph Question">
-              </div>
-            </div>
-            <div id="box_diag" class="grid-2">
-              <div>
-                <label>Upload Map Outline, Diagram, or Graph Photo</label>
-                <input type="file" id="diagImage" accept="image/*">
-              </div>
-              <div class="grid-2">
-                <div>
-                  <label>Question Marks</label>
-                  <input type="number" id="marks_diag" value="2" min="1" oninput="calculateAndValidateMarks()">
-                </div>
-                <div>
-                  <label>Section Heading</label>
-                  <input type="text" id="inst_diag" value="VI. Map / Diagram Based Question:">
-                </div>
-              </div>
-              <div style="grid-column: span 2;">
-                <label>Question Description / Sub-points</label>
-                <textarea id="diagDesc" rows="2" placeholder=""></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-add-sec" onclick="addNewCustomSection()">➕ Add Extra Custom Section (With Photo / Graph / Diagram Option)</button>
-      </div>
-
-      <div id="marksValidationBox">
-        <span id="marksSummaryText"></span>
-        <span>❌ Check Marks</span>
-      </div>
-
-      <div style="margin-top: 18px;">
-        <button id="genBtn" class="btn-generate" onclick="startGeneration()">⚡ Generate Exam Paper</button>
-        <div id="statusMessage"></div>
-      </div>
-    </div>
-
-    <!-- Paper Toolbar & Preview -->
-    <div class="card" id="paperCard" style="display: none;">
-      <div class="paper-toolbar no-print">
-        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 10px;">
-          <label style="min-width: 175px;"><b>📝 Paper / File Name:</b></label>
-          <input type="text" id="paperCustomName" placeholder="" style="font-weight: 700; color: var(--primary);">
-        </div>
-
-        <div class="toolbar-row">
-          <div class="toolbar-group">
-            <div style="display: flex; align-items: center; gap: 8px; border-right: 1.5px solid var(--border); padding-right: 14px;">
-              <span style="font-size: 0.85rem; font-weight: 600;">Direct Edit:</span>
-              <label class="switch">
-                <input type="checkbox" id="editToggle" onchange="toggleEditMode(this.checked)">
-                <span class="slider"></span>
-              </label>
-              <span id="editBadge" style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">Locked</span>
-            </div>
-
-            <div>
-              <label><b>Font:</b></label>
-              <select id="fontSelector" onchange="changePaperFont(this.value)" style="width: auto; min-width: 180px;">
-                <optgroup label="Academic & Standard Serifs">
-                  <option value="'Tinos', 'Noto Serif', serif" selected>Academic Serif (Default)</option>
-                  <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                  <option value="'EB Garamond', serif">EB Garamond</option>
-                  <option value="'Merriweather', serif">Merriweather</option>
-                  <option value="'Lora', serif">Lora</option>
-                  <option value="'PT Serif', serif">PT Serif</option>
-                  <option value="'Playfair Display', serif">Playfair Display</option>
-                  <option value="'Cinzel', serif">Cinzel (Classical)</option>
-                </optgroup>
-                <optgroup label="Languages (Indian & Arabic)">
-                  <option value="'Noto Sans Kannada', sans-serif">Kannada (ಕನ್ನಡ)</option>
-                  <option value="'Noto Sans Devanagari', sans-serif">Hindi / Sanskrit (हिंदी)</option>
-                  <option value="'Noto Naskh Arabic', serif">Arabic / Urdu (العربية)</option>
-                </optgroup>
-                <optgroup label="Modern Sans (Science / Maths)">
-                  <option value="'Roboto', sans-serif">Roboto</option>
-                  <option value="'Open Sans', sans-serif">Open Sans</option>
-                  <option value="'Poppins', sans-serif">Poppins</option>
-                  <option value="'Montserrat', sans-serif">Montserrat</option>
-                </optgroup>
-                <optgroup label="Monospace / Technical">
-                  <option value="'Courier New', Courier, monospace">Courier New</option>
-                </optgroup>
-              </select>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <label><b>Size:</b></label>
-              <input type="range" id="fontSizeSlider" min="8" max="16" step="0.5" value="10.5" oninput="changePaperFontSize(this.value)" style="width: 90px;">
-              <span id="fontSizeDisplay" style="font-size: 0.85rem; font-weight: bold; width: 45px;">10.5pt</span>
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 10px;">
-            <button onclick="saveCurrentPaperToHistory()" style="background-color: #0284c7; color: #fff; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">💾 Save to Vault</button>
-            <button onclick="printCurrentPaper()" style="background-color: var(--accent-emerald); color: #fff; padding: 10px 18px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">🖨️ Print / PDF</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="a4-page" id="paperPreview" contenteditable="false" spellcheck="false"></div>
-    </div>
-
-  </div>
-
-  <!-- PAGE 2: SAVED PAPERS VAULT VIEW -->
-  <div id="pageHistory" class="page-view hidden">
-    <div class="card no-print">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
-        <h2 style="border: none; margin: 0; padding: 0;">📚 Saved Exam Papers Vault</h2>
-        <button onclick="clearMyHistory()" style="background: var(--danger-bg); color: var(--danger-text); border: 1.5px solid var(--danger-border); padding: 7px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer;">Clear Vault</button>
-      </div>
-
-      <div id="historyListContainer"></div>
+      <button type="button" id="btnUnlockApp" class="btn-generate">Unlock App</button>
     </div>
   </div>
 
-  <!-- PAGE 3: DEDICATED PROFILE EDITOR PAGE -->
-  <div id="pageProfile" class="page-view hidden">
-    <div class="card no-print">
-      <h2 style="margin-bottom: 16px;">👤 Edit Profile & Account Details</h2>
-
-      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 520px; margin: 0 auto;">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <img id="profilePageAvatarImg" class="drawer-avatar" src="" style="width: 76px; height: 76px; display: none;">
-          <div id="profilePageAvatarFallback" class="drawer-avatar" style="width: 76px; height: 76px; font-size: 2.2rem;">👤</div>
-          <div style="flex: 1;">
-            <label>Crop / Update Profile Photo</label>
-            <input type="file" id="profilePageAvatarInput" accept="image/*" onchange="startCropper(this, 'profile')">
-          </div>
-        </div>
-
-        <div>
-          <label>Username (Strictly lowercase letters, a-z)</label>
-          <input type="text" id="profilePageUsername" oninput="sanitizeUsername(this)">
-          <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
-        </div>
-
-        <div>
-          <label>Full Name (Displayed in App)</label>
-          <input type="text" id="profilePageFullName" placeholder="e.g. Ismail Tharfeed">
-        </div>
-
-        <div>
-          <label>Mobile Number</label>
-          <input type="tel" id="profilePagePhone" placeholder="e.g. +91 9483061904">
-        </div>
-
-        <div>
-          <label>Teaching Subject</label>
-          <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
-        </div>
-
-        <div>
-          <label>Class / Grade</label>
-          <input type="text" id="profilePageClass" placeholder="e.g. 10th Standard">
-        </div>
-
-        <button onclick="saveProfileFromPage()" class="btn-generate" style="margin-top: 10px;">💾 Save All Changes</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAGE 4: DEDICATED ABOUT APPLICATION PAGE -->
-  <div id="pageAbout" class="page-view hidden">
-    <div class="card no-print">
-      <h2 style="margin-bottom: 16px;">ℹ️ About Application</h2>
-
-      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px; margin: 0 auto; line-height: 1.7; font-size: 0.96rem;">
-        <p>This exam paper creator application is a specialized platform designed to simplify the entire question paper preparation workflow for teachers and institutions. <strong>This app is created by Ismail Tharfeed, and this is a contact number +919483061904.</strong> It allows educators to generate standardized question papers either by scanning existing question banks or directly extracting conceptual questions from textbook lesson reading pages. The app automatically calculates blueprint marks, ensures clean layout formatting, and preserves question history securely on your device. Thank you for utilizing this application to streamline school and college examination management.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAGE 5: ADMIN MASTER DASHBOARD -->
-  <div id="pageAdmin" class="page-view hidden">
-    <div class="card no-print">
-      <h2 style="margin-bottom: 16px;">🛡️ Administrator Central Control</h2>
+  <!-- CIRCULAR IMAGE CROPPER MODAL -->
+  <div id="cropperOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cropperTitle" hidden>
+    <div class="cropper-card">
+      <h3 id="cropperTitle" class="color-primary">Crop Profile Picture</h3>
+      <p class="text-subtle text-center text-sm">Drag photo to reposition inside circle</p>
       
-      <div class="admin-stats-grid">
-        <div class="stat-card">
-          <span>Registered Staff</span>
-          <h3 id="admStatStaff">0</h3>
-        </div>
-        <div class="stat-card">
-          <span>Total Sign-Ins</span>
-          <h3 id="admStatLogins">0</h3>
-        </div>
-        <div class="stat-card">
-          <span>Total Papers Created</span>
-          <h3 id="admStatPapers">0</h3>
+      <div class="cropper-viewport-wrap">
+        <div class="cropper-viewport" id="cropperViewport" tabindex="0" role="region" aria-label="Image Cropping Viewport">
+          <img id="cropperImage" class="cropper-img" src="" alt="Cropping preview">
         </div>
       </div>
 
-      <h3 style="margin-top: 15px; margin-bottom: 8px;">Registered Staff Accounts & Credentials</h3>
-      <div style="overflow-x: auto;">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Full Name</th>
-              <th>Subject</th>
-              <th>Class</th>
-              <th>Phone</th>
-              <th>Auth Type</th>
-              <th>Vault Papers</th>
-            </tr>
-          </thead>
-          <tbody id="admStaffTableBody"></tbody>
-        </table>
+      <div class="zoom-controls">
+        <label for="cropZoomSlider" class="text-sm font-bold">Zoom:</label>
+        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider">
       </div>
 
-      <div style="display:flex; justify-content: space-between; align-items: baseline; margin-top: 25px; margin-bottom: 8px;">
-        <h3>Login & Access Audit Logs</h3>
-        <button onclick="clearAdminLogs()" style="background: transparent; border: none; font-size: 0.8rem; color: var(--primary); cursor: pointer; text-decoration: underline;">Clear Audit Log</button>
+      <div class="button-row">
+        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1">Cancel</button>
+        <button type="button" id="btnApplyCrop" class="btn-primary flex-1">Apply Crop</button>
       </div>
-      <div style="overflow-x: auto; max-height: 250px; overflow-y: auto;">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Username</th>
-              <th>Action Event</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="admLogsTableBody"></tbody>
-        </table>
-      </div>
-
-      <h3 style="margin-top: 25px; margin-bottom: 8px;">Master Question Paper Directory</h3>
-      <div id="admPapersContainer"></div>
     </div>
   </div>
 
-</div>
-
-<script>
-  // =========================================================================
-  // ✂️ INTERACTIVE CIRCULAR TOUCH/MOUSE CROPPER ENGINE
-  // =========================================================================
-  let cropperTargetContext = null;
-  let rawImageElement = null;
-  let cropState = {
-    imgWidth: 0,
-    imgHeight: 0,
-    scale: 1,
-    baseScale: 1,
-    posX: 0,
-    posY: 0,
-    isDragging: false,
-    startX: 0,
-    startY: 0
-  };
-
-  function startCropper(fileInput, context) {
-    if (!fileInput.files || !fileInput.files[0]) return;
-    const file = fileInput.files[0];
-    cropperTargetContext = context;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        rawImageElement = img;
-        const cropImg = document.getElementById('cropperImage');
-        cropImg.src = e.target.result;
-
-        const viewportSize = 240;
-        cropState.imgWidth = img.width;
-        cropState.imgHeight = img.height;
-
-        cropState.baseScale = Math.max(viewportSize / img.width, viewportSize / img.height);
-        cropState.scale = cropState.baseScale;
-        cropState.posX = (viewportSize - img.width * cropState.scale) / 2;
-        cropState.posY = (viewportSize - img.height * cropState.scale) / 2;
-
-        document.getElementById('cropZoomSlider').value = 1;
-        updateCropperTransform();
-
-        document.getElementById('cropperOverlay').style.display = 'flex';
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function onCropZoom(zoomFactor) {
-    const viewportSize = 240;
-    const newScale = cropState.baseScale * parseFloat(zoomFactor);
-
-    const centerX = cropState.posX - viewportSize / 2;
-    const centerY = cropState.posY - viewportSize / 2;
-
-    cropState.posX = (centerX / cropState.scale) * newScale + viewportSize / 2;
-    cropState.posY = (centerY / cropState.scale) * newScale + viewportSize / 2;
-    cropState.scale = newScale;
-
-    updateCropperTransform();
-  }
-
-  function updateCropperTransform() {
-    const cropImg = document.getElementById('cropperImage');
-    cropImg.style.transform = `translate3d(${cropState.posX}px, ${cropState.posY}px, 0px) scale(${cropState.scale})`;
-  }
-
-  const cropperViewport = document.getElementById('cropperViewport');
-  
-  function handlePointerDown(e) {
-    cropState.isDragging = true;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    cropState.startX = clientX - cropState.posX;
-    cropState.startY = clientY - cropState.posY;
-    cropperViewport.style.cursor = 'grabbing';
-  }
-
-  function handlePointerMove(e) {
-    if (!cropState.isDragging) return;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    cropState.posX = clientX - cropState.startX;
-    cropState.posY = clientY - cropState.startY;
-    updateCropperTransform();
-  }
-
-  function handlePointerUp() {
-    cropState.isDragging = false;
-    cropperViewport.style.cursor = 'grab';
-  }
-
-  cropperViewport.addEventListener('mousedown', handlePointerDown);
-  window.addEventListener('mousemove', handlePointerMove);
-  window.addEventListener('mouseup', handlePointerUp);
-
-  cropperViewport.addEventListener('touchstart', handlePointerDown, { passive: false });
-  window.addEventListener('touchmove', handlePointerMove, { passive: false });
-  window.addEventListener('touchend', handlePointerUp);
-
-  function cancelCrop() {
-    document.getElementById('cropperOverlay').style.display = 'none';
-  }
-
-  function applyCrop() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const outputDim = 250;
-
-    canvas.width = outputDim;
-    canvas.height = outputDim;
-
-    const vpSize = 240;
-    const ratio = outputDim / vpSize;
-
-    ctx.beginPath();
-    ctx.arc(outputDim / 2, outputDim / 2, outputDim / 2, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.clip();
-
-    ctx.drawImage(
-      rawImageElement,
-      cropState.posX * ratio,
-      cropState.posY * ratio,
-      cropState.imgWidth * cropState.scale * ratio,
-      cropState.imgHeight * cropState.scale * ratio
-    );
-
-    const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-    if (cropperTargetContext === 'signup') {
-      document.getElementById('regCroppedAvatarData').value = croppedDataUrl;
-      const preview = document.getElementById('regAvatarPreview');
-      preview.src = croppedDataUrl;
-      document.getElementById('regAvatarPreviewWrap').style.display = 'flex';
-    } else if (cropperTargetContext === 'profile') {
-      const img = document.getElementById('profilePageAvatarImg');
-      img.src = croppedDataUrl;
-      img.style.display = 'block';
-      document.getElementById('profilePageAvatarFallback').style.display = 'none';
-    }
-
-    document.getElementById('cropperOverlay').style.display = 'none';
-  }
-
-  // =========================================================================
-  // 📚 TWO-OPTION SOURCE UPLOAD MODE HANDLER
-  // =========================================================================
-  let currentUploadMode = 'existing';
-
-  function selectUploadMode(mode) {
-    currentUploadMode = mode;
-    const btnExisting = document.getElementById('btnChoiceExisting');
-    const btnLesson = document.getElementById('btnChoiceLesson');
-    const uploadLabel = document.getElementById('uploadLabel');
-    const uploadHint = document.getElementById('uploadHintText');
-    const summaryLabel = document.getElementById('activeModeSummaryLabel');
-
-    if (mode === 'existing') {
-      btnExisting.classList.add('selected');
-      btnLesson.classList.remove('selected');
-      summaryLabel.innerText = "📂 Mode: Question Bank / Exercises";
-      uploadLabel.innerText = "Upload Question Bank Documents (Photos / Scans / PDFs in Any Language):";
-      uploadHint.innerText = "Extracting existing questions and options directly into the exam blueprint.";
-    } else {
-      btnExisting.classList.remove('selected');
-      btnLesson.classList.add('selected');
-      summaryLabel.innerText = "📖 Mode: Textbook Lesson Pages";
-      uploadLabel.innerText = "Upload Textbook Lesson Pages / Notes / Theory (Photos / Scans / PDFs):";
-      uploadHint.innerText = "The system will read the lesson text and formulate new questions matching your section structure.";
-    }
-
-    toggleSourceAccordion();
-  }
-
-  function toggleSourceAccordion() {
-    const content = document.getElementById('sourceAccordionContent');
-    const arrow = document.getElementById('sourceAccordionArrow');
-    const isExpanded = content.classList.contains('expanded');
-
-    if (isExpanded) {
-      content.classList.remove('expanded');
-      arrow.classList.remove('rotated');
-    } else {
-      content.classList.add('expanded');
-      arrow.classList.add('rotated');
-    }
-  }
-
-  // =========================================================================
-  // 🔽 COLLAPSIBLE ACCORDION FOR STRUCTURE (SECTION 3)
-  // =========================================================================
-  function toggleSectionsAccordion() {
-    const content = document.getElementById('sectionsAccordionContent');
-    const arrow = document.getElementById('accordionArrow');
-    const isExpanded = content.classList.contains('expanded');
-
-    if (isExpanded) {
-      content.classList.remove('expanded');
-      arrow.classList.remove('rotated');
-    } else {
-      content.classList.add('expanded');
-      arrow.classList.add('rotated');
-    }
-  }
-
-  // =========================================================================
-  // 🚪 LEFT NAVIGATION DRAWER
-  // =========================================================================
-  function openDrawer() {
-    document.getElementById('sideDrawer').classList.add('active');
-    document.getElementById('drawerBackdrop').classList.add('active');
-    document.body.classList.add('no-scroll');
-  }
-
-  function closeDrawer() {
-    document.getElementById('sideDrawer').classList.remove('active');
-    document.getElementById('drawerBackdrop').classList.remove('active');
-    document.body.classList.remove('no-scroll');
-  }
-
-  function goToHomePage() {
-    closeDrawer();
-    switchPage('create', false);
-  }
-
-  function openVaultFromDrawer() {
-    closeDrawer();
-    switchPage('history', true);
-  }
-
-  function openAdminFromDrawer() {
-    closeDrawer();
-    switchPage('admin', true);
-  }
-
-  function goToAboutPage() {
-    closeDrawer();
-    switchPage('about', true);
-  }
-
-  function goToProfilePage() {
-    closeDrawer();
-    if (!activeUser) return;
-    
-    document.getElementById('profilePageUsername').value = activeUser.name || "";
-    document.getElementById('profilePageFullName').value = activeUser.fullName || activeUser.name || "";
-    document.getElementById('profilePageSubject').value = activeUser.subject || "";
-    document.getElementById('profilePageClass').value = activeUser.userClass || "10th Standard";
-    document.getElementById('profilePagePhone').value = activeUser.phone || "";
-
-    const avatarImg = document.getElementById('profilePageAvatarImg');
-    const fallback = document.getElementById('profilePageAvatarFallback');
-
-    if (activeUser.avatar) {
-      avatarImg.src = activeUser.avatar;
-      avatarImg.style.display = 'block';
-      fallback.style.display = 'none';
-    } else {
-      avatarImg.style.display = 'none';
-      fallback.style.display = 'flex';
-      fallback.innerText = (activeUser.fullName || activeUser.name || "S").charAt(0).toUpperCase();
-    }
-
-    switchPage('profile', true);
-  }
-
-  function saveProfileFromPage() {
-    if (!activeUser) return;
-
-    const newUsername = document.getElementById('profilePageUsername').value.trim();
-    const newName = document.getElementById('profilePageFullName').value.trim();
-    const newSub = document.getElementById('profilePageSubject').value.trim();
-    const newClass = document.getElementById('profilePageClass').value.trim();
-    const newPhone = document.getElementById('profilePagePhone').value.trim();
-    const avatarImg = document.getElementById('profilePageAvatarImg');
-
-    if (!newUsername || !/^[a-z]+$/.test(newUsername)) {
-      alert("Username Error: Strictly small letters only (a-z).");
-      return;
-    }
-
-    const registry = getStaffRegistry();
-    const oldUsername = activeUser.name;
-
-    if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
-      alert("Username already taken. Please choose another username.");
-      return;
-    }
-
-    activeUser.name = newUsername;
-    activeUser.fullName = newName || newUsername;
-    activeUser.subject = newSub || "General";
-    activeUser.userClass = newClass || "10th Standard";
-    activeUser.phone = newPhone;
-
-    if (avatarImg.src && avatarImg.src.startsWith('data:image')) {
-      activeUser.avatar = avatarImg.src;
-    }
-
-    const idx = registry.findIndex(s => s.name === oldUsername);
-    if (idx !== -1) {
-      registry[idx] = { ...registry[idx], ...activeUser };
-      saveStaffRegistry(registry);
-    }
-
-    localStorage.setItem('persistent_exam_user', JSON.stringify(activeUser));
-    syncProfileUI(activeUser);
-    
-    document.getElementById('subject').value = activeUser.subject || "";
-    document.getElementById('grade').value = activeUser.userClass || "";
-
-    alert("Profile and credentials saved successfully!");
-    history.back();
-  }
-
-  function syncProfileUI(user) {
-    if (!user) return;
-    const displayName = user.fullName || user.name || "Staff User";
-    document.getElementById('drawerProfileName').innerText = displayName;
-    document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
-    document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
-    document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
-
-    const avatarImg = document.getElementById('drawerAvatarImg');
-    const fallback = document.getElementById('drawerAvatarFallback');
-
-    if (user.avatar) {
-      avatarImg.src = user.avatar;
-      avatarImg.style.display = 'block';
-      fallback.style.display = 'none';
-    } else {
-      avatarImg.style.display = 'none';
-      fallback.style.display = 'flex';
-      fallback.innerText = displayName.charAt(0).toUpperCase();
-    }
-  }
-
-  // =========================================================================
-  // 🔒 IN-APP SECURITY LOCK LOGIC
-  // =========================================================================
-  function manageAppLock() {
-    const existingLock = localStorage.getItem('app_screen_lock_code');
-    if (existingLock) {
-      const choice = confirm("App Lock is currently enabled on this device.\n\nPress OK to Remove App Lock, or Cancel to change your PIN/Password.");
-      if (choice) {
-        localStorage.removeItem('app_screen_lock_code');
-        alert("App Lock has been removed successfully.");
-      } else {
-        const newCode = prompt("Enter new PIN / Password for App Lock:");
-        if (newCode && newCode.trim().length >= 4) {
-          localStorage.setItem('app_screen_lock_code', btoa(newCode.trim()));
-          alert("App Lock PIN / Password updated successfully.");
-        } else if (newCode) {
-          alert("App Lock PIN / Password must be at least 4 characters.");
-        }
-      }
-    } else {
-      const code = prompt("Set a PIN or Password to lock the app whenever it opens on this device:");
-      if (code && code.trim().length >= 4) {
-        localStorage.setItem('app_screen_lock_code', btoa(code.trim()));
-        alert("App Lock set successfully! You will be prompted to unlock when opening.");
-      } else if (code) {
-        alert("App Lock PIN / Password must be at least 4 characters.");
-      }
-    }
-  }
-
-  function checkAppLockOnLoad() {
-    const lockCode = localStorage.getItem('app_screen_lock_code');
-    if (lockCode) {
-      document.getElementById('lockOverlay').style.display = 'flex';
-      document.getElementById('appLockInput').value = '';
-      setTimeout(() => document.getElementById('appLockInput').focus(), 100);
-    }
-  }
-
-  function unlockApp() {
-    const lockCode = localStorage.getItem('app_screen_lock_code');
-    const entered = document.getElementById('appLockInput').value.trim();
-    if (!entered) {
-      alert("Please enter your App Lock PIN / Password.");
-      return;
-    }
-    if (btoa(entered) === lockCode) {
-      document.getElementById('lockOverlay').style.display = 'none';
-    } else {
-      alert("Incorrect App Lock PIN / Password. Access Denied.");
-      document.getElementById('appLockInput').value = '';
-    }
-  }
-
-  // =========================================================================
-  // 🛡️ MOBILE BACK BUTTON ROUTING
-  // =========================================================================
-  let lastBackPressTime = 0;
-  let currentPage = 'create';
-
-  function setupStrictMobileBackRouting() {
-    history.replaceState({ screen: 'create', drawerOpen: false }, null, location.href);
-
-    window.addEventListener('popstate', function (e) {
-      const state = e.state || {};
-
-      if (state.drawerOpen) {
-        setPageView('create');
-        openDrawer();
-        return;
-      }
-
-      const drawer = document.getElementById('sideDrawer');
-      if (drawer && drawer.classList.contains('active')) {
-        closeDrawer();
-        return;
-      }
-
-      if (state.screen === 'create' || !state.screen) {
-        setPageView('create');
-        const now = Date.now();
-        if (now - lastBackPressTime < 2000) {
-          history.back();
-        } else {
-          lastBackPressTime = now;
-          const toast = document.getElementById('backToast');
-          toast.style.display = 'block';
-          setTimeout(() => { toast.style.display = 'none'; }, 2000);
-        }
-        return;
-      }
-
-      setPageView(state.screen || 'create');
-    });
-  }
-
-  function setPageView(page) {
-    currentPage = page;
-    
-    const isHome = (page === 'create');
-    const headerElem = document.getElementById('mainHomeHeader');
-    if (headerElem) {
-      headerElem.style.display = isHome ? 'flex' : 'none';
-    }
-
-    document.getElementById('pageCreate').classList.toggle('hidden', page !== 'create');
-    document.getElementById('pageHistory').classList.toggle('hidden', page !== 'history');
-    document.getElementById('pageProfile').classList.toggle('hidden', page !== 'profile');
-    document.getElementById('pageAbout').classList.toggle('hidden', page !== 'about');
-    document.getElementById('pageAdmin').classList.toggle('hidden', page !== 'admin');
-
-    if (page === 'history') renderHistoryList();
-    if (page === 'admin') renderAdminDashboard();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function switchPage(page, fromDrawer = false) {
-    if (fromDrawer) {
-      history.pushState({ screen: 'create', drawerOpen: true }, null, location.href);
-      history.pushState({ screen: page, drawerOpen: false }, null, location.href);
-    } else {
-      history.pushState({ screen: page, drawerOpen: false }, null, location.href);
-    }
-    setPageView(page);
-  }
-
-  // =========================================================================
-  // 🔐 ADMIN & PERSISTENT AUTH CREDENTIALS
-  // =========================================================================
-  const ADMIN_CREDENTIALS = {
-    username: "admin",
-    secret: "Admin@2026"
-  };
-
-  let currentAuthMode = 'signin';
-  let currentAuthType = 'password';
-  let activeUser = null;
-  let customSectionCount = 0;
-
-  function sanitizeUsername(input) {
-    input.value = input.value.replace(/[^a-z]/g, '');
-  }
-
-  function sanitizePin(input) {
-    input.value = input.value.replace(/[^0-9]/g, '');
-  }
-
-  function getStaffRegistry() {
-    return JSON.parse(localStorage.getItem('exam_staff_registry')) || [];
-  }
-
-  function saveStaffRegistry(registry) {
-    localStorage.setItem('exam_staff_registry', JSON.stringify(registry));
-  }
-
-  function getAuditLogs() {
-    return JSON.parse(localStorage.getItem('exam_audit_logs')) || [];
-  }
-
-  function logAuditEvent(username, action, status) {
-    const logs = getAuditLogs();
-    logs.unshift({
-      time: new Date().toLocaleString(),
-      username: username || "anonymous",
-      action: action,
-      status: status
-    });
-    if (logs.length > 100) logs.pop();
-    localStorage.setItem('exam_audit_logs', JSON.stringify(logs));
-  }
-
-  function cacheHeaderSettings() {
-    if (!activeUser) return;
-    const settings = {
-      instName: document.getElementById('instName').value,
-      examTitle: document.getElementById('examTitle').value,
-      subject: document.getElementById('subject').value,
-      grade: document.getElementById('grade').value,
-      duration: document.getElementById('duration').value,
-      genInst: document.getElementById('genInst').value
-    };
-    localStorage.setItem(`exam_settings_${activeUser.id}`, JSON.stringify(settings));
-  }
-
-  function populateUserHeaderSettings(user) {
-    const saved = JSON.parse(localStorage.getItem(`exam_settings_${user.id}`));
-    if (saved) {
-      document.getElementById('instName').value = saved.instName || "KARNATAKA PUBLIC SCHOOL";
-      document.getElementById('examTitle').value = saved.examTitle || "Annual Examination - 2026";
-      document.getElementById('subject').value = saved.subject || user.subject || "";
-      document.getElementById('grade').value = saved.grade || user.userClass || "10th Standard";
-      document.getElementById('duration').value = saved.duration || "3 Hours";
-      document.getElementById('genInst').value = saved.genInst || "1. All sections are compulsory. 2. Write question numbers clearly.";
-    } else {
-      document.getElementById('instName').value = "KARNATAKA PUBLIC SCHOOL";
-      document.getElementById('examTitle').value = "Annual Examination - 2026";
-      document.getElementById('subject').value = user.subject || "Social Science";
-      document.getElementById('grade').value = user.userClass || "10th Standard";
-      document.getElementById('duration').value = "3 Hours";
-      document.getElementById('genInst').value = "1. All sections are compulsory. 2. Write question numbers clearly in the margin.";
-    }
-  }
-
-  function setAuthMode(mode) {
-    currentAuthMode = mode;
-    document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
-    document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
-    document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
-    document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Sign in with your username & credentials.' : 'Complete initial profile & security credentials.';
-    document.getElementById('signUpFields').style.display = mode === 'signup' ? 'block' : 'none';
-    document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register & Enter';
-    resetAuthInputs();
-  }
-
-  function setAuthType(type) {
-    currentAuthType = type;
-    document.getElementById('btnAuthPassword').classList.toggle('active', type === 'password');
-    document.getElementById('btnAuthPin').classList.toggle('active', type === 'pin');
-
-    document.getElementById('authInputPassword').style.display = type === 'password' ? 'block' : 'none';
-    document.getElementById('authInputPin').style.display = type === 'pin' ? 'block' : 'none';
-  }
-
-  function resetAuthInputs() {
-    document.getElementById('authUsernameInput').value = '';
-    document.getElementById('authPassword').value = '';
-    document.getElementById('authPin').value = '';
-    document.getElementById('regSubject').value = '';
-    document.getElementById('regFullName').value = '';
-    document.getElementById('regMobilePhone').value = '';
-    document.getElementById('regCroppedAvatarData').value = '';
-    document.getElementById('regAvatarPreviewWrap').style.display = 'none';
-  }
-
-  function countWords(str) {
-    if (!str) return 0;
-    return str.trim().split(/\s+/).filter(word => word.length > 0).length;
-  }
-
-  async function handleAuthSubmit() {
-    const registry = getStaffRegistry();
-    const typedUsername = document.getElementById('authUsernameInput').value;
-
-    const usernameRegex = /^[a-z]+$/;
-    if (!typedUsername || !usernameRegex.test(typedUsername)) {
-      alert("Username Error: Strictly small English letters only (a-z). No capitals, numbers, spaces, or characters allowed.");
-      return;
-    }
-
-    let enteredSecret = currentAuthType === 'password' 
-      ? document.getElementById('authPassword').value 
-      : document.getElementById('authPin').value;
-
-    if (currentAuthMode === 'signin' && typedUsername === ADMIN_CREDENTIALS.username) {
-      if (enteredSecret === ADMIN_CREDENTIALS.secret) {
-        const adminUser = {
-          id: 'admin_root',
-          name: 'admin',
-          fullName: 'Administrator',
-          subject: 'All Subjects (Admin)',
-          userClass: 'Administration',
-          phone: '+91 9483061904',
-          role: 'admin',
-          authType: 'password'
-        };
-        logAuditEvent("admin", "Admin Login", "Success");
-        loginSuccess(adminUser);
-        return;
-      } else {
-        logAuditEvent("admin", "Admin Login Attempt", "Failed: Wrong Credential");
-        alert("Incorrect Admin Credentials.");
-        return;
-      }
-    }
-
-    if (currentAuthType === 'password') {
-      const wordCount = countWords(enteredSecret);
-      if (wordCount <= 5) {
-        alert(`Password Error: Compulsory more than 5 words (current: ${wordCount} words). Please enter at least 6 separate words.`);
-        return;
-      }
-    }
-
-    if (currentAuthType === 'pin') {
-      if (!enteredSecret || enteredSecret.length <= 4 || !/^\d+$/.test(enteredSecret)) {
-        alert("PIN Error: Compulsory more than 4 numbers (minimum 5 digits).");
-        return;
-      }
-    }
-
-    if (currentAuthMode === 'signup') {
-      const subject = document.getElementById('regSubject').value.trim();
-      const fullName = document.getElementById('regFullName').value.trim() || typedUsername;
-      const mobile = document.getElementById('regMobilePhone').value.trim();
-      const croppedAvatar = document.getElementById('regCroppedAvatarData').value;
-
-      if (typedUsername === 'admin') {
-        alert("Username 'admin' is reserved. Choose another name.");
-        return;
-      }
-
-      const exists = registry.some(s => s.name === typedUsername);
-      if (exists) {
-        alert("This username already exists. Please choose a different username.");
-        return;
-      }
-
-      const newStaff = {
-        id: 'staff_' + Date.now(),
-        name: typedUsername,
-        fullName: fullName,
-        subject: subject || "General",
-        userClass: "10th Standard",
-        phone: mobile,
-        avatar: croppedAvatar || "",
-        authType: currentAuthType,
-        secret: btoa(enteredSecret),
-        createdAt: new Date().toLocaleDateString()
-      };
-
-      registry.push(newStaff);
-      saveStaffRegistry(registry);
-      logAuditEvent(typedUsername, "Staff Account Registered", "Success");
-      loginSuccess(newStaff);
-
-    } else {
-      const staff = registry.find(s => s.name === typedUsername);
-      if (!staff) {
-        logAuditEvent(typedUsername, "Staff Login Attempt", "Failed: User Not Found");
-        alert("Username not found. Please verify spelling or Sign Up.");
-        return;
-      }
-
-      if (currentAuthType !== staff.authType) {
-        alert(`This user account requires ${staff.authType.toUpperCase()}. Switched input type.`);
-        setAuthType(staff.authType);
-        return;
-      }
-
-      if (btoa(enteredSecret) === staff.secret) {
-        logAuditEvent(typedUsername, "Staff Login", "Success");
-        loginSuccess(staff);
-      } else {
-        logAuditEvent(typedUsername, "Staff Login Attempt", "Failed: Incorrect Credential");
-        alert("Incorrect credential. Access Denied.");
-      }
-    }
-  }
-
-  function loginSuccess(user) {
-    activeUser = user;
-    localStorage.setItem('persistent_exam_user', JSON.stringify(user));
-    document.getElementById('authOverlay').style.display = 'none';
-
-    syncProfileUI(user);
-    populateUserHeaderSettings(user);
-    resetAuthInputs();
-
-    const isAdmin = user.role === 'admin';
-    document.getElementById('drawerAdminItem').style.display = isAdmin ? 'flex' : 'none';
-
-    setPageView('create');
-  }
-
-  function switchProfile() {
-    closeDrawer();
-    activeUser = null;
-    localStorage.removeItem('persistent_exam_user');
-    document.getElementById('authOverlay').style.display = 'flex';
-    document.getElementById('drawerAdminItem').style.display = 'none';
-    setAuthMode('signin');
-  }
-
-  function addNewCustomSection() {
-    customSectionCount++;
-    const secId = `custom_${customSectionCount}`;
-    const container = document.getElementById('dynamicSectionsContainer');
-
-    const secDiv = document.createElement('div');
-    secDiv.className = 'section-box';
-    secDiv.id = `sec_card_${secId}`;
-
-    secDiv.innerHTML = `
-      <div class="section-header-edit">
-        <div class="left-block">
-          <input type="checkbox" id="use_${secId}" checked onchange="toggleSec('${secId}')">
-          <input type="text" class="editable-sec-title" id="title_${secId}" value="Section Custom ${customSectionCount}">
+  <!-- SLIDE-OUT LEFT DRAWER -->
+  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1"></div>
+  <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
+    <header class="drawer-header">
+      <h3>⚙️ Menu & Settings</h3>
+      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button>
+    </header>
+
+    <div class="drawer-scroll-body">
+      <!-- Profile Card -->
+      <section aria-labelledby="drawerProfileSection">
+        <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
+        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile">
+          <div class="drawer-profile-top">
+            <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
+            <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
+            <div class="drawer-profile-info">
+              <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
+              <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
+              <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
+              <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
+            </div>
+          </div>
         </div>
-        <button onclick="removeCustomSection('${secId}')" style="background: transparent; border: none; color: var(--danger-text); font-weight: bold; cursor: pointer;">✕ Remove</button>
+      </section>
+
+      <!-- Navigation & Vault -->
+      <nav aria-label="Application Sections">
+        <h4 class="drawer-section-title">Navigation & Vault</h4>
+        <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" data-action="nav-home">
+            <span>🏠 Home Page</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="nav-vault">
+            <span>📚 Saved Papers Vault</span>
+          </button>
+          <button type="button" class="drawer-item" id="drawerAdminItem" data-action="nav-admin" hidden>
+            <span>🛡️ Admin Dashboard</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Preferences & Security -->
+      <section aria-label="Preferences">
+        <h4 class="drawer-section-title">Preferences & Security</h4>
+        <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" data-action="toggle-theme">
+            <span>Theme Mode</span>
+            <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="app-lock">
+            <span>App Screen Lock</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="share-app">
+            <span>Share Application</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="nav-about">
+            <span>ℹ️ About Application</span>
+          </button>
+          <button type="button" class="drawer-item item-danger" data-action="sign-out">
+            <span>Sign Out / Switch Profile</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- AUTHENTICATION OVERLAY -->
+  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+    <div class="auth-card">
+      <h2 id="authHeading">Staff Sign In</h2>
+      <p id="authSubHeading">Sign in with your username & credentials.</p>
+
+      <div class="auth-nav" role="tablist">
+        <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" data-auth-mode="signin">Sign In</button>
+        <button type="button" id="navSignUp" role="tab" aria-selected="false" data-auth-mode="signup">Sign Up</button>
       </div>
-      <div id="box_${secId}" class="grid-2">
+
+      <form id="authForm" novalidate>
+        <div class="form-group">
+          <label for="authUsernameInput">Username</label>
+          <input type="text" id="authUsernameInput" autocomplete="username" required>
+          <span class="auth-hint">Strictly lowercase English letters only (a-z).</span>
+        </div>
+
+        <div id="signUpFields" hidden>
+          <div class="form-group">
+            <label for="regFullName">Full Name (Displayed in Profile)</label>
+            <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+          <div class="form-group">
+            <label for="regMobilePhone">Mobile Number</label>
+            <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
+          </div>
+          <div class="form-group">
+            <label for="regSubject">Teaching Subject</label>
+            <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
+          </div>
+          <div class="form-group">
+            <label for="regAvatarFile">Profile Picture (With Crop)</label>
+            <input type="file" id="regAvatarFile" accept="image/*">
+            <input type="hidden" id="regCroppedAvatarData">
+            <div id="regAvatarPreviewWrap" class="avatar-preview-wrap" hidden>
+              <img id="regAvatarPreview" class="avatar-preview-img" alt="Avatar preview">
+              <span class="color-success font-bold text-sm">✓ Photo cropped</span>
+            </div>
+          </div>
+        </div>
+
+        <fieldset class="form-group border-none p-0">
+          <legend class="form-label">Credential Type</legend>
+          <div class="auth-type-pill">
+            <button type="button" class="active" id="btnAuthPassword" data-auth-type="password">🔏 Password</button>
+            <button type="button" id="btnAuthPin" data-auth-type="pin">🔢 PIN Code</button>
+          </div>
+        </fieldset>
+
+        <div id="authInputPassword" class="form-group">
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" autocomplete="current-password">
+          <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
+        </div>
+
+        <div id="authInputPin" class="form-group" hidden>
+          <label for="authPin">PIN Code</label>
+          <input type="password" id="authPin" maxlength="10" inputmode="numeric">
+          <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn-generate mt-md">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- TOP APP HEADER -->
+    <header class="app-header no-print" id="mainHomeHeader">
+      <div class="header-watermark" aria-hidden="true"></div>
+      
+      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <div class="header-center-title">
+        <h1>Exam Paper <span>Creator</span></h1>
+      </div>
+
+      <div class="header-spacer" aria-hidden="true"></div>
+    </header>
+
+    <!-- PAGE 1: HOME PAGE (CREATE PAPER VIEW) -->
+    <section id="pageCreate" class="page-view" aria-labelledby="createPageHeading">
+      <h2 id="createPageHeading" class="sr-only">Paper Generation Studio</h2>
+      
+      <!-- 1. Examination Details -->
+      <section class="card no-print">
+        <h2>1. Examination Details & Header Settings</h2>
         <div class="grid-2">
-          <div>
-            <label>Question Count</label>
-            <input type="number" id="count_${secId}" value="1" min="1" oninput="calculateAndValidateMarks()">
+          <div class="form-group">
+            <label for="instName">Institution / School / College Name</label>
+            <input type="text" id="instName" class="cached-header">
           </div>
-          <div>
-            <label>Marks Each</label>
-            <input type="number" id="marks_${secId}" value="2" min="1" oninput="calculateAndValidateMarks()">
-          </div>
-        </div>
-        <div>
-          <label>Attach Optional Diagram / Photo / Graph</label>
-          <input type="file" id="file_${secId}" accept="image/*">
-        </div>
-        <div style="grid-column: span 2;">
-          <label>Section Instructions Heading</label>
-          <input type="text" id="inst_${secId}" value="Answer the following based on the instructions:">
-        </div>
-        <div style="grid-column: span 2;">
-          <label>Question Description (Optional)</label>
-          <input type="text" id="desc_${secId}" placeholder="">
-        </div>
-      </div>
-    `;
-
-    container.appendChild(secDiv);
-    calculateAndValidateMarks();
-  }
-
-  function removeCustomSection(secId) {
-    const el = document.getElementById(`sec_card_${secId}`);
-    if (el) el.remove();
-    calculateAndValidateMarks();
-  }
-
-  function calculateAndValidateMarks() {
-    const maxMarks = parseInt(document.getElementById('maxMarks').value) || 0;
-    let calculatedTotal = 0;
-
-    const presetSecs = ['mcq', '1m', '2m', '3m', '4m'];
-    presetSecs.forEach(sec => {
-      const chk = document.getElementById('use_' + sec);
-      if (chk && chk.checked) {
-        const count = parseInt(document.getElementById('count_' + sec).value) || 0;
-        const marks = parseInt(document.getElementById('marks_' + sec).value) || 0;
-        calculatedTotal += (count * marks);
-      }
-    });
-
-    const diagChk = document.getElementById('use_diag');
-    if (diagChk && diagChk.checked) {
-      calculatedTotal += parseInt(document.getElementById('marks_diag').value) || 0;
-    }
-
-    for (let i = 1; i <= customSectionCount; i++) {
-      const chk = document.getElementById(`use_custom_${i}`);
-      if (chk && chk.checked) {
-        const count = parseInt(document.getElementById(`count_custom_${i}`).value) || 0;
-        const marks = parseInt(document.getElementById(`marks_custom_${i}`).value) || 0;
-        calculatedTotal += (count * marks);
-      }
-    }
-
-    const box = document.getElementById('marksValidationBox');
-    const summaryText = document.getElementById('marksSummaryText');
-    const genBtn = document.getElementById('genBtn');
-
-    if (calculatedTotal === maxMarks) {
-      box.style.display = "none";
-      genBtn.disabled = false;
-    } else {
-      box.style.display = "flex";
-      const diff = calculatedTotal - maxMarks;
-      summaryText.innerText = `Error: Total sections sum (${calculatedTotal}) ${diff > 0 ? 'exceeds' : 'is less than'} Target (${maxMarks}) by ${Math.abs(diff)} marks!`;
-      genBtn.disabled = true;
-    }
-  }
-
-  function toggleSec(id) {
-    const chk = document.getElementById('use_' + id);
-    const box = document.getElementById('box_' + id);
-    if (box && chk) box.style.display = chk.checked ? 'grid' : 'none';
-    calculateAndValidateMarks();
-  }
-
-  function getStaffSpecificKey() {
-    return activeUser ? `exam_vault_${activeUser.id}` : 'exam_vault_default';
-  }
-
-  function getMySavedPapers() {
-    try {
-      return JSON.parse(localStorage.getItem(getStaffSpecificKey())) || [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function saveCurrentPaperToHistory(autoNotify = true) {
-    const preview = document.getElementById('paperPreview');
-    const htmlContent = preview.innerHTML;
-    if (!htmlContent.trim()) {
-      alert("No question paper content to save!");
-      return;
-    }
-
-    const customNameInput = document.getElementById('paperCustomName');
-    const paperName = customNameInput.value.trim() || document.getElementById('examTitle').value || "Exam Paper";
-    const subject = document.getElementById('subject').value || "";
-    const dateStr = new Date().toLocaleString();
-
-    const newEntry = {
-      id: Date.now(),
-      paperName: paperName,
-      title: document.getElementById('examTitle').value || "",
-      subject: subject,
-      staffId: activeUser ? activeUser.id : '',
-      staffName: activeUser ? (activeUser.fullName || activeUser.name) : 'unknown',
-      date: dateStr,
-      font: document.getElementById('fontSelector').value,
-      fontSize: document.getElementById('fontSizeSlider').value,
-      content: htmlContent
-    };
-
-    const papers = getMySavedPapers();
-    papers.unshift(newEntry);
-    localStorage.setItem(getStaffSpecificKey(), JSON.stringify(papers));
-
-    logAuditEvent(activeUser ? activeUser.name : 'unknown', `Created Paper: ${paperName}`, "Success");
-    if (autoNotify) alert("Paper saved to vault.");
-  }
-
-  function renderHistoryList() {
-    const container = document.getElementById('historyListContainer');
-    const papers = getMySavedPapers();
-
-    if (papers.length === 0) {
-      container.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-          <p style="font-size: 1.1rem; margin-bottom: 6px;">No saved question papers in this account.</p>
-          <small>Create an exam paper and save it to access it anytime.</small>
-        </div>
-      `;
-      return;
-    }
-
-    let html = "";
-    papers.forEach(item => {
-      const displayName = item.paperName || `${item.title} ${item.subject}`.trim() || "Question Paper";
-      html += `
-        <div class="history-item">
-          <div class="history-meta">
-            <h3>${displayName}</h3>
-            <p>${item.subject ? `Subject: ${item.subject} | ` : ''}Saved: ${item.date}</p>
-          </div>
-          <div class="history-actions">
-            <button onclick="loadPaperFromHistory(${item.id})" style="background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">👁️ View / Edit</button>
-            <button onclick="printPaperFromHistory(${item.id})" style="background: var(--accent-emerald); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">🖨️ Print</button>
-            <button onclick="deletePaperFromHistory(${item.id})" style="background: var(--danger-bg); color: var(--danger-text); border: 1.5px solid var(--danger-border); padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">🗑️</button>
+          <div class="form-group">
+            <label for="examTitle">Examination Title</label>
+            <input type="text" id="examTitle" class="cached-header">
           </div>
         </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
 
-  function loadPaperFromHistory(id, customKey = null) {
-    const key = customKey || getStaffSpecificKey();
-    const papers = JSON.parse(localStorage.getItem(key)) || [];
-    const paper = papers.find(p => p.id === id);
-    if (!paper) return;
-
-    const preview = document.getElementById('paperPreview');
-    preview.innerHTML = paper.content;
-
-    document.getElementById('paperCustomName').value = paper.paperName || '';
-    document.getElementById('fontSelector').value = paper.font;
-    changePaperFont(paper.font);
-
-    document.getElementById('fontSizeSlider').value = paper.fontSize;
-    changePaperFontSize(paper.fontSize);
-
-    document.getElementById('paperCard').style.display = "block";
-    switchPage('create');
-    document.getElementById('paperCard').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function printPaperFromHistory(id, customKey = null) {
-    loadPaperFromHistory(id, customKey);
-    setTimeout(() => { printCurrentPaper(); }, 300);
-  }
-
-  function deletePaperFromHistory(id) {
-    if (!confirm("Delete this saved paper?")) return;
-    let papers = getMySavedPapers();
-    papers = papers.filter(p => p.id !== id);
-    localStorage.setItem(getStaffSpecificKey(), JSON.stringify(papers));
-    renderHistoryList();
-  }
-
-  function clearMyHistory() {
-    if (!confirm("Clear your question paper vault?")) return;
-    localStorage.removeItem(getStaffSpecificKey());
-    renderHistoryList();
-  }
-
-  function renderAdminDashboard() {
-    const registry = getStaffRegistry();
-    const logs = getAuditLogs();
-
-    const totalStaff = registry.length;
-    const totalLogins = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
-
-    let allPapersCount = 0;
-    registry.forEach(s => {
-      const papers = JSON.parse(localStorage.getItem(`exam_vault_${s.id}`)) || [];
-      allPapersCount += papers.length;
-    });
-
-    document.getElementById('admStatStaff').innerText = totalStaff;
-    document.getElementById('admStatLogins').innerText = totalLogins;
-    document.getElementById('admStatPapers').innerText = allPapersCount;
-
-    const staffTbody = document.getElementById('admStaffTableBody');
-    if (registry.length === 0) {
-      staffTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No staff registered yet.</td></tr>`;
-    } else {
-      let staffHtml = "";
-      registry.forEach(staff => {
-        const staffPapers = JSON.parse(localStorage.getItem(`exam_vault_${staff.id}`)) || [];
-        staffHtml += `
-          <tr>
-            <td><strong>${staff.name}</strong></td>
-            <td>${staff.fullName || staff.name}</td>
-            <td>${staff.subject}</td>
-            <td>${staff.userClass || "10th Standard"}</td>
-            <td>${staff.phone || "N/A"}</td>
-            <td><span style="background: var(--card); border: 1.5px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">${staff.authType.toUpperCase()}</span></td>
-            <td><strong>${staffPapers.length}</strong> saved</td>
-          </tr>
-        `;
-      });
-      staffTbody.innerHTML = staffHtml;
-    }
-
-    const logsTbody = document.getElementById('admLogsTableBody');
-    if (logs.length === 0) {
-      logsTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No logs recorded.</td></tr>`;
-    } else {
-      let logsHtml = "";
-      logs.forEach(log => {
-        const isSuccess = log.status === "Success";
-        logsHtml += `
-          <tr>
-            <td><small>${log.time}</small></td>
-            <td><strong>${log.username}</strong></td>
-            <td>${log.action}</td>
-            <td><span style="color: ${isSuccess ? '#16a34a' : '#dc2626'}; font-weight: bold;">${log.status}</span></td>
-          </tr>
-        `;
-      });
-      logsTbody.innerHTML = logsHtml;
-    }
-
-    const papersContainer = document.getElementById('admPapersContainer');
-    let allPapersHtml = "";
-    let papersFound = false;
-
-    registry.forEach(staff => {
-      const papers = JSON.parse(localStorage.getItem(`exam_vault_${staff.id}`)) || [];
-      if (papers.length > 0) {
-        papersFound = true;
-        papers.forEach(p => {
-          allPapersHtml += `
-            <div class="history-item">
-              <div class="history-meta">
-                <h3>${p.paperName || p.title}</h3>
-                <p>Teacher: <strong>${staff.fullName || staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
-              </div>
-              <div class="history-actions">
-                <button onclick="loadPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">👁️ Inspect</button>
-                <button onclick="printPaperFromHistory(${p.id}, 'exam_vault_${staff.id}')" style="background: var(--accent-emerald); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">🖨️ Print</button>
-              </div>
-            </div>
-          `;
-        });
-      }
-    });
-
-    papersContainer.innerHTML = papersFound ? allPapersHtml : `<p style="padding: 16px; color: var(--text-muted); font-size: 0.9rem;">No question papers generated yet.</p>`;
-  }
-
-  function clearAdminLogs() {
-    if (!confirm("Clear audit logs?")) return;
-    localStorage.removeItem('exam_audit_logs');
-    renderAdminDashboard();
-  }
-
-  function printCurrentPaper() {
-    const customNameInput = document.getElementById('paperCustomName');
-    const originalDocTitle = document.title;
-    if (customNameInput && customNameInput.value.trim()) {
-      document.title = customNameInput.value.trim();
-    }
-    window.print();
-    setTimeout(() => { document.title = originalDocTitle; }, 1000);
-  }
-
-  function toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    const nextTheme = isDark ? 'light' : 'dark';
-    html.setAttribute('data-theme', nextTheme);
-    const label = document.getElementById('drawerThemeLabel');
-    if (label) label.innerText = isDark ? '🌙 Dark' : '☀️ Light';
-  }
-
-  function changePaperFont(fontVal) {
-    const root = document.documentElement;
-    root.style.setProperty('--paper-font', fontVal);
-    const preview = document.getElementById('paperPreview');
-    if (preview) {
-      preview.style.setProperty('font-family', fontVal, 'important');
-      preview.querySelectorAll('*').forEach(el => el.style.setProperty('font-family', fontVal, 'important'));
-    }
-  }
-
-  function changePaperFontSize(sizeVal) {
-    const root = document.documentElement;
-    const ptString = sizeVal + 'pt';
-    document.getElementById('fontSizeDisplay').innerText = ptString;
-    root.style.setProperty('--paper-size', ptString);
-    const preview = document.getElementById('paperPreview');
-    if (preview) preview.style.setProperty('font-size', ptString, 'important');
-  }
-
-  function toggleEditMode(enable) {
-    const paper = document.getElementById('paperPreview');
-    const badge = document.getElementById('editBadge');
-    paper.setAttribute('contenteditable', enable ? "true" : "false");
-    badge.innerText = enable ? "Editable" : "Locked";
-    badge.style.color = enable ? "var(--primary)" : "var(--text-muted)";
-  }
-
-  async function shareApp() {
-    const shareData = {
-      title: 'Exam Paper Creator',
-      text: 'Standardized exam paper creator with customizable sections, diagram integration, and teacher data vaults.',
-      url: window.location.href
-    };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch (err) {}
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard.");
-    }
-  }
-
-  function extractTextFromUploadedFiles(files, statusElem) {
-    return new Promise(async (resolve) => {
-      let combinedText = "";
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        statusElem.innerText = `Scanning document (${i + 1}/${files.length})...`;
-        try {
-          if (file.type.startsWith("image/")) {
-            const { data: { text } } = await Tesseract.recognize(file, 'eng', {
-              logger: m => {
-                if (m.status === 'recognizingtext') {
-                  statusElem.innerText = `Reading text (${i + 1}/${files.length}): ${Math.round(m.progress * 100)}%`;
-                }
-              }
-            });
-            combinedText += `\n--- Page ${i + 1} ---\n` + text;
-          } else {
-            combinedText += `\n[Reference document: ${file.name}]`;
-          }
-        } catch(err) {
-          console.warn("OCR notice:", err);
-        }
-      }
-      resolve(combinedText);
-    });
-  }
-
-  function fileToDataURL(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  async function buildDiagramSectionHtml(qNum) {
-    let outHtml = "";
-
-    const isDiagEnabled = document.getElementById('use_diag') && document.getElementById('use_diag').checked;
-    if (isDiagEnabled) {
-      const heading = document.getElementById('inst_diag').value;
-      const marks = document.getElementById('marks_diag').value;
-      const desc = document.getElementById('diagDesc').value;
-      const file = document.getElementById('diagImage').files[0];
-      const imgSrc = file ? await fileToDataURL(file) : "";
-
-      outHtml += `
-        <div class="sec-block">
-          <div class="sec-title">
-            <span>${heading}</span>
-            <span class="sec-marks-total">[1 × ${marks} = ${marks}]</span>
+        <div class="grid-4 mt-sm">
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" class="cached-header">
           </div>
-          <div class="q-item">
-            <div class="q-line">
-              <span class="q-num">${qNum}.</span>
-              <span class="q-text">${desc}</span>
-            </div>
-            ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Exam Diagram"></div>` : ''}
+          <div class="form-group">
+            <label for="grade">Class / Grade</label>
+            <input type="text" id="grade" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="duration">Time Allowed</label>
+            <input type="text" id="duration" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="maxMarks">Total Max Marks (Target)</label>
+            <input type="number" id="maxMarks" value="25" min="1">
           </div>
         </div>
-      `;
-      qNum++;
-    }
 
-    for (let i = 1; i <= customSectionCount; i++) {
-      const chk = document.getElementById(`use_custom_${i}`);
-      if (chk && chk.checked) {
-        const fileInput = document.getElementById(`file_custom_${i}`);
-        const file = fileInput ? fileInput.files[0] : null;
-        const descInput = document.getElementById(`desc_custom_${i}`);
-        const desc = descInput ? descInput.value.trim() : "";
-        
-        if (file || desc) {
-          const heading = document.getElementById(`inst_custom_${i}`).value;
-          const count = document.getElementById(`count_custom_${i}`).value;
-          const marks = document.getElementById(`marks_custom_${i}`).value;
-          const imgSrc = file ? await fileToDataURL(file) : "";
+        <fieldset class="checkbox-group border-none p-0">
+          <legend class="sr-only">Header Inclusion Fields</legend>
+          <label><input type="checkbox" id="incName" checked> Name Line</label>
+          <label><input type="checkbox" id="incRoll" checked> Register / Roll No</label>
+          <label><input type="checkbox" id="incSec" checked> Section</label>
+          <label><input type="checkbox" id="incDate" checked> Date</label>
+        </fieldset>
 
-          outHtml += `
-            <div class="sec-block">
-              <div class="sec-title">
-                <span>${heading}</span>
-                <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
-              </div>
-              <div class="q-item">
-                <div class="q-line">
-                  <span class="q-num">${qNum}.</span>
-                  <span class="q-text">${desc || "Study the diagram/graph provided and answer:"}</span>
+        <div class="form-group mt-sm">
+          <label for="genInst">General Instructions for Students (Optional):</label>
+          <input type="text" id="genInst" class="cached-header">
+        </div>
+      </section>
+
+      <!-- 2. Source Material Upload -->
+      <section class="card no-print">
+        <h2>2. Source Material Upload Mode</h2>
+
+        <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
+          <span id="activeModeSummaryLabel" class="font-bold">📂 Mode: Question Bank / Exercises</span>
+          <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
+        </button>
+
+        <div class="accordion-content" id="sourceAccordionContent">
+          <div class="source-mode-choice-grid">
+            <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" data-mode="existing">
+              📚 Question Bank / Exercises
+            </button>
+            <button type="button" class="source-choice-btn" id="btnChoiceLesson" data-mode="lesson">
+              📖 Textbook Lesson Pages
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group mt-sm">
+          <label id="uploadLabel" for="fileInput">Upload Question Bank Documents (Photos / Scans / PDFs):</label>
+          <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+          <small id="uploadHintText" class="text-subtle block mt-xs">
+            Extracting existing questions and options directly into the exam blueprint.
+          </small>
+        </div>
+      </section>
+
+      <!-- 3. Structure & Sections Accordion -->
+      <section class="card no-print">
+        <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" aria-expanded="false" aria-controls="sectionsAccordionContent">
+          <h2>
+            <span>⚙️ 3. Question Paper Structure & Sections</span>
+            <span class="accordion-subtext">(Sections A-F & Custom)</span>
+          </h2>
+          <span class="arrow-icon" id="accordionArrow" aria-hidden="true">▼</span>
+        </button>
+
+        <div class="accordion-content" id="sectionsAccordionContent">
+          <div id="dynamicSectionsContainer">
+            <!-- Section A: MCQs -->
+            <article class="section-box" id="sec_card_mcq">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_mcq" class="sec-toggle" data-sec="mcq" checked aria-label="Enable Section A">
+                  <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
                 </div>
-                ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Diagram"></div>` : ''}
               </div>
-            </div>
-          `;
-          qNum++;
-        }
-      }
-    }
+              <div id="box_mcq" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_mcq">Question Count</label>
+                  <input type="number" id="count_mcq" class="marks-calc" value="4" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_mcq">Marks Each</label>
+                  <input type="number" id="marks_mcq" class="marks-calc" value="1" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_mcq">Instructions Heading</label>
+                  <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
+                </div>
+              </div>
+            </article>
 
-    return outHtml;
-  }
+            <!-- Section B: 1-Word / Sentence -->
+            <article class="section-box" id="sec_card_1m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_1m" class="sec-toggle" data-sec="1m" checked aria-label="Enable Section B">
+                  <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
+                </div>
+              </div>
+              <div id="box_1m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_1m">Question Count</label>
+                  <input type="number" id="count_1m" class="marks-calc" value="3" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_1m">Marks Each</label>
+                  <input type="number" id="marks_1m" class="marks-calc" value="1" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_1m">Instructions Heading</label>
+                  <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
+                </div>
+              </div>
+            </article>
 
-  // =========================================================================
-  // ⚡ IN-BROWSER PARSER & COMPILE ENGINE
-  // =========================================================================
-  function compileLocalExamPaperHTML(config) {
-    let qCounter = 1;
-    let sectionsHtml = "";
-    const isLessonMode = config.mode === 'lesson';
+            <!-- Section C: Short Answers -->
+            <article class="section-box" id="sec_card_2m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_2m" class="sec-toggle" data-sec="2m" checked aria-label="Enable Section C">
+                  <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
+                </div>
+              </div>
+              <div id="box_2m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_2m">Question Count</label>
+                  <input type="number" id="count_2m" class="marks-calc" value="3" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_2m">Marks Each</label>
+                  <input type="number" id="marks_2m" class="marks-calc" value="2" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_2m">Instructions Heading</label>
+                  <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
+                </div>
+              </div>
+            </article>
 
-    // Work with copies of questions
-    const qPool = [...config.parsedQuestions];
+            <!-- Section D: Brief Explanations -->
+            <article class="section-box" id="sec_card_3m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_3m" class="sec-toggle" data-sec="3m" checked aria-label="Enable Section D">
+                  <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
+                </div>
+              </div>
+              <div id="box_3m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_3m">Question Count</label>
+                  <input type="number" id="count_3m" class="marks-calc" value="2" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_3m">Marks Each</label>
+                  <input type="number" id="marks_3m" class="marks-calc" value="3" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_3m">Instructions Heading</label>
+                  <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
+                </div>
+              </div>
+            </article>
 
-    config.sections.forEach(sec => {
-      sectionsHtml += `
-        <div class="sec-block">
-          <div class="sec-title">
-            <span>${sec.title}</span>
-            <span class="sec-marks-total">[${sec.count} × ${sec.marks} = ${sec.count * sec.marks}]</span>
+            <!-- Section E: Long Answers -->
+            <article class="section-box" id="sec_card_4m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_4m" class="sec-toggle" data-sec="4m" checked aria-label="Enable Section E">
+                  <input type="text" class="editable-sec-title" id="title_4m" value="Section E: Long Answers / Detailed Questions">
+                </div>
+              </div>
+              <div id="box_4m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_4m">Question Count</label>
+                  <input type="number" id="count_4m" class="marks-calc" value="1" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_4m">Marks Each</label>
+                  <input type="number" id="marks_4m" class="marks-calc" value="4" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_4m">Instructions Heading</label>
+                  <input type="text" id="inst_4m" value="V. Answer the following questions in detail:">
+                </div>
+              </div>
+            </article>
+
+            <!-- Section F: Map / Diagram -->
+            <article class="section-box" id="sec_card_diag">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_diag" class="sec-toggle" data-sec="diag" checked aria-label="Enable Section F">
+                  <input type="text" class="editable-sec-title" id="title_diag" value="Section F: Map / Diagram / Graph Question">
+                </div>
+              </div>
+              <div id="box_diag" class="grid-2 sec-body">
+                <div class="form-group">
+                  <label for="diagImage">Upload Map Outline, Diagram, or Graph</label>
+                  <input type="file" id="diagImage" accept="image/*">
+                </div>
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label for="marks_diag">Question Marks</label>
+                    <input type="number" id="marks_diag" class="marks-calc" value="2" min="1">
+                  </div>
+                  <div class="form-group">
+                    <label for="inst_diag">Section Heading</label>
+                    <input type="text" id="inst_diag" value="VI. Map / Diagram Based Question:">
+                  </div>
+                </div>
+                <div class="form-group span-2">
+                  <label for="diagDesc">Question Description / Sub-points</label>
+                  <textarea id="diagDesc" rows="2"></textarea>
+                </div>
+              </div>
+            </article>
           </div>
-      `;
 
-      for (let i = 0; i < sec.count; i++) {
-        let questionText = "";
-
-        if (isLessonMode) {
-          const conceptSnippet = qPool.length > 0 
-            ? qPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-            : `principles of ${config.subject}`;
-
-          if (sec.isMcq) {
-            questionText = `Regarding the topic of ${conceptSnippet.substring(0, 75)}, which among the following statements is accurate?`;
-          } else if (sec.marks === 1) {
-            questionText = `State the main definition or significance of: ${conceptSnippet.substring(0, 65)}.`;
-          } else if (sec.marks === 2) {
-            questionText = `Mention any two key characteristics or causes of ${conceptSnippet.substring(0, 65)}.`;
-          } else if (sec.marks === 3) {
-            questionText = `Analyze and describe the major impacts and structure of ${conceptSnippet.substring(0, 70)}.`;
-          } else {
-            questionText = `Critically evaluate and explain in detail the principles of ${conceptSnippet.substring(0, 75)}.`;
-          }
-        } else {
-          questionText = qPool.length > 0 
-            ? qPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-            : `Analyze and explain the key concepts of ${config.subject}.`;
-        }
-
-        if (sec.isMcq) {
-          sectionsHtml += `
-            <div class="q-item">
-              <div class="q-line">
-                <span class="q-num">${qCounter}.</span>
-                <span class="q-text">${questionText}</span>
-              </div>
-              <div class="mcq-options">
-                <span>(A) Option A</span>
-                <span>(B) Option B</span>
-                <span>(C) Option C</span>
-                <span>(D) Option D</span>
-              </div>
-            </div>
-          `;
-        } else {
-          sectionsHtml += `
-            <div class="q-item">
-              <div class="q-line">
-                <span class="q-num">${qCounter}.</span>
-                <span class="q-text">${questionText}</span>
-              </div>
-            </div>
-          `;
-        }
-        qCounter++;
-      }
-
-      sectionsHtml += `</div>`;
-    });
-
-    return `
-      <div class="paper-header">
-        <h1>${config.instName}</h1>
-        <h3>${config.examTitle}</h3>
-        <div class="meta-row">
-          <span>Subject: ${config.subject}</span>
-          <span>Class: ${config.grade}</span>
-          <span>Time: ${config.duration}</span>
-          <span>Max Marks: ${config.maxMarks}</span>
+          <button type="button" class="btn-add-sec" id="btnAddCustomSection">➕ Add Extra Custom Section</button>
         </div>
-        <div class="student-fields">
-          ${config.incName ? '<span>Name: _______________________________</span>' : ''}
-          ${config.incRoll ? '<span>Reg/Roll No: ____________</span>' : ''}
-          ${config.incSec ? '<span>Sec: ____</span>' : ''}
-          ${config.incDate ? '<span>Date: _________</span>' : ''}
+
+        <div id="marksValidationBox" role="alert" aria-live="assertive" hidden>
+          <span id="marksSummaryText"></span>
+          <span>❌ Check Marks</span>
+        </div>
+
+        <div class="mt-md">
+          <button type="button" id="genBtn" class="btn-generate">⚡ Generate Exam Paper</button>
+          <div id="statusMessage" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- Paper Preview & Toolbar -->
+      <section class="card" id="paperCard" hidden>
+        <div class="paper-toolbar no-print">
+          <div class="paper-name-row">
+            <label for="paperCustomName" class="nowrap"><b>📝 Paper / File Name:</b></label>
+            <input type="text" id="paperCustomName" class="color-primary font-bold">
+          </div>
+
+          <div class="toolbar-row">
+            <div class="toolbar-group">
+              <div class="toggle-wrap">
+                <span class="text-sm font-semibold">Direct Edit:</span>
+                <label class="switch">
+                  <input type="checkbox" id="editToggle" aria-label="Toggle direct paper editing">
+                  <span class="slider"></span>
+                </label>
+                <span id="editBadge" class="text-xs font-bold text-subtle">Locked</span>
+              </div>
+
+              <div class="font-select-wrap">
+                <label for="fontSelector"><b>Font:</b></label>
+                <select id="fontSelector">
+                  <optgroup label="Academic & Standard Serifs">
+                    <option value="'Tinos', 'Noto Serif', serif" selected>Academic Serif (Default)</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                    <option value="'EB Garamond', serif">EB Garamond</option>
+                    <option value="'Merriweather', serif">Merriweather</option>
+                    <option value="'Lora', serif">Lora</option>
+                    <option value="'PT Serif', serif">PT Serif</option>
+                    <option value="'Playfair Display', serif">Playfair Display</option>
+                    <option value="'Cinzel', serif">Cinzel (Classical)</option>
+                  </optgroup>
+                  <optgroup label="Languages (Indian & Arabic)">
+                    <option value="'Noto Sans Kannada', sans-serif">Kannada (ಕನ್ನಡ)</option>
+                    <option value="'Noto Sans Devanagari', sans-serif">Hindi / Sanskrit (हिंदी)</option>
+                    <option value="'Noto Naskh Arabic', serif">Arabic / Urdu (العربية)</option>
+                  </optgroup>
+                  <optgroup label="Modern Sans (Science / Maths)">
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                    <option value="'Open Sans', sans-serif">Open Sans</option>
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                  </optgroup>
+                  <optgroup label="Monospace / Technical">
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="size-slider-wrap">
+                <label for="fontSizeSlider"><b>Size:</b></label>
+                <input type="range" id="fontSizeSlider" min="8" max="16" step="0.5" value="10.5">
+                <span id="fontSizeDisplay" class="text-sm font-bold">10.5pt</span>
+              </div>
+            </div>
+
+            <div class="action-buttons-wrap">
+              <button type="button" id="btnSaveToVault" class="btn-primary">💾 Save to Vault</button>
+              <button type="button" id="btnPrintPaper" class="btn-success">🖨️ Print / PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <article class="a4-page" id="paperPreview" contenteditable="false" spellcheck="false" aria-label="Exam Paper Page Preview"></article>
+      </section>
+    </section>
+
+    <!-- PAGE 2: SAVED PAPERS VAULT VIEW -->
+    <section id="pageHistory" class="page-view" aria-labelledby="vaultHeading" hidden>
+      <div class="card no-print">
+        <div class="card-header-flex">
+          <h2 id="vaultHeading" class="m-0 p-0 border-none">📚 Saved Exam Papers Vault</h2>
+          <button type="button" id="btnClearHistory" class="btn-danger-outline">Clear Vault</button>
+        </div>
+        <div id="historyListContainer" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- PAGE 3: DEDICATED PROFILE EDITOR PAGE -->
+    <section id="pageProfile" class="page-view" aria-labelledby="profileHeading" hidden>
+      <div class="card no-print">
+        <h2 id="profileHeading">👤 Edit Profile & Account Details</h2>
+
+        <form id="profileForm" class="max-w-md mx-auto flex-column gap-md">
+          <div class="avatar-edit-row">
+            <img id="profilePageAvatarImg" class="drawer-avatar lg" src="" alt="Profile picture" hidden>
+            <div id="profilePageAvatarFallback" class="drawer-avatar lg" aria-hidden="true">👤</div>
+            <div class="flex-1">
+              <label for="profilePageAvatarInput">Crop / Update Profile Photo</label>
+              <input type="file" id="profilePageAvatarInput" accept="image/*">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageUsername">Username (Strictly lowercase letters, a-z)</label>
+            <input type="text" id="profilePageUsername" required>
+            <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageFullName">Full Name (Displayed in App)</label>
+            <input type="text" id="profilePageFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePagePhone">Mobile Number</label>
+            <input type="tel" id="profilePagePhone" placeholder="e.g. +91 9483061904">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageSubject">Teaching Subject</label>
+            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageClass">Class / Grade</label>
+            <input type="text" id="profilePageClass" placeholder="e.g. 10th Standard">
+          </div>
+
+          <button type="submit" class="btn-generate mt-sm">💾 Save All Changes</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PAGE 4: DEDICATED ABOUT APPLICATION PAGE -->
+    <section id="pageAbout" class="page-view" aria-labelledby="aboutHeading" hidden>
+      <div class="card no-print">
+        <h2 id="aboutHeading">ℹ️ About Application</h2>
+        <div class="prose max-w-lg mx-auto">
+          <p>This exam paper creator application is a specialized platform designed to simplify the entire question paper preparation workflow for teachers and institutions. <strong>This app is created by Ismail Tharfeed, and this is a contact number +919483061904.</strong> It allows educators to generate standardized question papers either by scanning existing question banks or directly extracting conceptual questions from textbook lesson reading pages. The app automatically calculates blueprint marks, ensures clean layout formatting, and preserves question history securely on your device. Thank you for utilizing this application to streamline school and college examination management.</p>
         </div>
       </div>
-      ${config.genInst ? `<div class="general-instructions"><strong>General Instructions:</strong> ${config.genInst}</div>` : ''}
-      ${sectionsHtml}
-    `;
-  }
+    </section>
 
-  // =========================================================================
-  // 🤖 6-TIER NO-KEY MULTI-ENGINE AI PIPELINE
-  // =========================================================================
-  async function generateFastPaperDirect(promptText, localConfig, statusElem) {
-    statusElem.innerText = localConfig.mode === 'lesson' 
-      ? "Formulating questions from lesson pages via multi-engine AI..." 
-      : "Extracting questions directly into blueprint...";
+    <!-- PAGE 5: ADMIN MASTER DASHBOARD -->
+    <section id="pageAdmin" class="page-view" aria-labelledby="adminHeading" hidden>
+      <div class="card no-print">
+        <h2 id="adminHeading">🛡️ Administrator Central Control</h2>
+        
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <span>Registered Staff</span>
+            <h3 id="admStatStaff">0</h3>
+          </div>
+          <div class="stat-card">
+            <span>Total Sign-Ins</span>
+            <h3 id="admStatLogins">0</h3>
+          </div>
+          <div class="stat-card">
+            <span>Total Papers Created</span>
+            <h3 id="admStatPapers">0</h3>
+          </div>
+        </div>
 
-    // Cleaned plain system prompt for zero-API inference
-    const systemInstruction = "You are an academic exam generator. Return ONLY clean, valid raw HTML without Markdown backticks. Must contain paper-header, sec-block, and q-item elements.";
-    const fullPrompt = `${systemInstruction}\n\nTask:\n${promptText}`;
+        <h3>Registered Staff Accounts & Credentials</h3>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Subject</th>
+                <th>Class</th>
+                <th>Phone</th>
+                <th>Auth Type</th>
+                <th>Vault Papers</th>
+              </tr>
+            </thead>
+            <tbody id="admStaffTableBody"></tbody>
+          </table>
+        </div>
 
-    const engines = [
-      {
-        name: "Pollinations OpenAI Engine",
-        type: "post_json",
-        url: "https://text.pollinations.ai/",
-        payload: {
-          messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: promptText }
-          ],
-          model: "openai",
-          seed: Math.floor(Math.random() * 1000000),
-          jsonMode: false
-        },
-        timeout: 9000
-      },
-      {
-        name: "DeepSeek / Qwen Reasoning Engine",
-        type: "post_json",
-        url: "https://text.pollinations.ai/",
-        payload: {
-          messages: [{ role: "user", content: fullPrompt }],
-          model: "deepseek",
-          temperature: 0.3
-        },
-        timeout: 9000
-      },
-      {
-        name: "Mistral Reasoning Engine",
-        type: "post_json",
-        url: "https://text.pollinations.ai/",
-        payload: {
-          messages: [{ role: "user", content: fullPrompt }],
-          model: "mistral",
-          seed: 42
-        },
-        timeout: 8000
-      },
-      {
-        name: "Direct GET AI Gateway Stream",
-        type: "get",
-        url: `https://text.pollinations.ai/${encodeURIComponent(promptText.substring(0, 1600))}?model=searchgpt&cache=false`,
-        timeout: 8000
-      },
-      {
-        name: "Public HuggingFace Open Gateway",
-        type: "hf_post",
-        url: "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
-        payload: {
-          inputs: `<s>[INST] ${promptText.substring(0, 1800)} [/INST]`,
-          parameters: { max_new_tokens: 1800, return_full_text: false }
-        },
-        timeout: 7000
-      }
-    ];
+        <div class="card-header-flex mt-lg mb-xs">
+          <h3>Login & Access Audit Logs</h3>
+          <button type="button" id="btnClearAdminLogs" class="link-button">Clear Audit Log</button>
+        </div>
+        <div class="table-responsive max-h-250">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Username</th>
+                <th>Action Event</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admLogsTableBody"></tbody>
+          </table>
+        </div>
 
-    for (let i = 0; i < engines.length; i++) {
-      const engine = engines[i];
-      try {
-        statusElem.innerText = `Connecting to Engine ${i + 1}/${engines.length} (${engine.name})...`;
-
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), engine.timeout);
-
-        let response;
-        if (engine.type === "get") {
-          response = await fetch(engine.url, { signal: controller.signal });
-        } else {
-          response = await fetch(engine.url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(engine.payload),
-            signal: controller.signal
-          });
-        }
-
-        clearTimeout(timer);
-
-        if (response.ok) {
-          let textResult = "";
-          const contentType = response.headers.get("content-type") || "";
-
-          if (contentType.includes("application/json")) {
-            const data = await response.json();
-            if (Array.isArray(data) && data[0]?.generated_text) {
-              textResult = data[0].generated_text;
-            } else if (data.text) {
-              textResult = data.text;
-            } else if (data.choices?.[0]?.message?.content) {
-              textResult = data.choices[0].message.content;
-            } else {
-              textResult = JSON.stringify(data);
-            }
-          } else {
-            textResult = await response.text();
-          }
-
-          if (textResult && (textResult.includes("sec-block") || textResult.includes("q-item") || textResult.includes("paper-header"))) {
-            statusElem.innerText = `Paper compiled via ${engine.name}!`;
-            return textResult;
-          }
-        }
-      } catch (err) {
-        console.warn(`[Failover] ${engine.name} bypassed. Error: ${err.message}`);
-      }
-    }
-
-    // Tier 6: Guaranteed zero-breakage local compiler
-    statusElem.innerText = "External AI streams busy. Compiled using local academic synthesis engine.";
-    return compileLocalExamPaperHTML(localConfig);
-  }
-
-  // =========================================================================
-  // ⚡ GENERATION WORKFLOW
-  // =========================================================================
-  async function startGeneration() {
-    calculateAndValidateMarks();
-    if (document.getElementById('genBtn').disabled) {
-      alert("Please balance marks before generating the exam paper.");
-      return;
-    }
-
-    const files = document.getElementById('fileInput').files;
-    const btn = document.getElementById('genBtn');
-    const status = document.getElementById('statusMessage');
-    const paperCard = document.getElementById('paperCard');
-    const paperPreview = document.getElementById('paperPreview');
-
-    if (files.length === 0) {
-      alert(currentUploadMode === 'lesson' 
-        ? "Please upload textbook lesson pages/PDFs in Section 2." 
-        : "Please upload existing question bank documents in Section 2.");
-      return;
-    }
-
-    btn.disabled = true;
-    paperCard.style.display = "none";
-
-    try {
-      const extractedText = await extractTextFromUploadedFiles(files, status);
-
-      const parsedQuestions = extractedText
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 15 && !l.startsWith("---"));
-
-      const sectionsConfig = [];
-      const localSections = [];
-
-      const presetSecKeys = [
-        { id: 'mcq', desc: 'Multiple Choice Questions with 4 options', isMcq: true },
-        { id: '1m', desc: 'One-word or single-sentence short answer questions', isMcq: false },
-        { id: '2m', desc: 'Short conceptual questions', isMcq: false },
-        { id: '3m', desc: 'Brief descriptive questions', isMcq: false },
-        { id: '4m', desc: 'Long answer/detailed questions', isMcq: false }
-      ];
-
-      presetSecKeys.forEach(s => {
-        const chk = document.getElementById('use_' + s.id);
-        if (chk && chk.checked) {
-          const count = parseInt(document.getElementById('count_' + s.id).value) || 0;
-          const marks = parseInt(document.getElementById('marks_' + s.id).value) || 0;
-          const inst = document.getElementById('inst_' + s.id).value;
-          const secTitle = document.getElementById('title_' + s.id).value;
-          
-          sectionsConfig.push(`- Section: "${secTitle}"\n  Instructions: "${inst}"\n  Question count: ${count}\n  Marks each: ${marks}\n  Total: [${count} × ${marks} = ${count * marks}]`);
-          localSections.push({ title: inst, count, marks, isMcq: s.isMcq });
-        }
-      });
-
-      for (let i = 1; i <= customSectionCount; i++) {
-        const chk = document.getElementById(`use_custom_${i}`);
-        const fileInput = document.getElementById(`file_custom_${i}`);
-        const descInput = document.getElementById(`desc_custom_${i}`);
-        const hasManual = (fileInput && fileInput.files.length > 0) || (descInput && descInput.value.trim().length > 0);
-
-        if (chk && chk.checked && !hasManual) {
-          const count = parseInt(document.getElementById(`count_custom_${i}`).value) || 0;
-          const marks = parseInt(document.getElementById(`marks_custom_${i}`).value) || 0;
-          const inst = document.getElementById(`inst_custom_${i}`).value;
-          const secTitle = document.getElementById(`title_custom_${i}`).value;
-          
-          sectionsConfig.push(`- Section: "${secTitle}"\n  Instructions: "${inst}"\n  Question count: ${count}\n  Marks each: ${marks}\n  Total: [${count} × ${marks} = ${count * marks}]`);
-          localSections.push({ title: inst, count, marks, isMcq: false });
-        }
-      }
-
-      const instName = document.getElementById('instName').value;
-      const examTitle = document.getElementById('examTitle').value;
-      const subject = document.getElementById('subject').value;
-      const grade = document.getElementById('grade').value;
-      const duration = document.getElementById('duration').value;
-      const maxMarks = document.getElementById('maxMarks').value;
-      const genInst = document.getElementById('genInst').value;
-
-      const incName = document.getElementById('incName').checked;
-      const incRoll = document.getElementById('incRoll').checked;
-      const incSec = document.getElementById('incSec').checked;
-      const incDate = document.getElementById('incDate').checked;
-
-      const localConfig = {
-        mode: currentUploadMode,
-        instName, examTitle, subject, grade, duration, maxMarks, genInst,
-        incName, incRoll, incSec, incDate,
-        sections: localSections,
-        parsedQuestions
-      };
-
-      const modeInstruction = currentUploadMode === 'lesson'
-        ? "MODE 2 ACTIVE: The user uploaded raw textbook lesson/chapter pages. Read the content thoroughly and formulate brand new academic questions (MCQs with 4 options, 1M, 2M, 3M, 4M) matching the section blueprint exactly."
-        : "MODE 1 ACTIVE: The user uploaded an existing question bank. Extract and organize the questions directly into the sections matching the blueprint.";
-
-      const promptText = `
-You are an expert academic paper setter.
-${modeInstruction}
-
-SOURCE MATERIAL CONTENT:
-${extractedText ? extractedText.substring(0, 3000) : "Subject content for: " + subject}
-
-BLUEPRINT & SECTIONS:
-${sectionsConfig.join('\n\n')}
-
-GENERAL INSTRUCTIONS:
-"${genInst}"
-
-FORMATTING GUIDELINES:
-1. Marks Rule: ONLY display total section marks on headings using class="sec-marks-total", like: [Count × Marks = Total].
-2. Roman Headings: I., II., III., IV., V., VI...
-3. Same-Line Question format:
-  <div class="q-item">
-    <div class="q-line">
-      <span class="q-num">[Q.No].</span>
-      <span class="q-text">[Question Text]</span>
-    </div>
-    <div class="mcq-options">
-      <span>(A) [Opt A]</span>
-      <span>(B) [Opt B]</span>
-      <span>(C) [Opt C]</span>
-      <span>(D) [Opt D]</span>
-    </div>
-  </div>
-
-Return ONLY raw semantic HTML for A4 container (No markdown backticks):
-<div class="paper-header">
-  <h1>${instName}</h1>
-  <h3>${examTitle}</h3>
-  <div class="meta-row">
-    <span>Subject: ${subject}</span>
-    <span>Class: ${grade}</span>
-    <span>Time: ${duration}</span>
-    <span>Max Marks: ${maxMarks}</span>
-  </div>
-  <div class="student-fields">
-    ${incName ? '<span>Name: _______________________________</span>' : ''}
-    ${incRoll ? '<span>Reg/Roll No: ____________</span>' : ''}
-    ${incSec ? '<span>Sec: ____</span>' : ''}
-    ${incDate ? '<span>Date: _________</span>' : ''}
-  </div>
-</div>
-${genInst ? `<div class="general-instructions"><strong>General Instructions:</strong> ${genInst}</div>` : ''}
-`;
-
-      const generatedRaw = await generateFastPaperDirect(promptText, localConfig, status);
-      let htmlOutput = generatedRaw.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
-
-      const totalQCount = (htmlOutput.match(/class="q-item"/g) || []).length;
-      htmlOutput += await buildDiagramSectionHtml(totalQCount + 1);
-
-      paperPreview.innerHTML = htmlOutput;
-      paperCard.style.display = "block";
-      status.innerText = "Exam paper generated successfully!";
-
-      const defaultName = [subject, grade, examTitle].filter(Boolean).join('_').replace(/[\/\s]+/g, '_');
-      document.getElementById('paperCustomName').value = defaultName;
-
-      const selectedFont = document.getElementById('fontSelector').value;
-      changePaperFont(selectedFont);
-
-      document.getElementById('editToggle').checked = false;
-      toggleEditMode(false);
-
-      saveCurrentPaperToHistory(false);
-      paperCard.scrollIntoView({ behavior: 'smooth' });
-
-    } catch (err) {
-      alert("Notice: " + err.message);
-      status.innerText = "Error: " + err.message;
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  // --- APP STARTUP INITIALIZATION ---
-  window.addEventListener('load', () => {
-    if (!localStorage.getItem('app_users_cleared_v2')) {
-      localStorage.removeItem('exam_staff_registry');
-      localStorage.removeItem('persistent_exam_user');
-      localStorage.removeItem('active_exam_user');
-      localStorage.setItem('app_users_cleared_v2', 'true');
-    }
-
-    calculateAndValidateMarks();
-    setupStrictMobileBackRouting();
-    checkAppLockOnLoad();
-
-    const persistentUser = localStorage.getItem('persistent_exam_user');
-    if (persistentUser) {
-      loginSuccess(JSON.parse(persistentUser));
-    } else {
-      setAuthMode('signin');
-    }
-  });
-</script>
+        <h3 class="mt-lg mb-xs">Master Question Paper Directory</h3>
+        <div id="admPapersContainer"></div>
+      </div>
+    </section>
+  </main>
 
 </body>
 </html>
