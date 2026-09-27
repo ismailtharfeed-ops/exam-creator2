@@ -201,11 +201,11 @@
       background: var(--card-subtle); border: 1.5px solid var(--border);
       width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 5px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      gap: 6px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative; z-index: 2;
     }
     .menu-lines-btn span {
-      display: block; width: 20px; height: 2.2px; background-color: var(--text);
+      display: block; width: 22px; height: 2.5px; background-color: var(--text);
       border-radius: 4px; transition: all 0.25s ease;
     }
     .menu-lines-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: scale(1.04); }
@@ -419,11 +419,6 @@
     .q-line { display: block; line-height: 1.3 !important; }
     .q-num { font-weight: bold; margin-right: 6px; display: inline; white-space: nowrap; }
     .q-text { display: inline; }
-    .mcq-options { 
-      margin-top: 3px !important; margin-bottom: 4px !important;
-      padding-left: 20px; font-size: 0.95em !important;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; 
-    }
     .diagram-container { text-align: center; margin: 6px 0; page-break-inside: avoid; }
     .diagram-container img { max-width: 85%; max-height: 220px; object-fit: contain; border: 1px solid #666; padding: 3px; }
 
@@ -637,13 +632,17 @@
     <header class="app-header no-print" id="mainHomeHeader">
       <div class="header-watermark" aria-hidden="true"></div>
       
+      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
       <div class="header-center-title">
         <h1>Exam Paper <span>Creator</span></h1>
       </div>
 
-      <button type="button" class="menu-dots-btn" id="btnOpenDrawer" aria-label="Open Navigation Options">
-        ⋮
-      </button>
+      <div class="header-spacer" aria-hidden="true"></div>
     </header>
 
     <!-- PAGE 1: CREATE PAPER VIEW -->
@@ -728,165 +727,17 @@
         <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" aria-expanded="false" aria-controls="sectionsAccordionContent">
           <h2>
             <span>⚙️ 3. Question Paper Structure & Sections</span>
-            <span class="accordion-subtext">(Sections A-F & Custom)</span>
+            <span class="accordion-subtext">(Customizable Sections & Diagrams)</span>
           </h2>
           <span class="arrow-icon" id="accordionArrow" aria-hidden="true">▼</span>
         </button>
 
         <div class="accordion-content" id="sectionsAccordionContent">
           <div id="dynamicSectionsContainer">
-            <!-- Section A: MCQs -->
-            <article class="section-box" id="sec_card_mcq">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_mcq" class="sec-toggle" data-sec="mcq" checked aria-label="Enable Section A">
-                  <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
-                </div>
-              </div>
-              <div id="box_mcq" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_mcq">Question Count</label>
-                  <input type="number" id="count_mcq" class="marks-calc" value="4" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_mcq">Marks Each</label>
-                  <input type="number" id="marks_mcq" class="marks-calc" value="1" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_mcq">Instructions Heading</label>
-                  <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
-                </div>
-              </div>
-            </article>
-
-            <!-- Section B: 1-Word / Sentence -->
-            <article class="section-box" id="sec_card_1m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_1m" class="sec-toggle" data-sec="1m" checked aria-label="Enable Section B">
-                  <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
-                </div>
-              </div>
-              <div id="box_1m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_1m">Question Count</label>
-                  <input type="number" id="count_1m" class="marks-calc" value="3" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_1m">Marks Each</label>
-                  <input type="number" id="marks_1m" class="marks-calc" value="1" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_1m">Instructions Heading</label>
-                  <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
-                </div>
-              </div>
-            </article>
-
-            <!-- Section C: Short Answers -->
-            <article class="section-box" id="sec_card_2m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_2m" class="sec-toggle" data-sec="2m" checked aria-label="Enable Section C">
-                  <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
-                </div>
-              </div>
-              <div id="box_2m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_2m">Question Count</label>
-                  <input type="number" id="count_2m" class="marks-calc" value="3" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_2m">Marks Each</label>
-                  <input type="number" id="marks_2m" class="marks-calc" value="2" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_2m">Instructions Heading</label>
-                  <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
-                </div>
-              </div>
-            </article>
-
-            <!-- Section D: Brief Explanations -->
-            <article class="section-box" id="sec_card_3m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_3m" class="sec-toggle" data-sec="3m" checked aria-label="Enable Section D">
-                  <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
-                </div>
-              </div>
-              <div id="box_3m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_3m">Question Count</label>
-                  <input type="number" id="count_3m" class="marks-calc" value="2" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_3m">Marks Each</label>
-                  <input type="number" id="marks_3m" class="marks-calc" value="3" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_3m">Instructions Heading</label>
-                  <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
-                </div>
-              </div>
-            </article>
-
-            <!-- Section E: Long Answers -->
-            <article class="section-box" id="sec_card_4m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_4m" class="sec-toggle" data-sec="4m" checked aria-label="Enable Section E">
-                  <input type="text" class="editable-sec-title" id="title_4m" value="Section E: Long Answers / Detailed Questions">
-                </div>
-              </div>
-              <div id="box_4m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_4m">Question Count</label>
-                  <input type="number" id="count_4m" class="marks-calc" value="1" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_4m">Marks Each</label>
-                  <input type="number" id="marks_4m" class="marks-calc" value="4" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_4m">Instructions Heading</label>
-                  <input type="text" id="inst_4m" value="V. Answer the following questions in detail:">
-                </div>
-              </div>
-            </article>
-
-            <!-- Section F: Map / Diagram -->
-            <article class="section-box" id="sec_card_diag">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_diag" class="sec-toggle" data-sec="diag" checked aria-label="Enable Section F">
-                  <input type="text" class="editable-sec-title" id="title_diag" value="Section F: Map / Diagram / Graph Question">
-                </div>
-              </div>
-              <div id="box_diag" class="grid-2 sec-body">
-                <div class="form-group">
-                  <label for="diagImage">Upload Map Outline, Diagram, or Graph</label>
-                  <input type="file" id="diagImage" accept="image/*">
-                </div>
-                <div class="grid-2">
-                  <div class="form-group">
-                    <label for="marks_diag">Question Marks</label>
-                    <input type="number" id="marks_diag" class="marks-calc" value="2" min="1">
-                  </div>
-                  <div class="form-group">
-                    <label for="inst_diag">Section Heading</label>
-                    <input type="text" id="inst_diag" value="VI. Map / Diagram Based Question:">
-                  </div>
-                </div>
-                <div class="form-group span-2">
-                  <label for="diagDesc">Question Description / Sub-points</label>
-                  <textarea id="diagDesc" rows="2"></textarea>
-                </div>
-              </div>
-            </article>
+            <!-- Starting clean with 1 default custom section ready for questions or photos -->
           </div>
 
-          <button type="button" class="btn-add-sec" id="btnAddCustomSection">➕ Add Extra Custom Section</button>
+          <button type="button" class="btn-add-sec" id="btnAddCustomSection">➕ Add Custom Section (With Photo / Diagram Option)</button>
         </div>
 
         <div id="marksValidationBox" role="alert" aria-live="assertive" hidden>
@@ -1417,78 +1268,18 @@
       });
     }
 
-    function determineLanguageCode(subjectStr) {
-      const s = (subjectStr || '').toLowerCase();
-      if (s.includes('kannada')) return 'kan+eng';
-      if (s.includes('hindi') || s.includes('sanskrit')) return 'hin+eng';
-      if (s.includes('arabic') || s.includes('urdu')) return 'ara+eng';
-      return 'eng';
-    }
-
-    async function extractTextFromPdf(file, langCode, statusElem) {
-      const pdfLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-      if (!pdfLib) return "";
-      try {
-        pdfLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfLib.getDocument({ data: arrayBuffer }).promise;
-        let fullText = "";
-
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const textContent = await page.getTextContent();
-          let pageStr = textContent.items.map(item => item.str).join(' ');
-
-          if (!pageStr || pageStr.trim().length < 20) {
-            statusElem.innerText = `OCR scanning PDF page ${pageNum}/${pdf.numPages}...`;
-            const viewport = page.getViewport({ scale: 1.5 });
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            await page.render({ canvasContext: ctx, viewport }).promise;
-
-            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-            if (typeof Tesseract !== 'undefined') {
-              const worker = await Tesseract.createWorker(langCode);
-              try {
-                const { data: { text } } = await worker.recognize(blob);
-                pageStr = text;
-              } finally {
-                await worker.terminate();
-              }
-            }
-          }
-          fullText += `\n--- Page ${pageNum} ---\n` + pageStr;
-        }
-        return fullText;
-      } catch (err) {
-        return "";
-      }
-    }
-
     async function extractTextFromFiles(files, statusElem) {
       let combinedText = "";
-      const langCode = determineLanguageCode(document.getElementById('subject')?.value);
-
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         statusElem.innerText = `Processing file (${i + 1}/${files.length}): ${file.name}...`;
-
-        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-          const pdfText = await extractTextFromPdf(file, langCode, statusElem);
-          if (pdfText && pdfText.trim().length > 20) {
-            combinedText += pdfText + "\n";
-            continue;
-          }
-        }
 
         if (file.type.startsWith("image/") && typeof Tesseract !== 'undefined') {
           let worker = null;
           let res = null;
           try {
             res = await preprocessImageForOcr(file);
-            worker = await Tesseract.createWorker(langCode);
+            worker = await Tesseract.createWorker('eng');
             const { data: { text } } = await worker.recognize(res.blob);
             if (text) combinedText += `\n--- Page ${i + 1} ---\n` + text;
           } catch (e) {} finally {
@@ -1508,115 +1299,94 @@
       });
     }
 
-    function parseRawQuestionsAndMCQs(rawText) {
-      const detectedMCQs = [];
-      const detectedStandard = [];
-      const cleanDoc = rawText.replace(/\r/g, '\n').replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-      const inlineMcqRegex = /(?:^|\n)(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))\s*(.+?)(?:\s*[\(\[]?([A-Da-d])[\)\]\.\-:]\s*(.+?))\s*[\(\[]?([B-Db-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([C-Dc-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([D-Dd])[\)\]\.\-:]\s*([^\n\(\)]+?)(?=(?:\n\s*(?:Q\.?\s*\d+\vert{}\d+[\.\)]|\([0-9]+\))|$))/gis;
-
-      let match;
-      while ((match = inlineMcqRegex.exec(cleanDoc)) !== null) {
-        detectedMCQs.push({
-          question: match[1].trim(),
-          options: [match[3].trim().replace(/^[,\.\-]/, ''), match[5].trim().replace(/^[,\.\-]/, ''), match[7].trim().replace(/^[,\.\-]/, ''), match[9].trim().replace(/^[,\.\-]/, '')]
-        });
-      }
-
-      const lines = cleanDoc.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      let currentMCQ = null;
-      const singleOptRegex = /^(?:[\(\[]?([A-Da-d])[\)\]\.\-:]\s*)(.{2,})$/;       const qNumRegex = /^(?:Q\.?\s*\d+\vert{}\d+[\.\)]|\([0-9]+\))\s*(.+)$/i;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const optMatch = line.match(singleOptRegex);
-        const qMatch = line.match(qNumRegex);
-
-        if (optMatch && currentMCQ) {
-          currentMCQ.options.push(optMatch[2].trim());
-          if (currentMCQ.options.length >= 4) {
-            detectedMCQs.push(currentMCQ);
-            currentMCQ = null;
-          }
-          continue;
-        }
-
-        if (qMatch) {
-          if (currentMCQ && currentMCQ.options.length >= 2) detectedMCQs.push(currentMCQ);
-          currentMCQ = { question: qMatch[1].trim(), options: [] };
-          detectedStandard.push(qMatch[1].trim());
-        } else if (line.length > 20 && !line.startsWith("---")) {
-          if (currentMCQ && currentMCQ.options.length === 0) currentMCQ.question += " " + line;
-          else detectedStandard.push(line);
-        }
-      }
-      if (currentMCQ && currentMCQ.options.length >= 2) detectedMCQs.push(currentMCQ);
-      return { detectedMCQs, detectedStandard };
+    // =========================================================================
+    // CUSTOM SECTION BUILDER & COMPILER
+    // =========================================================================
+    function addNewCustomSection() {
+      AppState.customSectionCount++;
+      const secId = `custom_${AppState.customSectionCount}`;
+      const container = document.getElementById('dynamicSectionsContainer');
+      const secDiv = document.createElement('article');
+      secDiv.className = 'section-box';
+      secDiv.id = `sec_card_${secId}`;
+      secDiv.innerHTML = `
+        <div class="section-header-edit">
+          <div class="left-block">
+            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked>
+            <input type="text" class="editable-sec-title" id="title_${secId}" value="Section ${String.fromCharCode(64 + AppState.customSectionCount)}: Custom Questions">
+          </div>
+          <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕</button>
+        </div>
+        <div id="box_${secId}" class="grid-2 sec-body">
+          <div class="form-group"><label>Question Count</label><input type="number" id="count_${secId}" class="marks-calc" value="2" min="1" oninput="calculateAndValidateMarks()"></div>
+          <div class="form-group"><label>Marks Each</label><input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1" oninput="calculateAndValidateMarks()"></div>
+          <div class="form-group">
+            <label>Attach Optional Photo / Diagram / Graph</label>
+            <input type="file" id="file_${secId}" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Section Heading / Instructions</label>
+            <input type="text" id="inst_${secId}" value="Answer the following questions:">
+          </div>
+          <div class="form-group span-2">
+            <label>Question Description / Sub-points (Optional)</label>
+            <textarea id="desc_${secId}" rows="2" placeholder="e.g. Answer based on the attached diagram/map"></textarea>
+          </div>
+        </div>
+      `;
+      container.appendChild(secDiv);
+      calculateAndValidateMarks();
     }
 
-    function extractNounsAndPhrases(text) {
-      return Array.from(new Set(text.replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 4)));
-    }
-
-    function compileLocalExamPaperHTML(config) {
+    async function compileCustomExamPaperHTML(config) {
       let qCounter = 1;
       let sectionsHtml = "";
-      const { detectedMCQs, detectedStandard } = parseRawQuestionsAndMCQs(config.rawText || "");
-      const standardPool = detectedStandard.length > 0 ? [...detectedStandard] : [...config.parsedQuestions];
-      const mcqPool = [...detectedMCQs];
-      const safeVocab = extractNounsAndPhrases(config.rawText || "").length > 0 ? extractNounsAndPhrases(config.rawText || "") : ["concept", "principle", "factor", "analysis", "parameter"];
-      let vocabIndex = 0;
 
-      config.sections.forEach(sec => {
+      for (let i = 1; i <= AppState.customSectionCount; i++) {
+        const chk = document.getElementById(`use_custom_${i}`);
+        if (!chk || !chk.checked) continue;
+
+        const title = document.getElementById(`title_custom_${i}`).value || `Section ${i}`;
+        const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 1;
+        const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 1;
+        const inst = document.getElementById(`inst_custom_${i}`).value || "Answer the following:";
+        const desc = document.getElementById(`desc_custom_${i}`).value || "";
+        const fileInput = document.getElementById(`file_custom_${i}`);
+        const file = fileInput?.files?.[0];
+        
+        let imgSrc = "";
+        if (file) {
+          imgSrc = await fileToDataURL(file);
+          await AppDB.set(`sec_img_${Date.now()}`, imgSrc);
+        }
+
         sectionsHtml += `
           <div class="sec-block">
             <div class="sec-title">
-              <span>${sec.title}</span>
-              <span class="sec-marks-total">[${sec.count} × ${sec.marks} = ${sec.count * sec.marks}]</span>
+              <span>${title} - ${inst}</span>
+              <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
             </div>
+            ${desc ? `<div class="text-subtle text-sm mb-xs" style="font-style:italic;">${desc}</div>` : ''}
+            ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Section Diagram"></div>` : ''}
         `;
-        for (let i = 0; i < sec.count; i++) {
-          if (sec.isMcq) {
-            let qText = "";
-            let options = [];
-            if (mcqPool.length > 0) {
-              const item = mcqPool.shift();
-              qText = item.question;
-              options = [...item.options];
-              while (options.length < 4) options.push(`Pertaining strictly to ${safeVocab[vocabIndex++ % safeVocab.length]}`);
-            } else {
-              const snippet = standardPool.length > 0 ? standardPool.shift() : `core principles of ${config.subject}`;
-              qText = `Identify the correct statement regarding ${snippet.substring(0, 60)}:`;
-              options = ["Directly associated factor", "Operates independently", "Inverse proportionality", "Accelerates the outcome"];
-            }
-            sectionsHtml += `
-              <div class="q-item">
-                <div class="q-line">
-                  <span class="q-num">${qCounter}.</span>
-                  <span class="q-text">${qText}</span>
-                </div>
-                <div class="mcq-options">
-                  <span>(A) ${options[0]}</span>
-                  <span>(B) ${options[1]}</span>
-                  <span>(C) ${options[2]}</span>
-                  <span>(D) ${options[3]}</span>
-                </div>
+
+        for (let q = 0; q < count; q++) {
+          const qText = config.parsedQuestions.length > 0 
+            ? config.parsedQuestions.shift() 
+            : `Discuss the theoretical framework and practical implications regarding point ${q + 1}.`;
+
+          sectionsHtml += `
+            <div class="q-item">
+              <div class="q-line">
+                <span class="q-num">${qCounter}.</span>
+                <span class="q-text">${qText}</span>
               </div>
-            `;
-          } else {
-            const questionText = standardPool.length > 0 ? standardPool.shift() : `Explain ${config.subject} concepts.`;
-            sectionsHtml += `
-              <div class="q-item">
-                <div class="q-line">
-                  <span class="q-num">${qCounter}.</span>
-                  <span class="q-text">${questionText}</span>
-                </div>
-              </div>
-            `;
-          }
+            </div>
+          `;
           qCounter++;
         }
         sectionsHtml += `</div>`;
-      });
+      }
 
       return `
         <div class="paper-header">
@@ -1640,57 +1410,36 @@
       `;
     }
 
-    async function generateFastPaperDirect(promptText, localConfig, statusElem) {
-      statusElem.innerText = "Formatting verified exam paper...";
-      return compileLocalExamPaperHTML(localConfig);
-    }
-
-    async function buildDiagramSectionHtml(qNum) { return ""; }
-
     function calculateAndValidateMarks() {
       const maxMarks = parseInt(document.getElementById('maxMarks').value, 10) || 0;
       let calculatedTotal = 0;
-      ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
-        const chk = document.getElementById('use_' + sec);
+
+      for (let i = 1; i <= AppState.customSectionCount; i++) {
+        const chk = document.getElementById(`use_custom_${i}`);
         if (chk && chk.checked) {
-          calculatedTotal += (parseInt(document.getElementById('count_' + sec).value, 10) || 0) * (parseInt(document.getElementById('marks_' + sec).value, 10) || 0);
+          const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 0;
+          const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 0;
+          calculatedTotal += (count * marks);
         }
-      });
+      }
+
       const box = document.getElementById('marksValidationBox');
       const genBtn = document.getElementById('genBtn');
+      if (AppState.customSectionCount === 0) {
+        box.hidden = false;
+        document.getElementById('marksSummaryText').innerText = `Please add at least one custom section below.`;
+        genBtn.disabled = true;
+        return;
+      }
+
       if (calculatedTotal === maxMarks) {
         box.hidden = true;
         genBtn.disabled = false;
       } else {
         box.hidden = false;
-        document.getElementById('marksSummaryText').innerText = `Total sections sum (${calculatedTotal}) differs from Target (${maxMarks}).`;
+        document.getElementById('marksSummaryText').innerText = `Total sections sum (${calculatedTotal}) differs from Target Max Marks (${maxMarks}).`;
         genBtn.disabled = true;
       }
-    }
-
-    function addNewCustomSection() {
-      AppState.customSectionCount++;
-      const secId = `custom_${AppState.customSectionCount}`;
-      const container = document.getElementById('dynamicSectionsContainer');
-      const secDiv = document.createElement('article');
-      secDiv.className = 'section-box';
-      secDiv.id = `sec_card_${secId}`;
-      secDiv.innerHTML = `
-        <div class="section-header-edit">
-          <div class="left-block">
-            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked>
-            <input type="text" class="editable-sec-title" id="title_${secId}" value="Custom Section ${AppState.customSectionCount}">
-          </div>
-          <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕</button>
-        </div>
-        <div id="box_${secId}" class="grid-2 sec-body">
-          <div class="form-group"><label>Count</label><input type="number" id="count_${secId}" class="marks-calc" value="1" min="1"></div>
-          <div class="form-group"><label>Marks</label><input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1"></div>
-          <div class="form-group span-2"><label>Heading</label><input type="text" id="inst_${secId}" value="Answer:"></div>
-        </div>
-      `;
-      container.appendChild(secDiv);
-      calculateAndValidateMarks();
     }
 
     function getStaffSpecificVaultKey() {
@@ -1748,7 +1497,6 @@
       if (page === 'admin') renderAdminDashboard();
     }
 
-    function switchPage(page, fromDrawer = false) { setPageView(page); }
     function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
     function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
 
@@ -1768,10 +1516,16 @@
       document.getElementById('drawerProfileName').innerText = user.fullName || user.name;
       document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
       const avatarData = await AppDB.get(`avatar_${user.id}`);
+      const avatarImg = document.getElementById('drawerAvatarImg');
+      const fallback = document.getElementById('drawerAvatarFallback');
       if (avatarData) {
-        document.getElementById('drawerAvatarImg').src = avatarData;
-        document.getElementById('drawerAvatarImg').hidden = false;
-        document.getElementById('drawerAvatarFallback').hidden = true;
+        avatarImg.src = avatarData;
+        avatarImg.hidden = false;
+        fallback.hidden = true;
+      } else {
+        avatarImg.hidden = true;
+        fallback.hidden = false;
+        fallback.innerText = (user.fullName || user.name || "S").charAt(0).toUpperCase();
       }
     }
 
@@ -1782,7 +1536,7 @@
       await syncProfileUI(user);
       populateHeaderSettings(user);
 
-      // Strict Admin Access Check
+      // Secret Admin Dashboard visibility check
       const isAdmin = (user.name === 'admin');
       document.getElementById('drawerAdminItem').hidden = !isAdmin;
       setPageView('create');
@@ -1820,13 +1574,14 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
 
-      if (!SafeStorage.get('app_users_cleared_v6')) {
+      if (!SafeStorage.get('app_users_cleared_v8')) {
         SafeStorage.remove('exam_staff_registry');
         SafeStorage.remove('persistent_exam_user');
-        SafeStorage.set('app_users_cleared_v6', true);
+        SafeStorage.set('app_users_cleared_v8', true);
       }
 
-      calculateAndValidateMarks();
+      // Start with 1 default custom section ready
+      addNewCustomSection();
 
       window.history.replaceState({ page: 'create' }, '');
       window.addEventListener('popstate', (e) => {
@@ -1955,12 +1710,6 @@
         const target = e.target;
         if (target.id === 'regAvatarFile' && target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
         if (target.id === 'profilePageAvatarInput' && target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
-        if (target.classList.contains('sec-toggle')) {
-          const secId = target.getAttribute('data-sec');
-          const box = document.getElementById(`box_${secId}`);
-          if (box) box.style.display = target.checked ? 'grid' : 'none';
-          calculateAndValidateMarks();
-        }
       });
 
       document.body.addEventListener('submit', async (e) => {
@@ -2034,6 +1783,70 @@
               showInlineError("Incorrect security PIN.");
             }
           }
+        }
+      });
+
+      // Exam Paper Generation Trigger
+      document.getElementById('genBtn').addEventListener('click', async () => {
+        calculateAndValidateMarks();
+        const btn = document.getElementById('genBtn');
+        if (btn.disabled) {
+          alert("Please balance marks before generation.");
+          return;
+        }
+
+        const files = document.getElementById('fileInput').files;
+        const status = document.getElementById('statusMessage');
+        const paperCard = document.getElementById('paperCard');
+        const paperPreview = document.getElementById('paperPreview');
+
+        btn.disabled = true;
+        paperCard.hidden = true;
+
+        try {
+          let extractedText = "";
+          if (files.length > 0) {
+            extractedText = await extractTextFromFiles(files, status);
+          }
+
+          const parsedQuestions = extractedText
+            ? extractedText.split('\n').map(l => l.trim()).filter(l => l.length > 10 && !l.startsWith("---"))
+            : [];
+
+          const config = {
+            mode: AppState.currentUploadMode,
+            rawText: extractedText,
+            instName: document.getElementById('instName').value,
+            examTitle: document.getElementById('examTitle').value,
+            subject: document.getElementById('subject').value,
+            grade: document.getElementById('grade').value,
+            duration: document.getElementById('duration').value,
+            maxMarks: document.getElementById('maxMarks').value,
+            genInst: document.getElementById('genInst').value,
+            incName: document.getElementById('incName').checked,
+            incRoll: document.getElementById('incRoll').checked,
+            incSec: document.getElementById('incSec').checked,
+            incDate: document.getElementById('incDate').checked,
+            parsedQuestions
+          };
+
+          const htmlOutput = await compileCustomExamPaperHTML(config);
+
+          paperPreview.innerHTML = htmlOutput;
+          paperCard.hidden = false;
+          status.innerText = "Exam paper generated successfully!";
+
+          const defaultName = [config.subject, config.grade, config.examTitle].filter(Boolean).join('_').replace(/[\/\s]+/g, '_');
+          document.getElementById('paperCustomName').value = defaultName;
+          changePaperFont(document.getElementById('fontSelector').value);
+
+          saveCurrentPaperToHistory(false);
+          paperCard.scrollIntoView({ behavior: 'smooth' });
+        } catch (err) {
+          alert("Notice: " + err.message);
+          status.innerText = "Error: " + err.message;
+        } finally {
+          btn.disabled = false;
         }
       });
     });
