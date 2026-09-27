@@ -197,15 +197,19 @@
       background-repeat: no-repeat; background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
     }
-    .menu-dots-btn {
+    .menu-lines-btn {
       background: var(--card-subtle); border: 1.5px solid var(--border);
-      width: 40px; height: 40px; border-radius: 10px; cursor: pointer; 
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; font-weight: bold; color: var(--text);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 5px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative; z-index: 2;
     }
-    .menu-dots-btn:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); transform: scale(1.04); }
+    .menu-lines-btn span {
+      display: block; width: 20px; height: 2.2px; background-color: var(--text);
+      border-radius: 4px; transition: all 0.25s ease;
+    }
+    .menu-lines-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: scale(1.04); }
+    .menu-lines-btn:hover span { background-color: var(--primary); }
 
     .header-center-title {
       position: absolute; left: 50%; transform: translateX(-50%);
@@ -213,7 +217,7 @@
     }
     .header-center-title h1 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin: 0; }
     .header-center-title h1 span { color: var(--primary); }
-    .header-spacer { width: 40px; }
+    .header-spacer { width: 42px; }
 
     .drawer-backdrop {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
@@ -1744,15 +1748,9 @@
       if (page === 'admin') renderAdminDashboard();
     }
 
-    function openDrawer() {
-      document.getElementById('sideDrawer').classList.add('active');
-      document.getElementById('drawerBackdrop').classList.add('active');
-    }
-
-    function closeDrawer() {
-      document.getElementById('sideDrawer').classList.remove('active');
-      document.getElementById('drawerBackdrop').classList.remove('active');
-    }
+    function switchPage(page, fromDrawer = false) { setPageView(page); }
+    function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
+    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
 
     function setAuthMode(mode) {
       AppState.currentAuthMode = mode;
@@ -1784,8 +1782,8 @@
       await syncProfileUI(user);
       populateHeaderSettings(user);
 
-      // Explicit Admin Check for Dashboard visibility
-      const isAdmin = user.role === 'admin' || user.name === 'admin';
+      // Strict Admin Access Check
+      const isAdmin = (user.name === 'admin');
       document.getElementById('drawerAdminItem').hidden = !isAdmin;
       setPageView('create');
     }
@@ -1822,23 +1820,19 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
 
-      if (!SafeStorage.get('app_users_cleared_v5')) {
+      if (!SafeStorage.get('app_users_cleared_v6')) {
         SafeStorage.remove('exam_staff_registry');
         SafeStorage.remove('persistent_exam_user');
-        SafeStorage.set('app_users_cleared_v5', true);
+        SafeStorage.set('app_users_cleared_v6', true);
       }
 
       calculateAndValidateMarks();
 
-      // Natural History Stack Routing (No Single-Click App Exit)
       window.history.replaceState({ page: 'create' }, '');
       window.addEventListener('popstate', (e) => {
         const state = e.state;
-        if (state && state.page) {
-          setPageView(state.page);
-        } else {
-          setPageView('create');
-        }
+        if (state && state.page) setPageView(state.page);
+        else setPageView('create');
       });
 
       const lockCode = SafeStorage.get('app_screen_lock_code');
@@ -1876,8 +1870,12 @@
         }
         if (target.closest('[data-action="nav-admin"]')) {
           closeDrawer();
-          window.history.pushState({ page: 'admin' }, '');
-          setPageView('admin');
+          if (AppState.activeUser?.name === 'admin') {
+            window.history.pushState({ page: 'admin' }, '');
+            setPageView('admin');
+          } else {
+            alert("Access Denied: Admin privileges required.");
+          }
           return;
         }
         if (target.closest('[data-action="nav-about"]')) {
@@ -1910,6 +1908,37 @@
           else alert("Incorrect PIN.");
           return;
         }
+
+        // Accordion Toggles
+        if (target.closest('#btnToggleSourceAccordion')) {
+          const content = document.getElementById('sourceAccordionContent');
+          const arrow = document.getElementById('sourceAccordionArrow');
+          const expanded = content.classList.toggle('expanded');
+          arrow.classList.toggle('rotated', expanded);
+          return;
+        }
+        if (target.closest('#btnToggleSectionsAccordion')) {
+          const content = document.getElementById('sectionsAccordionContent');
+          const arrow = document.getElementById('accordionArrow');
+          const expanded = content.classList.toggle('expanded');
+          arrow.classList.toggle('rotated', expanded);
+          return;
+        }
+
+        const sourceBtn = target.closest('.source-choice-btn');
+        if (sourceBtn) {
+          const mode = sourceBtn.getAttribute('data-mode');
+          AppState.currentUploadMode = mode;
+          document.querySelectorAll('.source-choice-btn').forEach(b => b.classList.remove('selected'));
+          sourceBtn.classList.add('selected');
+          document.getElementById('activeModeSummaryLabel').innerText = mode === 'existing'
+            ? "📂 Mode: Question Bank / Exercises"
+            : "📖 Mode: Textbook Lesson Pages";
+          document.getElementById('uploadLabel').innerText = mode === 'existing'
+            ? "Upload Question Bank Documents (Photos / Scans / PDFs):"
+            : "Upload Textbook Lesson Pages / Theory (Photos / Scans / PDFs):";
+          return;
+        }
       });
 
       document.body.addEventListener('input', (e) => {
@@ -1926,6 +1955,12 @@
         const target = e.target;
         if (target.id === 'regAvatarFile' && target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
         if (target.id === 'profilePageAvatarInput' && target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
+        if (target.classList.contains('sec-toggle')) {
+          const secId = target.getAttribute('data-sec');
+          const box = document.getElementById(`box_${secId}`);
+          if (box) box.style.display = target.checked ? 'grid' : 'none';
+          calculateAndValidateMarks();
+        }
       });
 
       document.body.addEventListener('submit', async (e) => {
@@ -1947,7 +1982,7 @@
           const hashedPin = await CryptoEngine.hash(pin);
           const registry = SafeStorage.get('exam_staff_registry', []);
 
-          // Built-in Admin bypass account
+          // Special Protected Admin Credentials
           if (username === 'admin' && pin === '2026') {
             const adminUser = {
               id: 'admin_root',
@@ -1957,10 +1992,10 @@
               userClass: 'Administration',
               phone: '+91 9483061904',
               role: 'admin',
-              authType: 'pin',
               secret: hashedPin
             };
             logAuditEvent("admin", "Admin Login", "Success");
+            FocusTrap.release();
             await loginSuccess(adminUser);
             return;
           }
