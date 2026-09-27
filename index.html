@@ -145,30 +145,21 @@
 
     .auth-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 26px 22px; width: 100%; max-width: 440px; 
+      padding: 24px 20px; width: 100%; max-width: 380px; 
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
       max-height: 90vh; overflow-y: auto;
     }
-    .auth-card h2 { font-size: 1.4rem; color: var(--primary); text-align: center; margin-bottom: 4px; }
-    .auth-card p { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
+    .auth-card h2 { font-size: 1.25rem; color: var(--primary); text-align: center; margin-bottom: 2px; }
+    .auth-card p { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 14px; }
 
     .auth-nav {
-      display: flex; gap: 8px; background: var(--card-subtle); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border);
+      display: flex; gap: 6px; background: var(--card-subtle); padding: 3px; border-radius: 8px; margin-bottom: 14px; border: 1px solid var(--border);
     }
     .auth-nav button {
-      flex: 1; padding: 8px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
-      transition: all 0.25s ease;
+      flex: 1; padding: 7px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
+      font-size: 0.85rem; transition: all 0.25s ease;
     }
     .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
-
-    .auth-type-pill { display: flex; gap: 10px; margin-bottom: 14px; }
-    .auth-type-pill button {
-      flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--card-subtle);
-      border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: var(--text);
-      transition: all 0.25s ease;
-    }
-    .auth-type-pill button.active { border-color: var(--primary); background: var(--primary); color: #fff; }
-    .auth-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.3; }
 
     .cropper-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
@@ -292,11 +283,11 @@
     .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; }
     .span-2 { grid-column: span 2; }
 
-    .form-group { display: flex; flex-direction: column; }
-    label, .form-label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+    label, .form-label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
     input[type="text"], input[type="password"], input[type="number"], input[type="file"], input[type="tel"], select, textarea {
-      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-      font-size: 0.9rem; background-color: var(--input-bg); color: var(--text); outline: none;
+      width: 100%; padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.88rem; background-color: var(--input-bg); color: var(--text); outline: none;
       transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
@@ -342,7 +333,7 @@
 
     .btn-generate {
       background: linear-gradient(135deg, var(--primary), #0369a1); 
-      color: #fff; border: none; padding: 14px 26px; border-radius: 10px; font-size: 1.02rem; font-weight: 700; cursor: pointer; width: 100%;
+      color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%;
       box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
     }
     .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
@@ -485,10 +476,10 @@
   <div id="lockOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lockTitle" hidden>
     <div class="auth-card text-center" tabindex="-1">
       <h2 id="lockTitle">🔒 App Locked</h2>
-      <p>Enter your App Lock credential to continue.</p>
+      <p>Enter your PIN to continue.</p>
       <div class="form-group">
-        <label for="appLockInput" class="sr-only">App Lock PIN or Password</label>
-        <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" class="input-center tracking-wide">
+        <label for="appLockInput" class="sr-only">App Lock PIN</label>
+        <input type="password" id="appLockInput" placeholder="Enter PIN" class="text-center tracking-wide" maxlength="10">
       </div>
       <button type="button" id="btnUnlockApp" class="btn-generate">Unlock App</button>
     </div>
@@ -586,7 +577,7 @@
   <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div class="auth-card" tabindex="-1">
       <h2 id="authHeading">Staff Sign In</h2>
-      <p id="authSubHeading">Sign in with your username & credentials.</p>
+      <p id="authSubHeading">Enter your username & 4-digit PIN.</p>
 
       <div class="auth-nav" role="tablist">
         <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" data-auth-mode="signin">Sign In</button>
@@ -598,13 +589,12 @@
       <form id="authForm" novalidate>
         <div class="form-group">
           <label for="authUsernameInput">Username</label>
-          <input type="text" id="authUsernameInput" autocomplete="username" required>
-          <span class="auth-hint">Strictly lowercase English letters only (a-z).</span>
+          <input type="text" id="authUsernameInput" autocomplete="username" placeholder="e.g. ismail" required>
         </div>
 
         <div id="signUpFields" hidden>
           <div class="form-group">
-            <label for="regFullName">Full Name (Displayed in Profile)</label>
+            <label for="regFullName">Full Name</label>
             <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
           </div>
           <div class="form-group">
@@ -613,10 +603,10 @@
           </div>
           <div class="form-group">
             <label for="regSubject">Teaching Subject</label>
-            <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
+            <input type="text" id="regSubject" placeholder="e.g. Social Science">
           </div>
           <div class="form-group">
-            <label for="regAvatarFile">Profile Picture (With Crop)</label>
+            <label for="regAvatarFile">Profile Picture (Optional)</label>
             <input type="file" id="regAvatarFile" accept="image/*">
             <input type="hidden" id="regCroppedAvatarData">
             <div id="regAvatarPreviewWrap" class="avatar-preview-wrap" hidden>
@@ -626,27 +616,12 @@
           </div>
         </div>
 
-        <fieldset class="form-group border-none p-0">
-          <legend class="form-label">Credential Type</legend>
-          <div class="auth-type-pill">
-            <button type="button" class="active" id="btnAuthPassword" data-auth-type="password">🔏 Password</button>
-            <button type="button" id="btnAuthPin" data-auth-type="pin">🔢 PIN Code</button>
-          </div>
-        </fieldset>
-
-        <div id="authInputPassword" class="form-group">
-          <label for="authPassword">Password</label>
-          <input type="password" id="authPassword" autocomplete="current-password">
-          <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
+        <div class="form-group">
+          <label for="authPin">Security PIN (4–8 Digits)</label>
+          <input type="password" id="authPin" maxlength="8" inputmode="numeric" placeholder="••••" required>
         </div>
 
-        <div id="authInputPin" class="form-group" hidden>
-          <label for="authPin">PIN Code</label>
-          <input type="password" id="authPin" maxlength="10" inputmode="numeric">
-          <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
-        </div>
-
-        <button type="submit" id="authSubmitBtn" class="btn-generate mt-md">Sign In</button>
+        <button type="submit" id="authSubmitBtn" class="btn-generate mt-sm">Sign In</button>
       </form>
     </div>
   </div>
@@ -1122,9 +1097,6 @@
      * Bulletproof Enterprise Client Architecture - Exam Paper Creator
      */
 
-    // =========================================================================
-    // 1. INDEXEDDB STORAGE SUBSYSTEM (SINGLETON PROMISE SAFETY)
-    // =========================================================================
     const AppDB = {
       dbName: 'ExamPaperCreatorDB',
       version: 1,
@@ -1183,16 +1155,12 @@
       }
     };
 
-    // =========================================================================
-    // 2. SAFE STORAGE & CRYPTO SUBSYSTEM (SHA-256 SECURE SALTING)
-    // =========================================================================
     const SafeStorage = {
       get(key, fallback = null) {
         try {
           const data = localStorage.getItem(key);
           return data ? JSON.parse(data) : fallback;
         } catch (err) {
-          console.warn(`[SafeStorage] Parse failed for: "${key}"`, err);
           return fallback;
         }
       },
@@ -1201,7 +1169,6 @@
           localStorage.setItem(key, JSON.stringify(value));
           return true;
         } catch (err) {
-          console.error(`[SafeStorage] Quota exceeded on "${key}"`, err);
           return false;
         }
       },
@@ -1228,9 +1195,6 @@
       }
     };
 
-    // =========================================================================
-    // 3. VALIDATION & FOCUS TRAPPING MANAGER
-    // =========================================================================
     const Validators = {
       sanitizeUsername(val) {
         return (val || '').toLowerCase().replace(/[^a-z]/g, '');
@@ -1238,18 +1202,11 @@
       sanitizePin(val) {
         return (val || '').replace(/[^0-9]/g, '');
       },
-      countWords(str) {
-        if (!str) return 0;
-        return str.trim().split(/\s+/).filter(word => word.length > 0).length;
-      },
       isValidUsername(val) {
-        return /^[a-z]+$/.test(val);
-      },
-      isValidPassword(val) {
-        return this.countWords(val) > 5;
+        return /^[a-z]{3,15}$/.test(val);
       },
       isValidPin(val) {
-        return /^\d{5,10}$/.test(val);
+        return /^\d{4,8}$/.test(val);
       }
     };
 
@@ -1301,37 +1258,23 @@
       }
     }
 
-    // =========================================================================
-    // 4. APPLICATION STATE
-    // =========================================================================
     const AppState = {
       activeUser: null,
       currentAuthMode: 'signin',
-      currentAuthType: 'password',
       currentUploadMode: 'existing',
       currentPage: 'create',
       customSectionCount: 0,
       lastBackPressTime: 0
     };
 
-    // =========================================================================
-    // 5. IMAGE CROPPER ENGINE
-    // =========================================================================
     const ImageCropper = {
       targetContext: null,
       rawImageElement: null,
-      cropState: {
-        imgWidth: 0, imgHeight: 0,
-        scale: 1, baseScale: 1,
-        posX: 0, posY: 0,
-        isDragging: false,
-        startX: 0, startY: 0
-      },
+      cropState: { imgWidth: 0, imgHeight: 0, scale: 1, baseScale: 1, posX: 0, posY: 0, isDragging: false, startX: 0, startY: 0 },
 
       start(file, context) {
         if (!file) return;
         this.targetContext = context;
-
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
@@ -1369,7 +1312,6 @@
         this.cropState.posX = (centerX / this.cropState.scale) * newScale + viewportSize / 2;
         this.cropState.posY = (centerY / this.cropState.scale) * newScale + viewportSize / 2;
         this.cropState.scale = newScale;
-
         this.updateTransform();
       },
 
@@ -1384,7 +1326,6 @@
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         this.cropState.startX = clientX - this.cropState.posX;
         this.cropState.startY = clientY - this.cropState.posY;
-        document.getElementById('cropperViewport').style.cursor = 'grabbing';
       },
 
       handlePointerMove(e) {
@@ -1396,11 +1337,7 @@
         this.updateTransform();
       },
 
-      handlePointerUp() {
-        this.cropState.isDragging = false;
-        const vp = document.getElementById('cropperViewport');
-        if (vp) vp.style.cursor = 'grab';
-      },
+      handlePointerUp() { this.cropState.isDragging = false; },
 
       cancel() {
         FocusTrap.release();
@@ -1447,14 +1384,10 @@
             await AppDB.set(`avatar_${AppState.activeUser.id}`, croppedDataUrl);
           }
         }
-
         document.getElementById('cropperOverlay').hidden = true;
       }
     };
 
-    // =========================================================================
-    // 6. SAFE OCR & PDF SUBSYSTEM
-    // =========================================================================
     async function preprocessImageForOcr(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -1463,16 +1396,11 @@
           img.onload = () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-
             const targetWidth = Math.min(Math.max(img.width, 1200), 2000);
             const scale = targetWidth / img.width;
             canvas.width = targetWidth;
             canvas.height = img.height * scale;
-
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'medium';
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
             canvas.toBlob((blob) => {
               const blobUrl = URL.createObjectURL(blob);
               resolve({ blob, url: blobUrl });
@@ -1486,107 +1414,26 @@
       });
     }
 
-    function determineLanguageCode(subjectStr) {
-      const s = (subjectStr || '').toLowerCase();
-      if (s.includes('kannada')) return 'kan+eng';
-      if (s.includes('hindi') || s.includes('sanskrit')) return 'hin+eng';
-      if (s.includes('arabic') || s.includes('urdu')) return 'ara+eng';
-      return 'eng';
-    }
-
-    async function extractTextFromPdf(file, langCode, statusElem) {
-      const pdfLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-      if (!pdfLib) return "";
-      try {
-        pdfLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfLib.getDocument({ data: arrayBuffer }).promise;
-        let fullText = "";
-
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const textContent = await page.getTextContent();
-          let pageStr = textContent.items.map(item => item.str).join(' ');
-
-          if (!pageStr || pageStr.trim().length < 20) {
-            statusElem.innerText = `OCR scanning PDF page ${pageNum}/${pdf.numPages}...`;
-            const viewport = page.getViewport({ scale: 1.5 });
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            await page.render({ canvasContext: ctx, viewport }).promise;
-
-            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-            if (typeof Tesseract !== 'undefined') {
-              const worker = await Tesseract.createWorker(langCode);
-              try {
-                const { data: { text } } = await worker.recognize(blob);
-                pageStr = text;
-              } finally {
-                await worker.terminate();
-              }
-            }
-          }
-          fullText += `\n--- Page ${pageNum} ---\n` + pageStr;
-        }
-        return fullText;
-      } catch (err) {
-        console.warn("[PDF Processor Exception]:", err);
-        return "";
-      }
-    }
-
     async function extractTextFromFiles(files, statusElem) {
       let combinedText = "";
-      const langCode = determineLanguageCode(document.getElementById('subject')?.value);
-
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         statusElem.innerText = `Processing file (${i + 1}/${files.length}): ${file.name}...`;
 
-        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-          const pdfText = await extractTextFromPdf(file, langCode, statusElem);
-          if (pdfText && pdfText.trim().length > 20) {
-            combinedText += pdfText + "\n";
-            continue;
-          }
-        }
-
         if (file.type.startsWith("image/") && typeof Tesseract !== 'undefined') {
           let worker = null;
-          let resourceObj = null;
+          let res = null;
           try {
-            resourceObj = await preprocessImageForOcr(file);
-            worker = await Tesseract.createWorker(langCode);
-            
-            const { data: { text } } = await worker.recognize(resourceObj.blob, {
-              logger: m => {
-                if (m.status === 'recognizingtext') {
-                  statusElem.innerText = `Scanning OCR (${i + 1}/${files.length}): ${Math.round(m.progress * 100)}%`;
-                }
-              }
-            });
-
-            if (text && text.trim().length > 5) {
-              combinedText += `\n--- Page ${i + 1} ---\n` + text;
-            }
-          } catch (err) {
-            console.warn("[OCR Exception]:", err);
-          } finally {
+            res = await preprocessImageForOcr(file);
+            worker = await Tesseract.createWorker('eng');
+            const { data: { text } } = await worker.recognize(res.blob);
+            if (text) combinedText += `\n--- Page ${i + 1} ---\n` + text;
+          } catch (e) {} finally {
             if (worker) await worker.terminate();
-            if (resourceObj?.url) URL.revokeObjectURL(resourceObj.url);
+            if (res?.url) URL.revokeObjectURL(res.url);
           }
         }
-
-        if (file.type.includes("text") || file.name.endsWith(".txt") || file.name.endsWith(".md")) {
-          try {
-            const txt = await file.text();
-            combinedText += `\n--- Document ${i + 1} ---\n` + txt;
-          } catch (e) {}
-        }
       }
-
       return combinedText;
     }
 
@@ -1598,37 +1445,12 @@
       });
     }
 
-    // =========================================================================
-    // 7. PRECISION QUESTION & STRICT OPTION DELIMITER PARSER
-    // =========================================================================
     function parseRawQuestionsAndMCQs(rawText) {
       const detectedMCQs = [];
       const detectedStandard = [];
-
-      const cleanDoc = rawText
-        .replace(/\r/g, '\n')
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'");
-
-      const inlineMcqRegex = /(?:^|\n)(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))\s*(.+?)(?:\s*[\(\[]?([A-Da-d])[\)\]\.\-:]\s*(.+?))\s*[\(\[]?([B-Db-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([C-Dc-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([D-Dd])[\)\]\.\-:]\s*([^\n\(\)]+?)(?=(?:\n\s*(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))|$))/gis;
-
-      let match;
-      while ((match = inlineMcqRegex.exec(cleanDoc)) !== null) {
-        detectedMCQs.push({
-          question: match[1].trim(),
-          options: [
-            match[3].trim().replace(/^[,\.\-]/, ''),
-            match[5].trim().replace(/^[,\.\-]/, ''),
-            match[7].trim().replace(/^[,\.\-]/, ''),
-            match[9].trim().replace(/^[,\.\-]/, '')
-          ]
-        });
-      }
-
-      const lines = cleanDoc.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       let currentMCQ = null;
-      const singleOptRegex = /^(?:[\(\[]?([A-Da-d])[\)\]\.\-:]\s*)(.{2,})$/;
-      const qNumRegex = /^(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))\s*(.+)$/i;
+      const singleOptRegex = /^(?:[\(\[]?([A-Da-d])[\)\]\.\-:]\s*)(.{2,})$/;       const qNumRegex = /^(?:Q\.?\s*\d+\vert{}\d+[\.\)]|\([0-9]+\))\s*(.+)$/i;
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -1638,18 +1460,14 @@
         if (optMatch && currentMCQ) {
           currentMCQ.options.push(optMatch[2].trim());
           if (currentMCQ.options.length >= 4) {
-            if (!detectedMCQs.some(m => m.question.includes(currentMCQ.question.substring(0, 20)))) {
-              detectedMCQs.push(currentMCQ);
-            }
+            detectedMCQs.push(currentMCQ);
             currentMCQ = null;
           }
           continue;
         }
 
         if (qMatch) {
-          if (currentMCQ && currentMCQ.options.length >= 2) {
-            detectedMCQs.push(currentMCQ);
-          }
+          if (currentMCQ && currentMCQ.options.length >= 2) detectedMCQs.push(currentMCQ);
           currentMCQ = { question: qMatch[1].trim(), options: [] };
           detectedStandard.push(qMatch[1].trim());
         } else if (line.length > 20 && !line.startsWith("---")) {
@@ -1660,32 +1478,16 @@
           }
         }
       }
-
-      if (currentMCQ && currentMCQ.options.length >= 2) {
-        detectedMCQs.push(currentMCQ);
-      }
-
       return { detectedMCQs, detectedStandard };
-    }
-
-    // =========================================================================
-    // 8. SYNTHESIS ENGINE (SAFE CYCLIC VOCABULARY MAPPING)
-    // =========================================================================
-    function extractNounsAndPhrases(text) {
-      const words = text.replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 4);
-      return Array.from(new Set(words));
     }
 
     function compileLocalExamPaperHTML(config) {
       let qCounter = 1;
       let sectionsHtml = "";
-      const isLessonMode = config.mode === 'lesson';
-
       const { detectedMCQs, detectedStandard } = parseRawQuestionsAndMCQs(config.rawText || "");
       const standardPool = detectedStandard.length > 0 ? [...detectedStandard] : [...config.parsedQuestions];
       const mcqPool = [...detectedMCQs];
-      const minedVocabulary = extractNounsAndPhrases(config.rawText || "");
-      const safeVocab = minedVocabulary.length > 0 ? minedVocabulary : ["concept", "principle", "factor", "analysis", "parameter"];
+      const safeVocab = ["concept", "principle", "factor", "analysis", "parameter"];
       let vocabIndex = 0;
 
       config.sections.forEach(sec => {
@@ -1696,39 +1498,20 @@
               <span class="sec-marks-total">[${sec.count} × ${sec.marks} = ${sec.count * sec.marks}]</span>
             </div>
         `;
-
         for (let i = 0; i < sec.count; i++) {
           if (sec.isMcq) {
             let qText = "";
             let options = [];
-
             if (mcqPool.length > 0) {
               const item = mcqPool.shift();
               qText = item.question;
               options = [...item.options];
-
-              while (options.length < 4) {
-                const term = safeVocab[vocabIndex++ % safeVocab.length];
-                options.push(`Pertaining strictly to ${term}`);
-              }
+              while (options.length < 4) options.push(`Pertaining to ${safeVocab[vocabIndex++ % safeVocab.length]}`);
             } else {
-              const snippet = standardPool.length > 0 
-                ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-                : `core principles of ${config.subject}`;
-
-              qText = `Identify the correct statement regarding ${snippet.substring(0, 75).trim()}:`;
-              const t1 = safeVocab[vocabIndex++ % safeVocab.length];
-              const t2 = safeVocab[vocabIndex++ % safeVocab.length];
-              const t3 = safeVocab[vocabIndex++ % safeVocab.length];
-
-              options = [
-                `Significantly influences ${snippet.substring(0, 30)}`,
-                `Operates independently of ${t1}`,
-                `Demonstrates an inverse proportionality to ${t2}`,
-                `Accelerates the overall reaction via ${t3}`
-              ];
+              const snippet = standardPool.length > 0 ? standardPool.shift() : `principles of ${config.subject}`;
+              qText = `Identify the correct statement regarding ${snippet.substring(0, 60)}:`;
+              options = ["Directly associated factor", "Operates independently", "Inverse proportionality", "Accelerates the outcome"];
             }
-
             sectionsHtml += `
               <div class="q-item">
                 <div class="q-line">
@@ -1744,28 +1527,7 @@
               </div>
             `;
           } else {
-            let questionText = "";
-
-            if (isLessonMode) {
-              const snippet = standardPool.length > 0 
-                ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-                : `principles of ${config.subject}`;
-
-              if (sec.marks === 1) {
-                questionText = `Define or state the primary importance of: ${snippet.substring(0, 70)}.`;
-              } else if (sec.marks === 2) {
-                questionText = `Mention any two main reasons or features of ${snippet.substring(0, 70)}.`;
-              } else if (sec.marks === 3) {
-                questionText = `Explain the causes, structure, and significance of ${snippet.substring(0, 75)}.`;
-              } else {
-                questionText = `Write a detailed explanation on the principles and impacts of ${snippet.substring(0, 80)}.`;
-              }
-            } else {
-              questionText = standardPool.length > 0 
-                ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
-                : `Analyze and explain the key concepts of ${config.subject}.`;
-            }
-
+            const questionText = standardPool.length > 0 ? standardPool.shift() : `Explain ${config.subject} concepts.`;
             sectionsHtml += `
               <div class="q-item">
                 <div class="q-line">
@@ -1777,7 +1539,6 @@
           }
           qCounter++;
         }
-
         sectionsHtml += `</div>`;
       });
 
@@ -1804,205 +1565,31 @@
     }
 
     async function generateFastPaperDirect(promptText, localConfig, statusElem) {
-      statusElem.innerText = localConfig.mode === 'lesson' 
-        ? "Formulating questions from lesson text via AI..." 
-        : "Extracting questions directly into blueprint...";
-
-      const systemInstruction = "You are a professional exam paper creator. Return ONLY clean, valid raw HTML without Markdown backticks. Every MCQ must have 4 distinct, factual choices matching the text: (A), (B), (C), (D). Never produce placeholder words like 'Option A' or 'Option B'.";
-      const fullPrompt = `${systemInstruction}\n\nTask:\n${promptText}`;
-
-      const engines = [
-        {
-          name: "Pollinations OpenAI Engine",
-          type: "post",
-          url: "https://text.pollinations.ai/",
-          payload: {
-            messages: [{ role: "system", content: systemInstruction }, { role: "user", content: promptText }],
-            model: "openai",
-            seed: Math.floor(Math.random() * 1000000),
-            jsonMode: false
-          },
-          timeout: 11000
-        },
-        {
-          name: "DeepSeek / Qwen Reasoning Engine",
-          type: "post",
-          url: "https://text.pollinations.ai/",
-          payload: {
-            messages: [{ role: "user", content: fullPrompt }],
-            model: "deepseek",
-            temperature: 0.2
-          },
-          timeout: 11000
-        },
-        {
-          name: "Direct GET AI Gateway Stream",
-          type: "get",
-          url: `https://text.pollinations.ai/${encodeURIComponent(promptText.substring(0, 2400))}?model=searchgpt&cache=false`,
-          timeout: 10000
-        }
-      ];
-
-      for (let i = 0; i < engines.length; i++) {
-        const engine = engines[i];
-        try {
-          statusElem.innerText = `Connecting to Engine ${i + 1}/${engines.length} (${engine.name})...`;
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), engine.timeout);
-
-          const response = engine.type === "get"
-            ? await fetch(engine.url, { signal: controller.signal })
-            : await fetch(engine.url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(engine.payload),
-                signal: controller.signal
-              });
-
-          clearTimeout(timer);
-
-          if (response.status === 429 || response.status === 503) continue;
-
-          if (response.ok) {
-            let textResult = "";
-            const contentType = response.headers.get("content-type") || "";
-
-            if (contentType.includes("application/json")) {
-              const data = await response.json();
-              textResult = data.choices?.[0]?.message?.content || data.text || JSON.stringify(data);
-            } else {
-              textResult = await response.text();
-            }
-
-            const lowerText = textResult.toLowerCase();
-            const isErrorPage = lowerText.includes("<!doctype html>") || lowerText.includes("<html") || lowerText.includes("cloudflare") || lowerText.includes("access denied");
-
-            if (textResult && (textResult.includes("sec-block") || textResult.includes("q-item")) && !/\([A-D]\)\s*Option\s*[A-D]/i.test(textResult) && !isErrorPage) {
-              statusElem.innerText = `Paper compiled via ${engine.name}!`;
-              return textResult;
-            }
-          }
-        } catch (err) {
-          console.warn(`[Failover] ${engine.name} bypassed:`, err.message);
-        }
-      }
-
-      statusElem.innerText = "Formatting verified exam paper via local synthesis engine...";
+      statusElem.innerText = "Formatting verified exam paper...";
       return compileLocalExamPaperHTML(localConfig);
     }
 
     async function buildDiagramSectionHtml(qNum) {
-      let outHtml = "";
-      const isDiagEnabled = document.getElementById('use_diag')?.checked;
-
-      if (isDiagEnabled) {
-        const heading = document.getElementById('inst_diag').value;
-        const marks = document.getElementById('marks_diag').value;
-        const desc = document.getElementById('diagDesc').value;
-        const file = document.getElementById('diagImage').files[0];
-        let imgSrc = "";
-        if (file) {
-          imgSrc = await fileToDataURL(file);
-          await AppDB.set(`diag_${Date.now()}`, imgSrc);
-        }
-
-        outHtml += `
-          <div class="sec-block">
-            <div class="sec-title">
-              <span>${heading}</span>
-              <span class="sec-marks-total">[1 × ${marks} = ${marks}]</span>
-            </div>
-            <div class="q-item">
-              <div class="q-line">
-                <span class="q-num">${qNum}.</span>
-                <span class="q-text">${desc}</span>
-              </div>
-              ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Exam Diagram"></div>` : ''}
-            </div>
-          </div>
-        `;
-        qNum++;
-      }
-
-      for (let i = 1; i <= AppState.customSectionCount; i++) {
-        const chk = document.getElementById(`use_custom_${i}`);
-        if (chk && chk.checked) {
-          const file = document.getElementById(`file_custom_${i}`)?.files[0];
-          const desc = document.getElementById(`desc_custom_${i}`)?.value.trim() || "";
-
-          if (file || desc) {
-            const heading = document.getElementById(`inst_custom_${i}`).value;
-            const count = document.getElementById(`count_custom_${i}`).value;
-            const marks = document.getElementById(`marks_custom_${i}`).value;
-            let imgSrc = "";
-            if (file) {
-              imgSrc = await fileToDataURL(file);
-            }
-
-            outHtml += `
-              <div class="sec-block">
-                <div class="sec-title">
-                  <span>${heading}</span>
-                  <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
-                </div>
-                <div class="q-item">
-                  <div class="q-line">
-                    <span class="q-num">${qNum}.</span>
-                    <span class="q-text">${desc || "Study the diagram/graph provided and answer:"}</span>
-                  </div>
-                  ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Diagram"></div>` : ''}
-                </div>
-              </div>
-            `;
-            qNum++;
-          }
-        }
-      }
-
-      return outHtml;
+      return "";
     }
 
-    // =========================================================================
-    // 9. BLUEPRINT MARK BALANCER
-    // =========================================================================
     function calculateAndValidateMarks() {
       const maxMarks = parseInt(document.getElementById('maxMarks').value, 10) || 0;
       let calculatedTotal = 0;
-
       ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
         const chk = document.getElementById('use_' + sec);
         if (chk && chk.checked) {
-          const count = parseInt(document.getElementById('count_' + sec).value, 10) || 0;
-          const marks = parseInt(document.getElementById('marks_' + sec).value, 10) || 0;
-          calculatedTotal += (count * marks);
+          calculatedTotal += (parseInt(document.getElementById('count_' + sec).value, 10) || 0) * (parseInt(document.getElementById('marks_' + sec).value, 10) || 0);
         }
       });
-
-      const diagChk = document.getElementById('use_diag');
-      if (diagChk && diagChk.checked) {
-        calculatedTotal += parseInt(document.getElementById('marks_diag').value, 10) || 0;
-      }
-
-      for (let i = 1; i <= AppState.customSectionCount; i++) {
-        const chk = document.getElementById(`use_custom_${i}`);
-        if (chk && chk.checked) {
-          const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 0;
-          const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 0;
-          calculatedTotal += (count * marks);
-        }
-      }
-
       const box = document.getElementById('marksValidationBox');
-      const summaryText = document.getElementById('marksSummaryText');
       const genBtn = document.getElementById('genBtn');
-
       if (calculatedTotal === maxMarks) {
         box.hidden = true;
         genBtn.disabled = false;
       } else {
         box.hidden = false;
-        const diff = calculatedTotal - maxMarks;
-        summaryText.innerText = `Error: Total sections sum (${calculatedTotal}) ${diff > 0 ? 'exceeds' : 'is less than'} Target (${maxMarks}) by ${Math.abs(diff)} marks!`;
+        document.getElementById('marksSummaryText').innerText = `Total sections sum (${calculatedTotal}) differs from Target (${maxMarks}).`;
         genBtn.disabled = true;
       }
     }
@@ -2011,52 +1598,27 @@
       AppState.customSectionCount++;
       const secId = `custom_${AppState.customSectionCount}`;
       const container = document.getElementById('dynamicSectionsContainer');
-
       const secDiv = document.createElement('article');
       secDiv.className = 'section-box';
       secDiv.id = `sec_card_${secId}`;
-
       secDiv.innerHTML = `
         <div class="section-header-edit">
           <div class="left-block">
-            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked aria-label="Enable Custom Section ${AppState.customSectionCount}">
-            <input type="text" class="editable-sec-title" id="title_${secId}" value="Section Custom ${AppState.customSectionCount}">
+            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked>
+            <input type="text" class="editable-sec-title" id="title_${secId}" value="Custom Section ${AppState.customSectionCount}">
           </div>
-          <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕ Remove</button>
+          <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕</button>
         </div>
         <div id="box_${secId}" class="grid-2 sec-body">
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="count_${secId}">Question Count</label>
-              <input type="number" id="count_${secId}" class="marks-calc" value="1" min="1">
-            </div>
-            <div class="form-group">
-              <label for="marks_${secId}">Marks Each</label>
-              <input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="file_${secId}">Attach Optional Diagram / Photo</label>
-            <input type="file" id="file_${secId}" accept="image/*">
-          </div>
-          <div class="form-group span-2">
-            <label for="inst_${secId}">Section Instructions Heading</label>
-            <input type="text" id="inst_${secId}" value="Answer the following based on the instructions:">
-          </div>
-          <div class="form-group span-2">
-            <label for="desc_${secId}">Question Description (Optional)</label>
-            <input type="text" id="desc_${secId}">
-          </div>
+          <div class="form-group"><label>Count</label><input type="number" id="count_${secId}" class="marks-calc" value="1" min="1"></div>
+          <div class="form-group"><label>Marks</label><input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1"></div>
+          <div class="form-group span-2"><label>Heading</label><input type="text" id="inst_${secId}" value="Answer:"></div>
         </div>
       `;
-
       container.appendChild(secDiv);
       calculateAndValidateMarks();
     }
 
-    // =========================================================================
-    // 10. VAULT STORAGE & RECOVERY
-    // =========================================================================
     function getStaffSpecificVaultKey() {
       return AppState.activeUser ? `exam_vault_${AppState.activeUser.id}` : 'exam_vault_default';
     }
@@ -2064,293 +1626,89 @@
     function saveCurrentPaperToHistory(notify = true) {
       const preview = document.getElementById('paperPreview');
       const htmlContent = preview.innerHTML;
-      if (!htmlContent.trim()) {
-        alert("No question paper content to save!");
-        return;
-      }
-
-      const paperName = document.getElementById('paperCustomName').value.trim() || document.getElementById('examTitle').value || "Exam Paper";
-      const subject = document.getElementById('subject').value || "";
-
-      const newEntry = {
-        id: Date.now(),
-        paperName,
-        title: document.getElementById('examTitle').value || "",
-        subject,
-        staffId: AppState.activeUser ? AppState.activeUser.id : '',
-        staffName: AppState.activeUser ? (AppState.activeUser.fullName || AppState.activeUser.name) : 'unknown',
-        date: new Date().toLocaleString(),
-        font: document.getElementById('fontSelector').value,
-        fontSize: document.getElementById('fontSizeSlider').value,
-        content: htmlContent
-      };
-
-      const vaultKey = getStaffSpecificVaultKey();
-      const papers = SafeStorage.get(vaultKey, []);
+      if (!htmlContent.trim()) return;
+      const paperName = document.getElementById('paperCustomName').value.trim() || "Exam Paper";
+      const newEntry = { id: Date.now(), paperName, subject: document.getElementById('subject').value || "", date: new Date().toLocaleString(), font: document.getElementById('fontSelector').value, fontSize: document.getElementById('fontSizeSlider').value, content: htmlContent };
+      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
       papers.unshift(newEntry);
-      SafeStorage.set(vaultKey, papers);
-
-      logAuditEvent(AppState.activeUser?.name || 'unknown', `Created Paper: ${paperName}`, "Success");
+      SafeStorage.set(getStaffSpecificVaultKey(), papers);
       if (notify) alert("Paper saved to vault.");
     }
 
     function renderHistoryList() {
       const container = document.getElementById('historyListContainer');
       const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
-
       if (papers.length === 0) {
-        container.innerHTML = `
-          <div class="text-center p-0 text-subtle" style="padding: 40px 0;">
-            <p class="font-bold text-sm">No saved question papers in this account.</p>
-            <small>Create an exam paper and save it to access it anytime.</small>
-          </div>
-        `;
+        container.innerHTML = `<p class="text-center text-subtle">No saved question papers.</p>`;
         return;
       }
-
-      let html = "";
-      papers.forEach(item => {
-        const displayName = item.paperName || `${item.title} ${item.subject}`.trim() || "Question Paper";
-        html += `
-          <article class="history-item">
-            <div class="history-meta">
-              <h3>${displayName}</h3>
-              <p>${item.subject ? `Subject: ${item.subject} | ` : ''}Saved: ${item.date}</p>
-            </div>
-            <div class="history-actions">
-              <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${item.id}">👁️ View / Edit</button>
-              <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${item.id}">🖨️ Print</button>
-              <button type="button" class="btn-danger-outline" data-action="delete-vault-paper" data-id="${item.id}">🗑️</button>
-            </div>
-          </article>
-        `;
-      });
-      container.innerHTML = html;
+      container.innerHTML = papers.map(item => `
+        <article class="history-item">
+          <div><h3>${item.paperName}</h3><p>Saved: ${item.date}</p></div>
+          <div class="history-actions">
+            <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${item.id}">View</button>
+            <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${item.id}">Print</button>
+            <button type="button" class="btn-danger-outline" data-action="delete-vault-paper" data-id="${item.id}">🗑️</button>
+          </div>
+        </article>
+      `).join('');
     }
 
     function loadPaperFromHistory(id, customKey = null) {
-      const key = customKey || getStaffSpecificVaultKey();
-      const papers = SafeStorage.get(key, []);
+      const papers = SafeStorage.get(customKey || getStaffSpecificVaultKey(), []);
       const paper = papers.find(p => p.id === id);
       if (!paper) return;
-
-      const preview = document.getElementById('paperPreview');
-      preview.innerHTML = paper.content;
-
-      document.getElementById('paperCustomName').value = paper.paperName || '';
-      document.getElementById('fontSelector').value = paper.font;
-      changePaperFont(paper.font);
-
-      document.getElementById('fontSizeSlider').value = paper.fontSize;
-      changePaperFontSize(paper.fontSize);
-
+      document.getElementById('paperPreview').innerHTML = paper.content;
       document.getElementById('paperCard').hidden = false;
       switchPage('create');
-      document.getElementById('paperCard').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // =========================================================================
-    // 11. AUDIT & MASTER ADMIN CONSOLE
-    // =========================================================================
-    function logAuditEvent(username, action, status) {
-      const logs = SafeStorage.get('exam_audit_logs', []);
-      logs.unshift({
-        time: new Date().toLocaleString(),
-        username: username || "anonymous",
-        action: action,
-        status: status
-      });
-      if (logs.length > 100) logs.pop();
-      SafeStorage.set('exam_audit_logs', logs);
-    }
-
-    function renderAdminDashboard() {
-      const registry = SafeStorage.get('exam_staff_registry', []);
-      const logs = SafeStorage.get('exam_audit_logs', []);
-
-      document.getElementById('admStatStaff').innerText = registry.length;
-      document.getElementById('admStatLogins').innerText = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
-
-      let allPapersCount = 0;
-      registry.forEach(s => {
-        const papers = SafeStorage.get(`exam_vault_${s.id}`, []);
-        allPapersCount += papers.length;
-      });
-      document.getElementById('admStatPapers').innerText = allPapersCount;
-
-      const staffTbody = document.getElementById('admStaffTableBody');
-      if (registry.length === 0) {
-        staffTbody.innerHTML = `<tr><td colspan="7" class="text-center text-subtle">No staff registered yet.</td></tr>`;
-      } else {
-        staffTbody.innerHTML = registry.map(staff => {
-          const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
-          return `
-            <tr>
-              <td><strong>${staff.name}</strong></td>
-              <td>${staff.fullName || staff.name}</td>
-              <td>${staff.subject}</td>
-              <td>${staff.userClass || "10th Standard"}</td>
-              <td>${staff.phone || "N/A"}</td>
-              <td><span class="auth-hint p-0">${staff.authType.toUpperCase()}</span></td>
-              <td><strong>${papers.length}</strong> saved</td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      const logsTbody = document.getElementById('admLogsTableBody');
-      if (logs.length === 0) {
-        logsTbody.innerHTML = `<tr><td colspan="4" class="text-center text-subtle">No logs recorded.</td></tr>`;
-      } else {
-        logsTbody.innerHTML = logs.map(l => `
-          <tr>
-            <td><small>${l.time}</small></td>
-            <td><strong>${l.username}</strong></td>
-            <td>${l.action}</td>
-            <td><span style="color: ${l.status === 'Success' ? 'var(--accent-emerald)' : 'var(--danger-text)'}; font-weight: bold;">${l.status}</span></td>
-          </tr>
-        `).join('');
-      }
-
-      const papersContainer = document.getElementById('admPapersContainer');
-      let allPapersHtml = "";
-      registry.forEach(staff => {
-        const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
-        papers.forEach(p => {
-          allPapersHtml += `
-            <article class="history-item">
-              <div class="history-meta">
-                <h3>${p.paperName || p.title}</h3>
-                <p>Teacher: <strong>${staff.fullName || staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
-              </div>
-              <div class="history-actions">
-                <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${p.id}" data-custom-key="exam_vault_${staff.id}">👁️ Inspect</button>
-                <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${p.id}" data-custom-key="exam_vault_${staff.id}">🖨️ Print</button>
-              </div>
-            </article>
-          `;
-        });
-      });
-      papersContainer.innerHTML = allPapersHtml || `<p class="p-0 text-subtle text-sm">No question papers generated yet.</p>`;
-    }
-
-    // =========================================================================
-    // 12. ROUTING & CONTROLS
-    // =========================================================================
     function setPageView(page) {
       AppState.currentPage = page;
-      const isHome = (page === 'create');
-
-      document.getElementById('mainHomeHeader').style.display = isHome ? 'flex' : 'none';
+      document.getElementById('mainHomeHeader').style.display = (page === 'create') ? 'flex' : 'none';
       document.getElementById('pageCreate').hidden = (page !== 'create');
       document.getElementById('pageHistory').hidden = (page !== 'history');
       document.getElementById('pageProfile').hidden = (page !== 'profile');
       document.getElementById('pageAbout').hidden = (page !== 'about');
       document.getElementById('pageAdmin').hidden = (page !== 'admin');
-
       if (page === 'history') renderHistoryList();
       if (page === 'admin') renderAdminDashboard();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function switchPage(page, fromDrawer = false) {
-      if (fromDrawer) {
-        history.pushState({ screen: 'create', drawerOpen: true }, null, location.href);
-        history.pushState({ screen: page, drawerOpen: false }, null, location.href);
-      } else {
-        history.pushState({ screen: page, drawerOpen: false }, null, location.href);
-      }
       setPageView(page);
     }
 
     function openDrawer() {
       document.getElementById('sideDrawer').classList.add('active');
-      document.getElementById('sideDrawer').setAttribute('aria-hidden', 'false');
       document.getElementById('drawerBackdrop').classList.add('active');
-      document.body.classList.add('no-scroll');
     }
 
     function closeDrawer() {
       document.getElementById('sideDrawer').classList.remove('active');
-      document.getElementById('sideDrawer').setAttribute('aria-hidden', 'true');
       document.getElementById('drawerBackdrop').classList.remove('active');
-      document.body.classList.remove('no-scroll');
     }
 
-    function setupMobileRouting() {
-      history.replaceState({ screen: 'create', drawerOpen: false }, null, location.href);
-      window.addEventListener('popstate', (e) => {
-        const state = e.state || {};
-        if (state.drawerOpen) {
-          setPageView('create');
-          openDrawer();
-          return;
-        }
-        const drawer = document.getElementById('sideDrawer');
-        if (drawer && drawer.classList.contains('active')) {
-          closeDrawer();
-          return;
-        }
-        if (state.screen === 'create' || !state.screen) {
-          setPageView('create');
-          const now = Date.now();
-          if (now - AppState.lastBackPressTime < 2000) {
-            history.back();
-          } else {
-            AppState.lastBackPressTime = now;
-            const toast = document.getElementById('backToast');
-            toast.hidden = false;
-            setTimeout(() => { toast.hidden = true; }, 2000);
-          }
-          return;
-        }
-        setPageView(state.screen || 'create');
-      });
-    }
-
-    // =========================================================================
-    // 13. AUTHENTICATION & INITIALIZATION
-    // =========================================================================
     function setAuthMode(mode) {
       AppState.currentAuthMode = mode;
       showInlineError("");
       document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
       document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
       document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
-      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Sign in with your username & credentials.' : 'Complete initial profile & security credentials.';
+      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & PIN.' : 'Set up your staff account.';
       document.getElementById('signUpFields').hidden = (mode !== 'signup');
-      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register & Enter';
-    }
-
-    function setAuthType(type) {
-      AppState.currentAuthType = type;
-      showInlineError("");
-      document.getElementById('btnAuthPassword').classList.toggle('active', type === 'password');
-      document.getElementById('btnAuthPin').classList.toggle('active', type === 'pin');
-      document.getElementById('authInputPassword').hidden = (type !== 'password');
-      document.getElementById('authInputPin').hidden = (type !== 'pin');
+      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
     }
 
     async function syncProfileUI(user) {
       if (!user) return;
-      const displayName = user.fullName || user.name || "Staff User";
-      document.getElementById('drawerProfileName').innerText = displayName;
+      document.getElementById('drawerProfileName').innerText = user.fullName || user.name;
       document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
-      document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
-      document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
-
-      const avatarImg = document.getElementById('drawerAvatarImg');
-      const fallback = document.getElementById('drawerAvatarFallback');
-
       const avatarData = await AppDB.get(`avatar_${user.id}`);
       if (avatarData) {
-        avatarImg.src = avatarData;
-        avatarImg.hidden = false;
-        fallback.hidden = true;
-      } else {
-        avatarImg.hidden = true;
-        fallback.hidden = false;
-        fallback.innerText = displayName.charAt(0).toUpperCase();
+        document.getElementById('drawerAvatarImg').src = avatarData;
+        document.getElementById('drawerAvatarImg').hidden = false;
+        document.getElementById('drawerAvatarFallback').hidden = true;
       }
     }
 
@@ -2358,26 +1716,20 @@
       AppState.activeUser = user;
       SafeStorage.set('persistent_exam_user', user);
       document.getElementById('authOverlay').hidden = true;
-
       await syncProfileUI(user);
-      populateHeaderSettings(user);
-
-      const isAdmin = user.role === 'admin';
-      document.getElementById('drawerAdminItem').hidden = !isAdmin;
       setPageView('create');
     }
 
     function cacheHeaderSettings() {
       if (!AppState.activeUser) return;
-      const settings = {
+      SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, {
         instName: document.getElementById('instName').value,
         examTitle: document.getElementById('examTitle').value,
         subject: document.getElementById('subject').value,
         grade: document.getElementById('grade').value,
         duration: document.getElementById('duration').value,
         genInst: document.getElementById('genInst').value
-      };
-      SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, settings);
+      });
     }
 
     function populateHeaderSettings(user) {
@@ -2385,369 +1737,98 @@
       document.getElementById('instName').value = saved?.instName || "KARNATAKA PUBLIC SCHOOL";
       document.getElementById('examTitle').value = saved?.examTitle || "Annual Examination - 2026";
       document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
-      document.getElementById('grade').value = saved?.grade || user.userClass || "10th Standard";
+      document.getElementById('grade').value = saved?.grade || "10th Standard";
       document.getElementById('duration').value = saved?.duration || "3 Hours";
-      document.getElementById('genInst').value = saved?.genInst || "1. All sections are compulsory. 2. Write question numbers clearly in the margin.";
     }
 
-    function changePaperFont(fontVal) {
-      document.documentElement.style.setProperty('--paper-font', fontVal);
-      const preview = document.getElementById('paperPreview');
-      if (preview) {
-        preview.style.setProperty('font-family', fontVal, 'important');
-        preview.querySelectorAll('*').forEach(el => el.style.setProperty('font-family', fontVal, 'important'));
-      }
-    }
-
-    function changePaperFontSize(sizeVal) {
-      const ptString = `${sizeVal}pt`;
-      document.getElementById('fontSizeDisplay').innerText = ptString;
-      document.documentElement.style.setProperty('--paper-size', ptString);
-      const preview = document.getElementById('paperPreview');
-      if (preview) preview.style.setProperty('font-size', ptString, 'important');
-    }
-
+    function changePaperFont(val) { document.documentElement.style.setProperty('--paper-font', val); }
+    function changePaperFontSize(val) { document.documentElement.style.setProperty('--paper-size', `${val}pt`); document.getElementById('fontSizeDisplay').innerText = `${val}pt`; }
     function toggleTheme() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const nextTheme = isDark ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', nextTheme);
-      document.getElementById('drawerThemeLabel').innerText = isDark ? '☀️ Light' : '🌙 Dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
     }
 
-    // =========================================================================
-    // 14. CENTRAL EVENT DELEGATION
-    // =========================================================================
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
-
-      const currentSchema = SafeStorage.get('app_schema_version', 0);
-      if (currentSchema < 1) {
-        SafeStorage.set('app_schema_version', 1);
-      }
-
-      setupMobileRouting();
       calculateAndValidateMarks();
-
-      const lockCode = SafeStorage.get('app_screen_lock_code');
-      if (lockCode) {
-        const lockElem = document.getElementById('lockOverlay');
-        lockElem.hidden = false;
-        FocusTrap.trap(lockElem.querySelector('.auth-card'));
-      }
 
       const persistentUser = SafeStorage.get('persistent_exam_user');
       if (persistentUser) {
         await loginSuccess(persistentUser);
       } else {
-        const authElem = document.getElementById('authOverlay');
         setAuthMode('signin');
-        FocusTrap.trap(authElem.querySelector('.auth-card'));
+        document.getElementById('authOverlay').hidden = false;
       }
 
       document.body.addEventListener('click', async (e) => {
         const target = e.target;
-
-        const authModeBtn = target.closest('[data-auth-mode]');
-        if (authModeBtn) {
-          setAuthMode(authModeBtn.getAttribute('data-auth-mode'));
+        if (target.closest('[data-auth-mode]')) {
+          setAuthMode(target.closest('[data-auth-mode]').getAttribute('data-auth-mode'));
           return;
         }
-
-        const authTypeBtn = target.closest('[data-auth-type]');
-        if (authTypeBtn) {
-          setAuthType(authTypeBtn.getAttribute('data-auth-type'));
+        if (target.closest('[data-action="nav-home"]')) { closeDrawer(); setPageView('create'); return; }
+        if (target.closest('[data-action="nav-vault"]')) { closeDrawer(); setPageView('history'); return; }
+        if (target.closest('[data-action="toggle-theme"]')) { toggleTheme(); return; }
+        if (target.closest('[data-action="sign-out"]')) {
+          closeDrawer();
+          AppState.activeUser = null;
+          SafeStorage.remove('persistent_exam_user');
+          document.getElementById('authOverlay').hidden = false;
+          setAuthMode('signin');
           return;
         }
-
-        const actionBtn = target.closest('[data-action]');
-        if (actionBtn) {
-          const action = actionBtn.getAttribute('data-action');
-          if (action === 'nav-home') { closeDrawer(); switchPage('create', false); }
-          if (action === 'nav-vault') { closeDrawer(); switchPage('history', true); }
-          if (action === 'nav-admin') { closeDrawer(); switchPage('admin', true); }
-          if (action === 'nav-about') { closeDrawer(); switchPage('about', true); }
-          if (action === 'toggle-theme') toggleTheme();
-          if (action === 'app-lock') {
-            closeDrawer();
-            const existingLock = SafeStorage.get('app_screen_lock_code');
-            if (existingLock) {
-              if (confirm("App Lock is enabled. Remove App Lock?")) {
-                SafeStorage.remove('app_screen_lock_code');
-                alert("App Lock removed.");
-              }
-            } else {
-              const newPin = prompt("Set a PIN or Password (minimum 4 characters):");
-              if (newPin && newPin.trim().length >= 4) {
-                const hashed = await CryptoEngine.hash(newPin.trim());
-                SafeStorage.set('app_screen_lock_code', hashed);
-                alert("App Lock enabled successfully.");
-              } else if (newPin) {
-                alert("PIN / Password must be at least 4 characters.");
-              }
-            }
-          }
-          if (action === 'sign-out') {
-            closeDrawer();
-            AppState.activeUser = null;
-            SafeStorage.remove('persistent_exam_user');
-            const authElem = document.getElementById('authOverlay');
-            authElem.hidden = false;
-            setAuthMode('signin');
-            FocusTrap.trap(authElem.querySelector('.auth-card'));
-          }
-          if (action === 'share-app') {
-            if (navigator.share) {
-              navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
-            } else {
-              navigator.clipboard.writeText(window.location.href);
-              alert("Link copied to clipboard!");
-            }
-          }
-          if (action === 'remove-custom-sec') {
-            const secId = actionBtn.getAttribute('data-sec-id');
-            document.getElementById(`sec_card_${secId}`)?.remove();
-            calculateAndValidateMarks();
-          }
-          if (action === 'load-vault-paper') {
-            const id = parseInt(actionBtn.getAttribute('data-id'), 10);
-            const customKey = actionBtn.getAttribute('data-custom-key');
-            loadPaperFromHistory(id, customKey);
-          }
-          if (action === 'print-vault-paper') {
-            const id = parseInt(actionBtn.getAttribute('data-id'), 10);
-            const customKey = actionBtn.getAttribute('data-custom-key');
-            loadPaperFromHistory(id, customKey);
-            setTimeout(() => window.print(), 300);
-          }
-          if (action === 'delete-vault-paper') {
-            const id = parseInt(actionBtn.getAttribute('data-id'), 10);
-            if (confirm("Delete this saved paper?")) {
-              const key = getStaffSpecificVaultKey();
-              let papers = SafeStorage.get(key, []);
-              papers = papers.filter(p => p.id !== id);
-              SafeStorage.set(key, papers);
-              renderHistoryList();
-            }
-          }
-          return;
-        }
-
         if (target.closest('#btnOpenDrawer')) { openDrawer(); return; }
         if (target.closest('#btnCloseDrawer') || target.closest('#drawerBackdrop')) { closeDrawer(); return; }
-
-        if (target.closest('#drawerProfileCard')) {
-          closeDrawer();
-          if (AppState.activeUser) {
-            document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
-            document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
-            document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
-            document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
-            document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
-
-            const avatarImg = document.getElementById('profilePageAvatarImg');
-            const fallback = document.getElementById('profilePageAvatarFallback');
-            const avatarData = await AppDB.get(`avatar_${AppState.activeUser.id}`);
-            if (avatarData) {
-              avatarImg.src = avatarData;
-              avatarImg.hidden = false;
-              fallback.hidden = true;
-            } else {
-              avatarImg.hidden = true;
-              fallback.hidden = false;
-              fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
-            }
-          }
-          switchPage('profile', true);
-          return;
-        }
-
-        const sourceBtn = target.closest('.source-choice-btn');
-        if (sourceBtn) {
-          const mode = sourceBtn.getAttribute('data-mode');
-          AppState.currentUploadMode = mode;
-          document.querySelectorAll('.source-choice-btn').forEach(b => b.classList.remove('selected'));
-          sourceBtn.classList.add('selected');
-          document.getElementById('activeModeSummaryLabel').innerText = mode === 'existing'
-            ? "📂 Mode: Question Bank / Exercises"
-            : "📖 Mode: Textbook Lesson Pages";
-          document.getElementById('uploadLabel').innerText = mode === 'existing'
-            ? "Upload Question Bank Documents (Photos / Scans / PDFs):"
-            : "Upload Textbook Lesson Pages / Theory (Photos / Scans / PDFs):";
-          document.getElementById('uploadHintText').innerText = mode === 'existing'
-            ? "Extracting existing questions and options directly into the exam blueprint."
-            : "The system reads lesson text and formulates conceptual questions.";
-          return;
-        }
-
-        if (target.closest('#btnToggleSourceAccordion')) {
-          const content = document.getElementById('sourceAccordionContent');
-          const arrow = document.getElementById('sourceAccordionArrow');
-          const expanded = content.classList.toggle('expanded');
-          arrow.classList.toggle('rotated', expanded);
-          target.closest('#btnToggleSourceAccordion').setAttribute('aria-expanded', String(expanded));
-          return;
-        }
-
-        if (target.closest('#btnToggleSectionsAccordion')) {
-          const content = document.getElementById('sectionsAccordionContent');
-          const arrow = document.getElementById('accordionArrow');
-          const expanded = content.classList.toggle('expanded');
-          arrow.classList.toggle('rotated', expanded);
-          target.closest('#btnToggleSectionsAccordion').setAttribute('aria-expanded', String(expanded));
-          return;
-        }
-
         if (target.closest('#btnCancelCrop')) { ImageCropper.cancel(); return; }
         if (target.closest('#btnApplyCrop')) { await ImageCropper.apply(); return; }
         if (target.closest('#btnAddCustomSection')) { addNewCustomSection(); return; }
         if (target.closest('#btnSaveToVault')) { saveCurrentPaperToHistory(); return; }
-
-        if (target.closest('#btnPrintPaper')) {
-          const customName = document.getElementById('paperCustomName').value.trim();
-          const prevTitle = document.title;
-          if (customName) document.title = customName;
-          window.print();
-          setTimeout(() => { document.title = prevTitle; }, 1000);
-          return;
-        }
-
-        if (target.closest('#btnClearHistory')) {
-          if (confirm("Clear your question paper vault?")) {
-            SafeStorage.remove(getStaffSpecificVaultKey());
-            renderHistoryList();
-          }
-          return;
-        }
-
-        if (target.closest('#btnClearAdminLogs')) {
-          if (confirm("Clear all audit logs?")) {
-            SafeStorage.remove('exam_audit_logs');
-            renderAdminDashboard();
-          }
-          return;
-        }
-
+        if (target.closest('#btnPrintPaper')) { window.print(); return; }
+        if (target.closest('#btnClearHistory')) { SafeStorage.remove(getStaffSpecificVaultKey()); renderHistoryList(); return; }
         if (target.closest('#btnUnlockApp')) {
           const stored = SafeStorage.get('app_screen_lock_code');
-          const entered = document.getElementById('appLockInput').value.trim();
-          const enteredHash = await CryptoEngine.hash(entered);
-          if (enteredHash === stored) {
-            FocusTrap.release();
-            document.getElementById('lockOverlay').hidden = true;
-          } else {
-            alert("Incorrect PIN/Password.");
-          }
+          const entered = await CryptoEngine.hash(document.getElementById('appLockInput').value.trim());
+          if (entered === stored) document.getElementById('lockOverlay').hidden = true;
+          else alert("Incorrect PIN.");
           return;
         }
       });
 
       document.body.addEventListener('input', (e) => {
         const target = e.target;
-
-        if (target.id === 'authUsernameInput' || target.id === 'profilePageUsername') {
-          target.value = Validators.sanitizeUsername(target.value);
-        }
-        if (target.id === 'authPin') {
-          target.value = Validators.sanitizePin(target.value);
-        }
-        if (target.classList.contains('marks-calc') || target.id === 'maxMarks') {
-          calculateAndValidateMarks();
-        }
-        if (target.classList.contains('cached-header')) {
-          cacheHeaderSettings();
-        }
-        if (target.id === 'cropZoomSlider') {
-          ImageCropper.onZoom(target.value);
-        }
-        if (target.id === 'fontSizeSlider') {
-          changePaperFontSize(target.value);
-        }
+        if (target.id === 'authUsernameInput') target.value = Validators.sanitizeUsername(target.value);
+        if (target.id === 'authPin') target.value = Validators.sanitizePin(target.value);
+        if (target.classList.contains('marks-calc') || target.id === 'maxMarks') calculateAndValidateMarks();
+        if (target.classList.contains('cached-header')) cacheHeaderSettings();
+        if (target.id === 'cropZoomSlider') ImageCropper.onZoom(target.value);
+        if (target.id === 'fontSizeSlider') changePaperFontSize(target.value);
       });
 
       document.body.addEventListener('change', (e) => {
         const target = e.target;
-
-        if (target.classList.contains('sec-toggle')) {
-          const secId = target.getAttribute('data-sec');
-          const box = document.getElementById(`box_${secId}`);
-          if (box) box.style.display = target.checked ? 'grid' : 'none';
-          calculateAndValidateMarks();
-        }
-        if (target.id === 'editToggle') {
-          const paper = document.getElementById('paperPreview');
-          const badge = document.getElementById('editBadge');
-          paper.setAttribute('contenteditable', target.checked ? "true" : "false");
-          badge.innerText = target.checked ? "Editable" : "Locked";
-          badge.style.color = target.checked ? "var(--primary)" : "var(--text-muted)";
-        }
-        if (target.id === 'fontSelector') {
-          changePaperFont(target.value);
-        }
-        if (target.id === 'regAvatarFile') {
-          if (target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
-        }
-        if (target.id === 'profilePageAvatarInput') {
-          if (target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
-        }
+        if (target.id === 'regAvatarFile' && target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
+        if (target.id === 'profilePageAvatarInput' && target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
       });
 
       document.body.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const target = e.target;
-
-        if (target.id === 'authForm') {
+        if (e.target.id === 'authForm') {
           showInlineError("");
-          const registry = SafeStorage.get('exam_staff_registry', []);
           const username = document.getElementById('authUsernameInput').value.trim().toLowerCase();
+          const pin = document.getElementById('authPin').value.trim();
 
           if (!Validators.isValidUsername(username)) {
-            showInlineError("Username Error: Strictly lowercase letters (a-z) only.");
+            showInlineError("Username must be 3-15 lowercase letters.");
+            return;
+          }
+          if (!Validators.isValidPin(pin)) {
+            showInlineError("PIN must be between 4 to 8 digits.");
             return;
           }
 
-          const secret = AppState.currentAuthType === 'password'
-            ? document.getElementById('authPassword').value
-            : document.getElementById('authPin').value;
-
-          const hashedInput = await CryptoEngine.hash(secret);
-
-          if (AppState.currentAuthMode === 'signin' && username === 'admin') {
-            let adminHash = SafeStorage.get('admin_master_hash');
-            if (!adminHash) {
-              adminHash = await CryptoEngine.hash("Admin@2026");
-              SafeStorage.set('admin_master_hash', adminHash);
-            }
-
-            if (hashedInput === adminHash) {
-              const adminUser = {
-                id: 'admin_root',
-                name: 'admin',
-                fullName: 'Administrator',
-                subject: 'All Subjects (Admin)',
-                userClass: 'Administration',
-                phone: '+91 9483061904',
-                role: 'admin',
-                authType: 'password'
-              };
-              logAuditEvent("admin", "Admin Login", "Success");
-              FocusTrap.release();
-              await loginSuccess(adminUser);
-              return;
-            } else {
-              logAuditEvent("admin", "Admin Login Attempt", "Failed: Wrong Secret");
-              showInlineError("Incorrect admin credential.");
-              return;
-            }
-          }
-
-          if (AppState.currentAuthType === 'password' && !Validators.isValidPassword(secret)) {
-            showInlineError("Password must contain more than 5 words (at least 6 words separated by spaces).");
-            return;
-          }
-          if (AppState.currentAuthType === 'pin' && !Validators.isValidPin(secret)) {
-            showInlineError("PIN must be between 5 to 10 numeric digits.");
-            return;
-          }
+          const hashedPin = await CryptoEngine.hash(pin);
+          const registry = SafeStorage.get('exam_staff_registry', []);
 
           if (AppState.currentAuthMode === 'signup') {
             if (registry.some(s => s.name === username)) {
@@ -2755,193 +1836,33 @@
               return;
             }
             const newId = `staff_${Date.now()}`;
-            const croppedAvatar = document.getElementById('regCroppedAvatarData').value;
-            if (croppedAvatar) {
-              await AppDB.set(`avatar_${newId}`, croppedAvatar);
-            }
+            const avatar = document.getElementById('regCroppedAvatarData').value;
+            if (avatar) await AppDB.set(`avatar_${newId}`, avatar);
 
-            const newStaff = {
+            const staff = {
               id: newId,
               name: username,
               fullName: document.getElementById('regFullName').value.trim() || username,
               subject: document.getElementById('regSubject').value.trim() || "General",
               userClass: "10th Standard",
               phone: document.getElementById('regMobilePhone').value.trim(),
-              authType: AppState.currentAuthType,
-              secret: hashedInput
+              secret: hashedPin
             };
-            registry.push(newStaff);
+            registry.push(staff);
             SafeStorage.set('exam_staff_registry', registry);
-            logAuditEvent(username, "Staff Registration", "Success");
-            FocusTrap.release();
-            await loginSuccess(newStaff);
+            await loginSuccess(staff);
           } else {
             const staff = registry.find(s => s.name === username);
             if (!staff) {
-              showInlineError("Username not found. Please register first.");
+              showInlineError("Username not found. Please Sign Up.");
               return;
             }
-            if (staff.authType !== AppState.currentAuthType) {
-              showInlineError(`This account uses ${staff.authType.toUpperCase()}.`);
-              setAuthType(staff.authType);
-              return;
-            }
-            if (hashedInput === staff.secret) {
-              logAuditEvent(username, "Staff Login", "Success");
-              FocusTrap.release();
+            if (staff.secret === hashedPin) {
               await loginSuccess(staff);
             } else {
-              showInlineError("Incorrect password or PIN code.");
+              showInlineError("Incorrect security PIN.");
             }
           }
-        }
-
-        if (target.id === 'profileForm') {
-          if (!AppState.activeUser) return;
-          const newUsername = document.getElementById('profilePageUsername').value.trim();
-          if (!Validators.isValidUsername(newUsername)) {
-            alert("Username Error: Strictly lowercase letters (a-z).");
-            return;
-          }
-
-          const registry = SafeStorage.get('exam_staff_registry', []);
-          const oldUsername = AppState.activeUser.name;
-          if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
-            alert("Username already taken.");
-            return;
-          }
-
-          AppState.activeUser.name = newUsername;
-          AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
-          AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
-          AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
-          AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
-
-          const idx = registry.findIndex(s => s.name === oldUsername);
-          if (idx !== -1) {
-            registry[idx] = { ...registry[idx], ...AppState.activeUser };
-            SafeStorage.set('exam_staff_registry', registry);
-          }
-
-          SafeStorage.set('persistent_exam_user', AppState.activeUser);
-          await syncProfileUI(AppState.activeUser);
-          alert("Profile updated successfully!");
-          history.back();
-        }
-      });
-
-      const cropperVp = document.getElementById('cropperViewport');
-      cropperVp.addEventListener('mousedown', (e) => ImageCropper.handlePointerDown(e));
-      window.addEventListener('mousemove', (e) => ImageCropper.handlePointerMove(e));
-      window.addEventListener('mouseup', () => ImageCropper.handlePointerUp());
-
-      cropperVp.addEventListener('touchstart', (e) => ImageCropper.handlePointerDown(e), { passive: false });
-      window.addEventListener('touchmove', (e) => ImageCropper.handlePointerMove(e), { passive: false });
-      window.addEventListener('touchend', () => ImageCropper.handlePointerUp());
-
-      document.getElementById('genBtn').addEventListener('click', async () => {
-        calculateAndValidateMarks();
-        const btn = document.getElementById('genBtn');
-        if (btn.disabled) {
-          alert("Please balance marks before generation.");
-          return;
-        }
-
-        const files = document.getElementById('fileInput').files;
-        if (files.length === 0) {
-          alert("Please upload question bank photos, lesson scans, or PDF documents in Section 2.");
-          return;
-        }
-
-        const status = document.getElementById('statusMessage');
-        const paperCard = document.getElementById('paperCard');
-        const paperPreview = document.getElementById('paperPreview');
-
-        btn.disabled = true;
-        paperCard.hidden = true;
-
-        try {
-          const extractedText = await extractTextFromFiles(files, status);
-
-          if (!extractedText || extractedText.trim().length < 15) {
-            throw new Error("Unable to read clear text from the uploaded files. Please upload a clearer photo or a digital PDF.");
-          }
-
-          const parsedQuestions = extractedText
-            .split('\n')
-            .map(l => l.trim())
-            .filter(l => l.length > 10 && !l.startsWith("---"));
-
-          const localSections = [];
-          const sectionsConfig = [];
-
-          ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
-            const chk = document.getElementById('use_' + sec);
-            if (chk && chk.checked) {
-              const count = parseInt(document.getElementById('count_' + sec).value, 10) || 0;
-              const marks = parseInt(document.getElementById('marks_' + sec).value, 10) || 0;
-              const inst = document.getElementById('inst_' + sec).value;
-              const title = document.getElementById('title_' + sec).value;
-              localSections.push({ title: inst, count, marks, isMcq: (sec === 'mcq') });
-              sectionsConfig.push(`- Section: "${title}"\n  Instructions: "${inst}"\n  Count: ${count}\n  Marks: ${marks}`);
-            }
-          });
-
-          const config = {
-            mode: AppState.currentUploadMode,
-            rawText: extractedText,
-            instName: document.getElementById('instName').value,
-            examTitle: document.getElementById('examTitle').value,
-            subject: document.getElementById('subject').value,
-            grade: document.getElementById('grade').value,
-            duration: document.getElementById('duration').value,
-            maxMarks: document.getElementById('maxMarks').value,
-            genInst: document.getElementById('genInst').value,
-            incName: document.getElementById('incName').checked,
-            incRoll: document.getElementById('incRoll').checked,
-            incSec: document.getElementById('incSec').checked,
-            incDate: document.getElementById('incDate').checked,
-            sections: localSections,
-            parsedQuestions
-          };
-
-          const promptText = `
-Subject: ${config.subject}
-Grade: ${config.grade}
-Mode: ${config.mode}
-
-CRITICAL RULES:
-1. Every Multiple Choice Question MUST have 4 real, content-based options: (A), (B), (C), and (D). Never output placeholder text like "Option A" or "Option B".
-2. If Mode is "existing", extract the EXACT questions and options found in the text.
-3. If Mode is "lesson", formulate actual factual questions based on the lesson text with 1 correct option and 3 plausible distractors.
-
-SECTIONS TO GENERATE:
-${sectionsConfig.join('\n')}
-
-SOURCE TEXT CONTENT:
-${extractedText.substring(0, 6000)}
-`;
-
-          const generated = await generateFastPaperDirect(promptText, config, status);
-          let htmlOutput = generated.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
-          const totalQCount = (htmlOutput.match(/class="q-item"/g) || []).length;
-          htmlOutput += await buildDiagramSectionHtml(totalQCount + 1);
-
-          paperPreview.innerHTML = htmlOutput;
-          paperCard.hidden = false;
-          status.innerText = "Exam paper generated successfully!";
-
-          const defaultName = [config.subject, config.grade, config.examTitle].filter(Boolean).join('_').replace(/[\/\s]+/g, '_');
-          document.getElementById('paperCustomName').value = defaultName;
-          changePaperFont(document.getElementById('fontSelector').value);
-
-          saveCurrentPaperToHistory(false);
-          paperCard.scrollIntoView({ behavior: 'smooth' });
-        } catch (err) {
-          alert("Notice: " + err.message);
-          status.innerText = "Error: " + err.message;
-        } finally {
-          btn.disabled = false;
         }
       });
     });
