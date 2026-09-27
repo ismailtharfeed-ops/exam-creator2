@@ -187,9 +187,9 @@
 
     .app-header {
       position: relative; overflow: hidden; background: var(--card);
-      padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border-subtle);
+      padding: 12px 18px; border-radius: 16px; border: 1px solid var(--border-subtle);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-      display: flex; align-items: center; justify-content: space-between; min-height: 64px;
+      display: flex; align-items: center; justify-content: space-between; min-height: 60px;
     }
     .header-watermark {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -197,26 +197,23 @@
       background-repeat: no-repeat; background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
     }
-    .menu-lines-btn {
+    .menu-dots-btn {
       background: var(--card-subtle); border: 1.5px solid var(--border);
-      width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 5px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 40px; height: 40px; border-radius: 10px; cursor: pointer; 
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: bold; color: var(--text);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative; z-index: 2;
     }
-    .menu-lines-btn span {
-      display: block; width: 20px; height: 2.2px; background-color: var(--text);
-      border-radius: 4px; transition: all 0.25s ease;
-    }
-    .menu-lines-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: scale(1.04); }
-    .menu-lines-btn:hover span { background-color: var(--primary); }
+    .menu-dots-btn:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); transform: scale(1.04); }
+
     .header-center-title {
       position: absolute; left: 50%; transform: translateX(-50%);
       text-align: center; z-index: 1; width: max-content;
     }
-    .header-center-title h1 { font-size: 1.45rem; font-weight: 800; color: var(--text); margin: 0; }
+    .header-center-title h1 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin: 0; }
     .header-center-title h1 span { color: var(--primary); }
-    .header-spacer { width: 42px; }
+    .header-spacer { width: 40px; }
 
     .drawer-backdrop {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
@@ -255,10 +252,10 @@
     }
     .drawer-profile-top { display: flex; align-items: center; gap: 14px; }
     .drawer-avatar {
-      width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+      width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
       background: linear-gradient(135deg, var(--primary), #0284c7); color: #fff; 
       display: flex; align-items: center; justify-content: center; 
-      font-size: 1.4rem; font-weight: bold; border: 2.5px solid var(--card);
+      font-size: 1.3rem; font-weight: bold; border: 2.5px solid var(--card);
     }
     .drawer-avatar.lg { width: 76px; height: 76px; font-size: 2.2rem; }
     .drawer-profile-info { flex: 1; overflow: hidden; }
@@ -636,17 +633,13 @@
     <header class="app-header no-print" id="mainHomeHeader">
       <div class="header-watermark" aria-hidden="true"></div>
       
-      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      
       <div class="header-center-title">
         <h1>Exam Paper <span>Creator</span></h1>
       </div>
 
-      <div class="header-spacer" aria-hidden="true"></div>
+      <button type="button" class="menu-dots-btn" id="btnOpenDrawer" aria-label="Open Navigation Options">
+        ⋮
+      </button>
     </header>
 
     <!-- PAGE 1: CREATE PAPER VIEW -->
@@ -1269,8 +1262,7 @@
       currentAuthMode: 'signin',
       currentUploadMode: 'existing',
       currentPage: 'create',
-      customSectionCount: 0,
-      lastBackPressTime: 0
+      customSectionCount: 0
     };
 
     const ImageCropper = {
@@ -1738,12 +1730,11 @@
       if (!paper) return;
       document.getElementById('paperPreview').innerHTML = paper.content;
       document.getElementById('paperCard').hidden = false;
-      switchPage('create');
+      setPageView('create');
     }
 
     function setPageView(page) {
       AppState.currentPage = page;
-      document.getElementById('mainHomeHeader').style.display = (page === 'create') ? 'flex' : 'none';
       document.getElementById('pageCreate').hidden = (page !== 'create');
       document.getElementById('pageHistory').hidden = (page !== 'history');
       document.getElementById('pageProfile').hidden = (page !== 'profile');
@@ -1753,9 +1744,15 @@
       if (page === 'admin') renderAdminDashboard();
     }
 
-    function switchPage(page, fromDrawer = false) { setPageView(page); }
-    function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
-    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
+    function openDrawer() {
+      document.getElementById('sideDrawer').classList.add('active');
+      document.getElementById('drawerBackdrop').classList.add('active');
+    }
+
+    function closeDrawer() {
+      document.getElementById('sideDrawer').classList.remove('active');
+      document.getElementById('drawerBackdrop').classList.remove('active');
+    }
 
     function setAuthMode(mode) {
       AppState.currentAuthMode = mode;
@@ -1764,7 +1761,6 @@
       document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
       document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
       document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & PIN.' : 'Set up your staff account.';
-      document.getElementById('signUpFields').hidden = (mode !== 'signin'); // fixed toggle logic
       document.getElementById('signUpFields').hidden = (mode !== 'signup');
       document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
     }
@@ -1787,6 +1783,10 @@
       document.getElementById('authOverlay').hidden = true;
       await syncProfileUI(user);
       populateHeaderSettings(user);
+
+      // Explicit Admin Check for Dashboard visibility
+      const isAdmin = user.role === 'admin' || user.name === 'admin';
+      document.getElementById('drawerAdminItem').hidden = !isAdmin;
       setPageView('create');
     }
 
@@ -1822,14 +1822,31 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
 
-      // Reset registry on schema v4 update
-      if (!SafeStorage.get('app_users_cleared_v4')) {
+      if (!SafeStorage.get('app_users_cleared_v5')) {
         SafeStorage.remove('exam_staff_registry');
         SafeStorage.remove('persistent_exam_user');
-        SafeStorage.set('app_users_cleared_v4', true);
+        SafeStorage.set('app_users_cleared_v5', true);
       }
 
       calculateAndValidateMarks();
+
+      // Natural History Stack Routing (No Single-Click App Exit)
+      window.history.replaceState({ page: 'create' }, '');
+      window.addEventListener('popstate', (e) => {
+        const state = e.state;
+        if (state && state.page) {
+          setPageView(state.page);
+        } else {
+          setPageView('create');
+        }
+      });
+
+      const lockCode = SafeStorage.get('app_screen_lock_code');
+      if (lockCode) {
+        const lockElem = document.getElementById('lockOverlay');
+        lockElem.hidden = false;
+        FocusTrap.trap(lockElem.querySelector('.auth-card'));
+      }
 
       const persistentUser = SafeStorage.get('persistent_exam_user');
       if (persistentUser) {
@@ -1845,8 +1862,30 @@
           setAuthMode(target.closest('[data-auth-mode]').getAttribute('data-auth-mode'));
           return;
         }
-        if (target.closest('[data-action="nav-home"]')) { closeDrawer(); setPageView('create'); return; }
-        if (target.closest('[data-action="nav-vault"]')) { closeDrawer(); setPageView('history'); return; }
+        if (target.closest('[data-action="nav-home"]')) {
+          closeDrawer();
+          window.history.pushState({ page: 'create' }, '');
+          setPageView('create');
+          return;
+        }
+        if (target.closest('[data-action="nav-vault"]')) {
+          closeDrawer();
+          window.history.pushState({ page: 'history' }, '');
+          setPageView('history');
+          return;
+        }
+        if (target.closest('[data-action="nav-admin"]')) {
+          closeDrawer();
+          window.history.pushState({ page: 'admin' }, '');
+          setPageView('admin');
+          return;
+        }
+        if (target.closest('[data-action="nav-about"]')) {
+          closeDrawer();
+          window.history.pushState({ page: 'about' }, '');
+          setPageView('about');
+          return;
+        }
         if (target.closest('[data-action="toggle-theme"]')) { toggleTheme(); return; }
         if (target.closest('[data-action="sign-out"]')) {
           closeDrawer();
@@ -1908,6 +1947,24 @@
           const hashedPin = await CryptoEngine.hash(pin);
           const registry = SafeStorage.get('exam_staff_registry', []);
 
+          // Built-in Admin bypass account
+          if (username === 'admin' && pin === '2026') {
+            const adminUser = {
+              id: 'admin_root',
+              name: 'admin',
+              fullName: 'Administrator',
+              subject: 'All Subjects (Admin)',
+              userClass: 'Administration',
+              phone: '+91 9483061904',
+              role: 'admin',
+              authType: 'pin',
+              secret: hashedPin
+            };
+            logAuditEvent("admin", "Admin Login", "Success");
+            await loginSuccess(adminUser);
+            return;
+          }
+
           if (AppState.currentAuthMode === 'signup') {
             if (registry.some(s => s.name === username)) {
               showInlineError("Username is already taken.");
@@ -1924,6 +1981,7 @@
               subject: document.getElementById('regSubject').value.trim() || "General",
               userClass: "10th Standard",
               phone: document.getElementById('regMobilePhone').value.trim(),
+              role: username === 'admin' ? 'admin' : 'staff',
               secret: hashedPin
             };
             registry.push(staff);
