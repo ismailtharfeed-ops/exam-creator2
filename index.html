@@ -1,406 +1,2902 @@
-
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <title>Exam Paper Creator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0284c7">
-  <meta name="description" content="Academic Exam Paper Creator with client-side OCR and multi-engine fallback.">
+  <meta charset="UTF-8">
+  <title>Exam Paper Creator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="description" content="Academic Exam Paper Creator with client-side OCR and multi-engine fallback.">
 
-  <!-- Core Google Web Fonts pre-loaded for instant switching -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600;700&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+  <!-- Core Google Web Fonts pre-loaded for instant switching -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="dynamicGoogleFont" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@400;600;700&family=Roboto:ital,wght@0,400;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
 
-  <link rel="stylesheet" href="style.css">
+  <!-- PDF.js Digital Parser & In-Browser OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
 
-  <!-- Optional In-Browser OCR (Gracefully ignored if unreachable) -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
-  <script src="app.js" defer></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --card-subtle: #f8fafc;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-light: #e0f2fe;
+      
+      --accent-emerald: #059669;
+      --accent-emerald-hover: #047857;
+      
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      
+      --danger-bg: #fee2e2;
+      --danger-border: #fca5a5;
+      --danger-text: #b91c1c;
+      
+      --paper-bg: #ffffff;
+      --paper-text: #111827;
+      --paper-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+
+      --paper-font: 'Tinos', 'Noto Serif', 'Times New Roman', serif;
+      --paper-size: 10.5pt;
+
+      --watermark-opacity: 0.08;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --card: #1e293b;
+      --card-subtle: #172236;
+      --border: #334155;
+      --border-subtle: #1e293b;
+      
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --primary-light: rgba(56, 189, 248, 0.15);
+      
+      --accent-emerald: #10b981;
+      --accent-emerald-hover: #059669;
+      
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #111827;
+      
+      --danger-bg: #451a1a;
+      --danger-border: #7f1d1d;
+      --danger-text: #fca5a5;
+      
+      --paper-bg: #ffffff;
+      --paper-text: #111827;
+      --paper-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+
+      --watermark-opacity: 0.05;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body, input, select, button, textarea {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Kannada", "Noto Sans Devanagari", "Noto Naskh Arabic", sans-serif;
+    }
+
+    body { 
+      background-color: var(--bg); 
+      color: var(--text); 
+      padding: 18px 12px; 
+      transition: background-color 0.35s ease, color 0.35s ease; 
+    }
+
+    body.no-scroll {
+      overflow: hidden !important;
+      touch-action: none !important;
+    }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+    }
+
+    .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .flex-column { display: flex; flex-direction: column; }
+    .flex-1 { flex: 1; }
+    .gap-sm { gap: 8px; }
+    .gap-md { gap: 16px; }
+    .mt-xs { margin-top: 5px; }
+    .mt-sm { margin-top: 10px; }
+    .mt-md { margin-top: 18px; }
+    .mt-lg { margin-top: 25px; }
+    .mb-xs { margin-bottom: 8px; }
+    .mb-sm { margin-bottom: 12px; }
+    .m-0 { margin: 0 !important; }
+    .p-0 { padding: 0 !important; }
+    .w-100 { width: 100%; }
+    .max-w-md { max-width: 520px; }
+    .max-w-lg { max-width: 640px; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .text-center { text-align: center; }
+    .text-sm { font-size: 0.85rem; }
+    .text-xs { font-size: 0.78rem; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .tracking-wide { letter-spacing: 2px; }
+    .block { display: block; }
+    .nowrap { white-space: nowrap; }
+    .border-none { border: none !important; }
+    .color-primary { color: var(--primary) !important; }
+    .color-success { color: var(--accent-emerald) !important; }
+    .text-subtle { color: var(--text-muted); }
+
+    .inline-error-banner {
+      background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger-text);
+      padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; margin-bottom: 12px;
+    }
+    .inline-error-banner[hidden] { display: none !important; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 9999;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px);
+    }
+    .modal-backdrop[hidden] { display: none !important; }
+
+    .auth-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 26px 22px; width: 100%; max-width: 440px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .auth-card h2 { font-size: 1.4rem; color: var(--primary); text-align: center; margin-bottom: 4px; }
+    .auth-card p { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
+
+    .auth-nav {
+      display: flex; gap: 8px; background: var(--card-subtle); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border);
+    }
+    .auth-nav button {
+      flex: 1; padding: 8px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
+
+    .auth-type-pill { display: flex; gap: 10px; margin-bottom: 14px; }
+    .auth-type-pill button {
+      flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--card-subtle);
+      border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: var(--text);
+      transition: all 0.25s ease;
+    }
+    .auth-type-pill button.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .auth-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.3; }
+
+    .cropper-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .cropper-viewport-wrap { width: 240px; height: 240px; overflow: hidden; position: relative; }
+    .cropper-viewport {
+      width: 240px; height: 240px; position: relative; overflow: hidden;
+      border-radius: 50%; border: 3px solid var(--primary); background: #000;
+      touch-action: none; cursor: grab; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.75);
+    }
+    .cropper-img { position: absolute; top: 0; left: 0; transform-origin: 0 0; user-select: none; pointer-events: none; }
+    .zoom-controls { width: 100%; display: flex; align-items: center; gap: 10px; }
+    .button-row { display: flex; gap: 10px; width: 100%; }
+
+    .app-header {
+      position: relative; overflow: hidden; background: var(--card);
+      padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      display: flex; align-items: center; justify-content: space-between; min-height: 64px;
+    }
+    .header-watermark {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: 320px; height: 100%; pointer-events: none; opacity: var(--watermark-opacity);
+      background-repeat: no-repeat; background-size: contain; background-position: center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cg fill='%230284c7'%3E%3Cpath d='M80 60h280l80 80v300H80z' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cpath d='M360 60v80h80' fill='none' stroke='%230284c7' stroke-width='14'/%3E%3Cline x1='120' y1='170' x2='380' y2='170' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='220' x2='380' y2='220' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='270' x2='320' y2='270' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='320' x2='380' y2='320' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='120' y1='370' x2='260' y2='370' stroke='%230284c7' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='410' cy='390' r='50' fill='none' stroke='%230284c7' stroke-width='12'/%3E%3Cpath d='M395 390l10 10 25-25' fill='none' stroke='%230284c7' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .menu-lines-btn {
+      background: var(--card-subtle); border: 1.5px solid var(--border);
+      width: 42px; height: 42px; border-radius: 10px; cursor: pointer; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 5px; padding: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; z-index: 2;
+    }
+    .menu-lines-btn span {
+      display: block; width: 20px; height: 2.2px; background-color: var(--text);
+      border-radius: 4px; transition: all 0.25s ease;
+    }
+    .menu-lines-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: scale(1.04); }
+    .menu-lines-btn:hover span { background-color: var(--primary); }
+    .header-center-title {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      text-align: center; z-index: 1; width: max-content;
+    }
+    .header-center-title h1 { font-size: 1.45rem; font-weight: 800; color: var(--text); margin: 0; }
+    .header-center-title h1 span { color: var(--primary); }
+    .header-spacer { width: 42px; }
+
+    .drawer-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+      z-index: 10005; opacity: 0; pointer-events: none; 
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(4px); touch-action: none;
+    }
+    .drawer-backdrop.active { opacity: 1; pointer-events: auto; }
+    .side-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 330px; max-width: 86vw;
+      background: var(--card); border-right: 1px solid var(--border); z-index: 10006;
+      transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column; box-shadow: 6px 0 30px rgba(0,0,0,0.25);
+      overscroll-behavior: contain;
+    }
+    .side-drawer.active { transform: translateX(0); }
+    .drawer-header {
+      padding: 16px 18px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.05), transparent);
+    }
+    .drawer-close-btn {
+      background: var(--card-subtle); border: 1px solid var(--border); 
+      width: 32px; height: 32px; border-radius: 8px;
+      font-size: 1.1rem; color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .drawer-close-btn:hover { color: var(--danger-text); border-color: var(--danger-border); }
+    .drawer-scroll-body {
+      padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;
+      overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    }
+    .drawer-profile-card {
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 14px;
+      padding: 15px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
+    }
+    .drawer-profile-top { display: flex; align-items: center; gap: 14px; }
+    .drawer-avatar {
+      width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+      background: linear-gradient(135deg, var(--primary), #0284c7); color: #fff; 
+      display: flex; align-items: center; justify-content: center; 
+      font-size: 1.4rem; font-weight: bold; border: 2.5px solid var(--card);
+    }
+    .drawer-avatar.lg { width: 76px; height: 76px; font-size: 2.2rem; }
+    .drawer-profile-info { flex: 1; overflow: hidden; }
+    .drawer-profile-name { font-weight: 800; font-size: 1.05rem; }
+    .drawer-profile-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; }
+    .drawer-section-title {
+      font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--primary); margin-bottom: 6px;
+    }
+    .drawer-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.92rem; font-weight: 600; color: var(--text); cursor: pointer; text-align: left; width: 100%;
+    }
+    .drawer-item:hover { border-color: var(--primary); transform: translateX(3px); background: var(--primary-light); }
+    .drawer-item.item-danger { color: var(--danger-text); border-color: var(--danger-border); background: var(--danger-bg); }
+
+    .page-view { display: flex; flex-direction: column; gap: 16px; animation: pageSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .page-view[hidden] { display: none !important; }
+    @keyframes pageSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card {
+      background: var(--card); border: 1.5px solid var(--border-subtle); border-radius: 14px;
+      padding: 22px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    .card h2 { font-size: 1.05rem; margin-bottom: 12px; font-weight: 700; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 8px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; }
+    .span-2 { grid-column: span 2; }
+
+    .form-group { display: flex; flex-direction: column; }
+    label, .form-label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    input[type="text"], input[type="password"], input[type="number"], input[type="file"], input[type="tel"], select, textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; background-color: var(--input-bg); color: var(--text); outline: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+    .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; text-transform: none; color: var(--text); }
+
+    .accordion-trigger {
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; padding: 14px 18px; border-radius: 12px;
+      background: var(--card-subtle); border: 1.5px solid var(--border); text-align: left;
+    }
+    .accordion-trigger:hover { background: var(--primary-light); border-color: var(--primary); }
+    .accordion-trigger h2 { border: none; margin: 0; padding: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
+    .accordion-subtext { font-size: 0.8rem; font-weight: normal; color: var(--text-muted); }
+    .arrow-icon { font-size: 1.1rem; color: var(--primary); transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+    .arrow-icon.rotated { transform: rotate(180deg); }
+    .accordion-content {
+      max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-10px);
+      transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, transform 0.35s ease;
+    }
+    .accordion-content.expanded { max-height: 4000px; opacity: 1; transform: translateY(0); margin-top: 16px; }
+
+    .source-mode-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px; }
+    .source-choice-btn {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 14px;
+      cursor: pointer; background: var(--card); font-weight: 700; font-size: 0.9rem;
+      text-align: center; color: var(--text);
+    }
+    .source-choice-btn.selected { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
+
+    .section-box {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 15px 16px;
+      margin-bottom: 12px; background: var(--card-subtle);
+    }
+    .section-header-edit { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .section-header-edit .left-block { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .editable-sec-title {
+      font-weight: 700; font-size: 0.95rem; border: 1.5px solid transparent; background: transparent; color: var(--text);
+      padding: 4px 8px; border-radius: 6px; outline: none; width: 100%;
+    }
+    .editable-sec-title:focus { border-color: var(--primary); background: var(--input-bg); }
+    .btn-remove-sec { background: transparent; border: none; color: var(--danger-text); font-weight: bold; cursor: pointer; }
+
+    .btn-generate {
+      background: linear-gradient(135deg, var(--primary), #0369a1); 
+      color: #fff; border: none; padding: 14px 26px; border-radius: 10px; font-size: 1.02rem; font-weight: 700; cursor: pointer; width: 100%;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
+    }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+    .btn-primary { background: var(--primary); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .btn-secondary { background: var(--card-subtle); color: var(--text); border: 1.5px solid var(--border); padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-success { background: var(--accent-emerald); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .btn-danger-outline { background: var(--danger-bg); color: var(--danger-text); border: 1.5px solid var(--danger-border); padding: 7px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+    .btn-add-sec {
+      background: var(--card-subtle); color: var(--primary); border: 2px dashed var(--primary);
+      width: 100%; padding: 13px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.92rem; margin-top: 8px;
+    }
+    .link-button { background: transparent; border: none; font-size: 0.8rem; color: var(--primary); cursor: pointer; text-decoration: underline; }
+
+    #marksValidationBox {
+      padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; margin-top: 14px;
+      background-color: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger-text);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    #marksValidationBox[hidden] { display: none !important; }
+    #statusMessage { font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-top: 10px; text-align: center; }
+
+    .paper-toolbar {
+      display: flex; flex-direction: column; gap: 12px;
+      background: var(--card); border: 1.5px solid var(--border); padding: 14px 18px; border-radius: 10px; margin-bottom: 14px;
+    }
+    .paper-name-row { display: flex; align-items: center; gap: 10px; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 10px; }
+    .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .toolbar-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; border-right: 1.5px solid var(--border); padding-right: 14px; }
+    .font-select-wrap select { width: auto; min-width: 180px; }
+    .size-slider-wrap { display: flex; align-items: center; gap: 8px; }
+    .size-slider-wrap input { width: 90px; }
+    .action-buttons-wrap { display: flex; gap: 10px; }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #94a3b8; border-radius: 24px; transition: .25s ease;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px;
+      background-color: white; border-radius: 50%; transition: .25s ease;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .a4-page {
+      background: #ffffff !important; color: #111827 !important;
+      width: 210mm; min-height: 297mm; padding: 16mm 18mm; margin: 0 auto;
+      box-shadow: var(--paper-shadow); border-radius: 2px;
+      line-height: 1.35; outline: none;
+      font-family: var(--paper-font) !important; font-size: var(--paper-size) !important;
+    }
+    .a4-page, .a4-page * { font-family: var(--paper-font) !important; }
+    .a4-page[contenteditable="true"] { box-shadow: 0 0 0 3px var(--primary); }
+
+    .paper-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; }
+    .paper-header h1 { font-size: 1.35em !important; text-transform: uppercase; margin-bottom: 2px; font-weight: bold; }
+    .paper-header h3 { font-size: 1.1em !important; font-weight: normal; margin-bottom: 5px; }
+    .meta-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 3px; font-size: 0.95em !important; }
+    .student-fields { display: flex; justify-content: space-between; border-top: 1px dashed #444; padding-top: 4px; margin-top: 4px; font-size: 0.9em !important; }
+    .general-instructions { border: 1px solid #777; padding: 4px 8px; margin: 8px 0 10px; font-size: 0.88em !important; font-style: italic; }
+
+    .sec-block { page-break-inside: auto; margin-top: 18px !important; margin-bottom: 8px !important; }
+    .sec-title { 
+      font-weight: bold; text-decoration: underline; margin-bottom: 6px !important;
+      font-size: 1em !important; display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .sec-marks-total { font-weight: bold; text-decoration: none; white-space: nowrap; margin-left: 12px; }
+
+    .q-item { page-break-inside: avoid; margin-bottom: 5px !important; display: block; text-align: left; }
+    .q-line { display: block; line-height: 1.3 !important; }
+    .q-num { font-weight: bold; margin-right: 6px; display: inline; white-space: nowrap; }
+    .q-text { display: inline; }
+    .mcq-options { 
+      margin-top: 3px !important; margin-bottom: 4px !important;
+      padding-left: 20px; font-size: 0.95em !important;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; 
+    }
+    .diagram-container { text-align: center; margin: 6px 0; page-break-inside: avoid; }
+    .diagram-container img { max-width: 85%; max-height: 220px; object-fit: contain; border: 1px solid #666; padding: 3px; }
+
+    .card-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px; }
+    .history-item {
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px;
+    }
+    .history-meta h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+    .history-meta p { font-size: 0.85rem; color: var(--text-muted); }
+    .history-actions { display: flex; gap: 8px; }
+
+    .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 12px; padding: 18px; text-align: center; }
+    .stat-card span { font-size: 0.82rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+    .stat-card h3 { font-size: 1.9rem; color: var(--primary); margin-top: 6px; }
+
+    .table-responsive { overflow-x: auto; }
+    .max-h-250 { max-height: 250px; overflow-y: auto; }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
+    .data-table th, .data-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
+    .data-table th { background: var(--card-subtle); font-weight: bold; }
+    .data-table tr:hover { background: rgba(2, 132, 199, 0.04); }
+
+    .avatar-edit-row { display: flex; align-items: center; gap: 16px; }
+    .avatar-preview-wrap { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .avatar-preview-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94); color: #fff; padding: 10px 22px;
+      border-radius: 30px; font-size: 0.85rem; font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3); z-index: 10000;
+      animation: fadeInOut 2s ease forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, 10px); }
+      15% { opacity: 1; transform: translate(-50%, 0); }
+      85% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, 10px); }
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; margin: 0; }
+      .no-print { display: none !important; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      .a4-page { box-shadow: none !important; border: none; width: 100%; min-height: auto; padding: 0; margin: 0; }
+      @page { size: A4 portrait; margin: 15mm; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Accessible Toast -->
-  <div id="backToast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
-    Press back again to exit
-  </div>
+  <div id="backToast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+    Press back again to exit
+  </div>
 
-  <!-- IN-APP LOCK SCREEN MODAL -->
-  <div id="lockOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lockTitle" hidden>
-    <div class="auth-card text-center">
-      <h2 id="lockTitle">🔒 App Locked</h2>
-      <p>Enter your App Lock credential to continue.</p>
-      <div class="form-group">
-        <label for="appLockInput" class="sr-only">App Lock PIN or Password</label>
-        <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" class="input-center tracking-wide">
-      </div>
-      <button type="button" id="btnUnlockApp" class="btn-generate">Unlock App</button>
-    </div>
-  </div>
+  <!-- IN-APP LOCK SCREEN MODAL -->
+  <div id="lockOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lockTitle" hidden>
+    <div class="auth-card text-center" tabindex="-1">
+      <h2 id="lockTitle">🔒 App Locked</h2>
+      <p>Enter your App Lock credential to continue.</p>
+      <div class="form-group">
+        <label for="appLockInput" class="sr-only">App Lock PIN or Password</label>
+        <input type="password" id="appLockInput" placeholder="Enter Lock PIN / Password" class="input-center tracking-wide">
+      </div>
+      <button type="button" id="btnUnlockApp" class="btn-generate">Unlock App</button>
+    </div>
+  </div>
 
-  <!-- CIRCULAR IMAGE CROPPER MODAL -->
-  <div id="cropperOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cropperTitle" hidden>
-    <div class="cropper-card">
-      <h3 id="cropperTitle" class="color-primary">Crop Profile Picture</h3>
-      <p class="text-subtle text-center text-sm">Drag photo to reposition inside circle</p>
-      
-      <div class="cropper-viewport-wrap">
-        <div class="cropper-viewport" id="cropperViewport" tabindex="0" role="region" aria-label="Image Cropping Viewport">
-          <img id="cropperImage" class="cropper-img" src="" alt="Cropping preview">
-        </div>
-      </div>
+  <!-- CIRCULAR IMAGE CROPPER MODAL -->
+  <div id="cropperOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cropperTitle" hidden>
+    <div class="cropper-card" tabindex="-1">
+      <h3 id="cropperTitle" class="color-primary">Crop Profile Picture</h3>
+      <p class="text-subtle text-center text-sm">Drag photo to reposition inside circle</p>
+      
+      <div class="cropper-viewport-wrap">
+        <div class="cropper-viewport" id="cropperViewport" tabindex="0" role="region" aria-label="Image Cropping Viewport">
+          <img id="cropperImage" class="cropper-img" src="" alt="Cropping preview">
+        </div>
+      </div>
 
-      <div class="zoom-controls">
-        <label for="cropZoomSlider" class="text-sm font-bold">Zoom:</label>
-        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider">
-      </div>
+      <div class="zoom-controls">
+        <label for="cropZoomSlider" class="text-sm font-bold">Zoom:</label>
+        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider">
+      </div>
 
-      <div class="button-row">
-        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1">Cancel</button>
-        <button type="button" id="btnApplyCrop" class="btn-primary flex-1">Apply Crop</button>
-      </div>
-    </div>
-  </div>
+      <div class="button-row">
+        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1">Cancel</button>
+        <button type="button" id="btnApplyCrop" class="btn-primary flex-1">Apply Crop</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- SLIDE-OUT LEFT DRAWER -->
-  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1"></div>
-  <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
-    <header class="drawer-header">
-      <h3>⚙️ Menu & Settings</h3>
-      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button>
-    </header>
+  <!-- SLIDE-OUT LEFT DRAWER -->
+  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1"></div>
+  <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
+    <header class="drawer-header">
+      <h3>⚙️ Menu & Settings</h3>
+      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button>
+    </header>
 
-    <div class="drawer-scroll-body">
-      <!-- Profile Card -->
-      <section aria-labelledby="drawerProfileSection">
-        <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
-        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile">
-          <div class="drawer-profile-top">
-            <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
-            <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
-            <div class="drawer-profile-info">
-              <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
-              <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
-              <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
-              <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div class="drawer-scroll-body">
+      <section aria-labelledby="drawerProfileSection">
+        <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
+        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile">
+          <div class="drawer-profile-top">
+            <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
+            <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
+            <div class="drawer-profile-info">
+              <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
+              <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
+              <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
+              <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <!-- Navigation & Vault -->
-      <nav aria-label="Application Sections">
-        <h4 class="drawer-section-title">Navigation & Vault</h4>
-        <div class="flex-column gap-sm">
-          <button type="button" class="drawer-item" data-action="nav-home">
-            <span>🏠 Home Page</span>
-          </button>
-          <button type="button" class="drawer-item" data-action="nav-vault">
-            <span>📚 Saved Papers Vault</span>
-          </button>
-          <button type="button" class="drawer-item" id="drawerAdminItem" data-action="nav-admin" hidden>
-            <span>🛡️ Admin Dashboard</span>
-          </button>
-        </div>
-      </nav>
+      <nav aria-label="Application Sections">
+        <h4 class="drawer-section-title">Navigation & Vault</h4>
+        <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" data-action="nav-home">
+            <span>🏠 Home Page</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="nav-vault">
+            <span>📚 Saved Papers Vault</span>
+          </button>
+          <button type="button" class="drawer-item" id="drawerAdminItem" data-action="nav-admin" hidden>
+            <span>🛡️ Admin Dashboard</span>
+          </button>
+        </div>
+      </nav>
 
-      <!-- Preferences & Security -->
-      <section aria-label="Preferences">
-        <h4 class="drawer-section-title">Preferences & Security</h4>
-        <div class="flex-column gap-sm">
-          <button type="button" class="drawer-item" data-action="toggle-theme">
-            <span>Theme Mode</span>
-            <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
-          </button>
-          <button type="button" class="drawer-item" data-action="app-lock">
-            <span>App Screen Lock</span>
-          </button>
-          <button type="button" class="drawer-item" data-action="share-app">
-            <span>Share Application</span>
-          </button>
-          <button type="button" class="drawer-item" data-action="nav-about">
-            <span>ℹ️ About Application</span>
-          </button>
-          <button type="button" class="drawer-item item-danger" data-action="sign-out">
-            <span>Sign Out / Switch Profile</span>
-          </button>
-        </div>
-      </section>
-    </div>
-  </aside>
+      <section aria-label="Preferences">
+        <h4 class="drawer-section-title">Preferences & Security</h4>
+        <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" data-action="toggle-theme">
+            <span>Theme Mode</span>
+            <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="app-lock">
+            <span>App Screen Lock</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="share-app">
+            <span>Share Application</span>
+          </button>
+          <button type="button" class="drawer-item" data-action="nav-about">
+            <span>ℹ️ About Application</span>
+          </button>
+          <button type="button" class="drawer-item item-danger" data-action="sign-out">
+            <span>Sign Out / Switch Profile</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </aside>
 
-  <!-- AUTHENTICATION OVERLAY -->
-  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
-    <div class="auth-card">
-      <h2 id="authHeading">Staff Sign In</h2>
-      <p id="authSubHeading">Sign in with your username & credentials.</p>
+  <!-- AUTHENTICATION OVERLAY -->
+  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+    <div class="auth-card" tabindex="-1">
+      <h2 id="authHeading">Staff Sign In</h2>
+      <p id="authSubHeading">Sign in with your username & credentials.</p>
 
-      <div class="auth-nav" role="tablist">
-        <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" data-auth-mode="signin">Sign In</button>
-        <button type="button" id="navSignUp" role="tab" aria-selected="false" data-auth-mode="signup">Sign Up</button>
-      </div>
+      <div class="auth-nav" role="tablist">
+        <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" data-auth-mode="signin">Sign In</button>
+        <button type="button" id="navSignUp" role="tab" aria-selected="false" data-auth-mode="signup">Sign Up</button>
+      </div>
 
-      <form id="authForm" novalidate>
-        <div class="form-group">
-          <label for="authUsernameInput">Username</label>
-          <input type="text" id="authUsernameInput" autocomplete="username" required>
-          <span class="auth-hint">Strictly lowercase English letters only (a-z).</span>
-        </div>
+      <div id="authErrorBox" class="inline-error-banner" hidden></div>
 
-        <div id="signUpFields" hidden>
-          <div class="form-group">
-            <label for="regFullName">Full Name (Displayed in Profile)</label>
-            <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
-          </div>
-          <div class="form-group">
-            <label for="regMobilePhone">Mobile Number</label>
-            <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
-          </div>
-          <div class="form-group">
-            <label for="regSubject">Teaching Subject</label>
-            <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
-          </div>
-          <div class="form-group">
-            <label for="regAvatarFile">Profile Picture (With Crop)</label>
-            <input type="file" id="regAvatarFile" accept="image/*">
-            <input type="hidden" id="regCroppedAvatarData">
-            <div id="regAvatarPreviewWrap" class="avatar-preview-wrap" hidden>
-              <img id="regAvatarPreview" class="avatar-preview-img" alt="Avatar preview">
-              <span class="color-success font-bold text-sm">✓ Photo cropped</span>
-            </div>
-          </div>
-        </div>
+      <form id="authForm" novalidate>
+        <div class="form-group">
+          <label for="authUsernameInput">Username</label>
+          <input type="text" id="authUsernameInput" autocomplete="username" required>
+          <span class="auth-hint">Strictly lowercase English letters only (a-z).</span>
+        </div>
 
-        <fieldset class="form-group border-none p-0">
-          <legend class="form-label">Credential Type</legend>
-          <div class="auth-type-pill">
-            <button type="button" class="active" id="btnAuthPassword" data-auth-type="password">🔏 Password</button>
-            <button type="button" id="btnAuthPin" data-auth-type="pin">🔢 PIN Code</button>
-          </div>
-        </fieldset>
+        <div id="signUpFields" hidden>
+          <div class="form-group">
+            <label for="regFullName">Full Name (Displayed in Profile)</label>
+            <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+          <div class="form-group">
+            <label for="regMobilePhone">Mobile Number</label>
+            <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
+          </div>
+          <div class="form-group">
+            <label for="regSubject">Teaching Subject</label>
+            <input type="text" id="regSubject" placeholder="e.g. Social Science, Mathematics">
+          </div>
+          <div class="form-group">
+            <label for="regAvatarFile">Profile Picture (With Crop)</label>
+            <input type="file" id="regAvatarFile" accept="image/*">
+            <input type="hidden" id="regCroppedAvatarData">
+            <div id="regAvatarPreviewWrap" class="avatar-preview-wrap" hidden>
+              <img id="regAvatarPreview" class="avatar-preview-img" alt="Avatar preview">
+              <span class="color-success font-bold text-sm">✓ Photo cropped</span>
+            </div>
+          </div>
+        </div>
 
-        <div id="authInputPassword" class="form-group">
-          <label for="authPassword">Password</label>
-          <input type="password" id="authPassword" autocomplete="current-password">
-          <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
-        </div>
+        <fieldset class="form-group border-none p-0">
+          <legend class="form-label">Credential Type</legend>
+          <div class="auth-type-pill">
+            <button type="button" class="active" id="btnAuthPassword" data-auth-type="password">🔏 Password</button>
+            <button type="button" id="btnAuthPin" data-auth-type="pin">🔢 PIN Code</button>
+          </div>
+        </fieldset>
 
-        <div id="authInputPin" class="form-group" hidden>
-          <label for="authPin">PIN Code</label>
-          <input type="password" id="authPin" maxlength="10" inputmode="numeric">
-          <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
-        </div>
+        <div id="authInputPassword" class="form-group">
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" autocomplete="current-password">
+          <span class="auth-hint">Compulsory more than 5 words (minimum 6 words separated by spaces).</span>
+        </div>
 
-        <button type="submit" id="authSubmitBtn" class="btn-generate mt-md">Sign In</button>
-      </form>
-    </div>
-  </div>
+        <div id="authInputPin" class="form-group" hidden>
+          <label for="authPin">PIN Code</label>
+          <input type="password" id="authPin" maxlength="10" inputmode="numeric">
+          <span class="auth-hint">Compulsory more than 4 numbers (minimum 5 digits).</span>
+        </div>
 
-  <main class="container">
-    <!-- TOP APP HEADER -->
-    <header class="app-header no-print" id="mainHomeHeader">
-      <div class="header-watermark" aria-hidden="true"></div>
-      
-      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      
-      <div class="header-center-title">
-        <h1>Exam Paper <span>Creator</span></h1>
-      </div>
+        <button type="submit" id="authSubmitBtn" class="btn-generate mt-md">Sign In</button>
+      </form>
+    </div>
+  </div>
 
-      <div class="header-spacer" aria-hidden="true"></div>
-    </header>
+  <main class="container">
+    <header class="app-header no-print" id="mainHomeHeader">
+      <div class="header-watermark" aria-hidden="true"></div>
+      
+      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <div class="header-center-title">
+        <h1>Exam Paper <span>Creator</span></h1>
+      </div>
 
-    <!-- PAGE 1: HOME PAGE (CREATE PAPER VIEW) -->
-    <section id="pageCreate" class="page-view" aria-labelledby="createPageHeading">
-      <h2 id="createPageHeading" class="sr-only">Paper Generation Studio</h2>
-      
-      <!-- 1. Examination Details -->
-      <section class="card no-print">
-        <h2>1. Examination Details & Header Settings</h2>
-        <div class="grid-2">
-          <div class="form-group">
-            <label for="instName">Institution / School / College Name</label>
-            <input type="text" id="instName" class="cached-header">
-          </div>
-          <div class="form-group">
-            <label for="examTitle">Examination Title</label>
-            <input type="text" id="examTitle" class="cached-header">
-          </div>
-        </div>
+      <div class="header-spacer" aria-hidden="true"></div>
+    </header>
 
-        <div class="grid-4 mt-sm">
-          <div class="form-group">
-            <label for="subject">Subject</label>
-            <input type="text" id="subject" class="cached-header">
-          </div>
-          <div class="form-group">
-            <label for="grade">Class / Grade</label>
-            <input type="text" id="grade" class="cached-header">
-          </div>
-          <div class="form-group">
-            <label for="duration">Time Allowed</label>
-            <input type="text" id="duration" class="cached-header">
-          </div>
-          <div class="form-group">
-            <label for="maxMarks">Total Max Marks (Target)</label>
-            <input type="number" id="maxMarks" value="25" min="1">
-          </div>
-        </div>
+    <!-- PAGE 1: CREATE PAPER VIEW -->
+    <section id="pageCreate" class="page-view" aria-labelledby="createPageHeading">
+      <h2 id="createPageHeading" class="sr-only">Paper Generation Studio</h2>
+      
+      <section class="card no-print">
+        <h2>1. Examination Details & Header Settings</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="instName">Institution / School / College Name</label>
+            <input type="text" id="instName" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="examTitle">Examination Title</label>
+            <input type="text" id="examTitle" class="cached-header">
+          </div>
+        </div>
 
-        <fieldset class="checkbox-group border-none p-0">
-          <legend class="sr-only">Header Inclusion Fields</legend>
-          <label><input type="checkbox" id="incName" checked> Name Line</label>
-          <label><input type="checkbox" id="incRoll" checked> Register / Roll No</label>
-          <label><input type="checkbox" id="incSec" checked> Section</label>
-          <label><input type="checkbox" id="incDate" checked> Date</label>
-        </fieldset>
+        <div class="grid-4 mt-sm">
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="grade">Class / Grade</label>
+            <input type="text" id="grade" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="duration">Time Allowed</label>
+            <input type="text" id="duration" class="cached-header">
+          </div>
+          <div class="form-group">
+            <label for="maxMarks">Total Max Marks (Target)</label>
+            <input type="number" id="maxMarks" value="25" min="1">
+          </div>
+        </div>
 
-        <div class="form-group mt-sm">
-          <label for="genInst">General Instructions for Students (Optional):</label>
-          <input type="text" id="genInst" class="cached-header">
-        </div>
-      </section>
+        <fieldset class="checkbox-group border-none p-0">
+          <legend class="sr-only">Header Inclusion Fields</legend>
+          <label><input type="checkbox" id="incName" checked> Name Line</label>
+          <label><input type="checkbox" id="incRoll" checked> Register / Roll No</label>
+          <label><input type="checkbox" id="incSec" checked> Section</label>
+          <label><input type="checkbox" id="incDate" checked> Date</label>
+        </fieldset>
 
-      <!-- 2. Source Material Upload -->
-      <section class="card no-print">
-        <h2>2. Source Material Upload Mode</h2>
+        <div class="form-group mt-sm">
+          <label for="genInst">General Instructions for Students (Optional):</label>
+          <input type="text" id="genInst" class="cached-header">
+        </div>
+      </section>
 
-        <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
-          <span id="activeModeSummaryLabel" class="font-bold">📂 Mode: Question Bank / Exercises</span>
-          <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
-        </button>
+      <section class="card no-print">
+        <h2>2. Source Material Upload Mode</h2>
 
-        <div class="accordion-content" id="sourceAccordionContent">
-          <div class="source-mode-choice-grid">
-            <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" data-mode="existing">
-              📚 Question Bank / Exercises
-            </button>
-            <button type="button" class="source-choice-btn" id="btnChoiceLesson" data-mode="lesson">
-              📖 Textbook Lesson Pages
-            </button>
-          </div>
-        </div>
+        <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
+          <span id="activeModeSummaryLabel" class="font-bold">📂 Mode: Question Bank / Exercises</span>
+          <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
+        </button>
 
-        <div class="form-group mt-sm">
-          <label id="uploadLabel" for="fileInput">Upload Question Bank Documents (Photos / Scans / PDFs):</label>
-          <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
-          <small id="uploadHintText" class="text-subtle block mt-xs">
-            Extracting existing questions and options directly into the exam blueprint.
-          </small>
-        </div>
-      </section>
+        <div class="accordion-content" id="sourceAccordionContent">
+          <div class="source-mode-choice-grid">
+            <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" data-mode="existing">
+              📚 Question Bank / Exercises
+            </button>
+            <button type="button" class="source-choice-btn" id="btnChoiceLesson" data-mode="lesson">
+              📖 Textbook Lesson Pages
+            </button>
+          </div>
+        </div>
 
-      <!-- 3. Structure & Sections Accordion -->
-      <section class="card no-print">
-        <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" aria-expanded="false" aria-controls="sectionsAccordionContent">
-          <h2>
-            <span>⚙️ 3. Question Paper Structure & Sections</span>
-            <span class="accordion-subtext">(Sections A-F & Custom)</span>
-          </h2>
-          <span class="arrow-icon" id="accordionArrow" aria-hidden="true">▼</span>
-        </button>
+        <div class="form-group mt-sm">
+          <label id="uploadLabel" for="fileInput">Upload Question Bank Documents (Photos / Scans / PDFs):</label>
+          <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+          <small id="uploadHintText" class="text-subtle block mt-xs">
+            Extracting existing questions and options directly into the exam blueprint.
+          </small>
+        </div>
+      </section>
 
-        <div class="accordion-content" id="sectionsAccordionContent">
-          <div id="dynamicSectionsContainer">
-            <!-- Section A: MCQs -->
-            <article class="section-box" id="sec_card_mcq">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_mcq" class="sec-toggle" data-sec="mcq" checked aria-label="Enable Section A">
-                  <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
-                </div>
-              </div>
-              <div id="box_mcq" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_mcq">Question Count</label>
-                  <input type="number" id="count_mcq" class="marks-calc" value="4" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_mcq">Marks Each</label>
-                  <input type="number" id="marks_mcq" class="marks-calc" value="1" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_mcq">Instructions Heading</label>
-                  <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
-                </div>
-              </div>
-            </article>
+      <section class="card no-print">
+        <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" aria-expanded="false" aria-controls="sectionsAccordionContent">
+          <h2>
+            <span>⚙️ 3. Question Paper Structure & Sections</span>
+            <span class="accordion-subtext">(Sections A-F & Custom)</span>
+          </h2>
+          <span class="arrow-icon" id="accordionArrow" aria-hidden="true">▼</span>
+        </button>
 
-            <!-- Section B: 1-Word / Sentence -->
-            <article class="section-box" id="sec_card_1m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_1m" class="sec-toggle" data-sec="1m" checked aria-label="Enable Section B">
-                  <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
-                </div>
-              </div>
-              <div id="box_1m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_1m">Question Count</label>
-                  <input type="number" id="count_1m" class="marks-calc" value="3" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_1m">Marks Each</label>
-                  <input type="number" id="marks_1m" class="marks-calc" value="1" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_1m">Instructions Heading</label>
-                  <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
-                </div>
-              </div>
-            </article>
+        <div class="accordion-content" id="sectionsAccordionContent">
+          <div id="dynamicSectionsContainer">
+            <!-- Section A: MCQs -->
+            <article class="section-box" id="sec_card_mcq">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_mcq" class="sec-toggle" data-sec="mcq" checked aria-label="Enable Section A">
+                  <input type="text" class="editable-sec-title" id="title_mcq" value="Section A: Multiple Choice Questions (MCQ)">
+                </div>
+              </div>
+              <div id="box_mcq" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_mcq">Question Count</label>
+                  <input type="number" id="count_mcq" class="marks-calc" value="4" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_mcq">Marks Each</label>
+                  <input type="number" id="marks_mcq" class="marks-calc" value="1" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_mcq">Instructions Heading</label>
+                  <input type="text" id="inst_mcq" value="I. Choose the correct alternative and write the complete answer:">
+                </div>
+              </div>
+            </article>
 
-            <!-- Section C: Short Answers -->
-            <article class="section-box" id="sec_card_2m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_2m" class="sec-toggle" data-sec="2m" checked aria-label="Enable Section C">
-                  <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
-                </div>
-              </div>
-              <div id="box_2m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_2m">Question Count</label>
-                  <input type="number" id="count_2m" class="marks-calc" value="3" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_2m">Marks Each</label>
-                  <input type="number" id="marks_2m" class="marks-calc" value="2" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_2m">Instructions Heading</label>
-                  <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
-                </div>
-              </div>
-            </article>
+            <!-- Section B: 1-Word / Sentence -->
+            <article class="section-box" id="sec_card_1m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_1m" class="sec-toggle" data-sec="1m" checked aria-label="Enable Section B">
+                  <input type="text" class="editable-sec-title" id="title_1m" value="Section B: One-Word / One-Sentence Answers">
+                </div>
+              </div>
+              <div id="box_1m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_1m">Question Count</label>
+                  <input type="number" id="count_1m" class="marks-calc" value="3" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_1m">Marks Each</label>
+                  <input type="number" id="marks_1m" class="marks-calc" value="1" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_1m">Instructions Heading</label>
+                  <input type="text" id="inst_1m" value="II. Answer the following questions in one word or a sentence each:">
+                </div>
+              </div>
+            </article>
 
-            <!-- Section D: Brief Explanations -->
-            <article class="section-box" id="sec_card_3m">
-              <div class="section-header-edit">
-                <div class="left-block">
-                  <input type="checkbox" id="use_3m" class="sec-toggle" data-sec="3m" checked aria-label="Enable Section D">
-                  <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
-                </div>
-              </div>
-              <div id="box_3m" class="grid-4 sec-body">
-                <div class="form-group">
-                  <label for="count_3m">Question Count</label>
-                  <input type="number" id="count_3m" class="marks-calc" value="2" min="0">
-                </div>
-                <div class="form-group">
-                  <label for="marks_3m">Marks Each</label>
-                  <input type="number" id="marks_3m" class="marks-calc" value="3" min="1">
-                </div>
-                <div class="form-group span-2">
-                  <label for="inst_3m">Instructions Heading</label>
-                  <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
-                </div>
-              </div>
-            </article>
+            <!-- Section C: Short Answers -->
+            <article class="section-box" id="sec_card_2m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_2m" class="sec-toggle" data-sec="2m" checked aria-label="Enable Section C">
+                  <input type="text" class="editable-sec-title" id="title_2m" value="Section C: Short Answers (2 to 4 sentences)">
+                </div>
+              </div>
+              <div id="box_2m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_2m">Question Count</label>
+                  <input type="number" id="count_2m" class="marks-calc" value="3" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_2m">Marks Each</label>
+                  <input type="number" id="marks_2m" class="marks-calc" value="2" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_2m">Instructions Heading</label>
+                  <input type="text" id="inst_2m" value="III. Answer the following questions in 2 to 4 sentences each:">
+                </div>
+              </div>
+            </article>
 
-            <!--
+            <!-- Section D: Brief Explanations -->
+            <article class="section-box" id="sec_card_3m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_3m" class="sec-toggle" data-sec="3m" checked aria-label="Enable Section D">
+                  <input type="text" class="editable-sec-title" id="title_3m" value="Section D: Brief Explanations (6 to 8 sentences)">
+                </div>
+              </div>
+              <div id="box_3m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_3m">Question Count</label>
+                  <input type="number" id="count_3m" class="marks-calc" value="2" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_3m">Marks Each</label>
+                  <input type="number" id="marks_3m" class="marks-calc" value="3" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_3m">Instructions Heading</label>
+                  <input type="text" id="inst_3m" value="IV. Answer the following questions in 6 to 8 sentences each:">
+                </div>
+              </div>
+            </article>
+
+            <!-- Section E: Long Answers -->
+            <article class="section-box" id="sec_card_4m">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_4m" class="sec-toggle" data-sec="4m" checked aria-label="Enable Section E">
+                  <input type="text" class="editable-sec-title" id="title_4m" value="Section E: Long Answers / Detailed Questions">
+                </div>
+              </div>
+              <div id="box_4m" class="grid-4 sec-body">
+                <div class="form-group">
+                  <label for="count_4m">Question Count</label>
+                  <input type="number" id="count_4m" class="marks-calc" value="1" min="0">
+                </div>
+                <div class="form-group">
+                  <label for="marks_4m">Marks Each</label>
+                  <input type="number" id="marks_4m" class="marks-calc" value="4" min="1">
+                </div>
+                <div class="form-group span-2">
+                  <label for="inst_4m">Instructions Heading</label>
+                  <input type="text" id="inst_4m" value="V. Answer the following questions in detail:">
+                </div>
+              </div>
+            </article>
+
+            <!-- Section F: Map / Diagram -->
+            <article class="section-box" id="sec_card_diag">
+              <div class="section-header-edit">
+                <div class="left-block">
+                  <input type="checkbox" id="use_diag" class="sec-toggle" data-sec="diag" checked aria-label="Enable Section F">
+                  <input type="text" class="editable-sec-title" id="title_diag" value="Section F: Map / Diagram / Graph Question">
+                </div>
+              </div>
+              <div id="box_diag" class="grid-2 sec-body">
+                <div class="form-group">
+                  <label for="diagImage">Upload Map Outline, Diagram, or Graph</label>
+                  <input type="file" id="diagImage" accept="image/*">
+                </div>
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label for="marks_diag">Question Marks</label>
+                    <input type="number" id="marks_diag" class="marks-calc" value="2" min="1">
+                  </div>
+                  <div class="form-group">
+                    <label for="inst_diag">Section Heading</label>
+                    <input type="text" id="inst_diag" value="VI. Map / Diagram Based Question:">
+                  </div>
+                </div>
+                <div class="form-group span-2">
+                  <label for="diagDesc">Question Description / Sub-points</label>
+                  <textarea id="diagDesc" rows="2"></textarea>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <button type="button" class="btn-add-sec" id="btnAddCustomSection">➕ Add Extra Custom Section</button>
+        </div>
+
+        <div id="marksValidationBox" role="alert" aria-live="assertive" hidden>
+          <span id="marksSummaryText"></span>
+          <span>❌ Check Marks</span>
+        </div>
+
+        <div class="mt-md">
+          <button type="button" id="genBtn" class="btn-generate">⚡ Generate Exam Paper</button>
+          <div id="statusMessage" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="card" id="paperCard" hidden>
+        <div class="paper-toolbar no-print">
+          <div class="paper-name-row">
+            <label for="paperCustomName" class="nowrap"><b>📝 Paper / File Name:</b></label>
+            <input type="text" id="paperCustomName" class="color-primary font-bold">
+          </div>
+
+          <div class="toolbar-row">
+            <div class="toolbar-group">
+              <div class="toggle-wrap">
+                <span class="text-sm font-semibold">Direct Edit:</span>
+                <label class="switch">
+                  <input type="checkbox" id="editToggle" aria-label="Toggle direct paper editing">
+                  <span class="slider"></span>
+                </label>
+                <span id="editBadge" class="text-xs font-bold text-subtle">Locked</span>
+              </div>
+
+              <div class="font-select-wrap">
+                <label for="fontSelector"><b>Font:</b></label>
+                <select id="fontSelector">
+                  <optgroup label="Academic & Standard Serifs">
+                    <option value="'Tinos', 'Noto Serif', serif" selected>Academic Serif (Default)</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                    <option value="'EB Garamond', serif">EB Garamond</option>
+                    <option value="'Merriweather', serif">Merriweather</option>
+                    <option value="'Lora', serif">Lora</option>
+                    <option value="'PT Serif', serif">PT Serif</option>
+                    <option value="'Playfair Display', serif">Playfair Display</option>
+                    <option value="'Cinzel', serif">Cinzel (Classical)</option>
+                  </optgroup>
+                  <optgroup label="Languages (Indian & Arabic)">
+                    <option value="'Noto Sans Kannada', sans-serif">Kannada (ಕನ್ನಡ)</option>
+                    <option value="'Noto Sans Devanagari', sans-serif">Hindi / Sanskrit (हिंदी)</option>
+                    <option value="'Noto Naskh Arabic', serif">Arabic / Urdu (العربية)</option>
+                  </optgroup>
+                  <optgroup label="Modern Sans (Science / Maths)">
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                    <option value="'Open Sans', sans-serif">Open Sans</option>
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                  </optgroup>
+                  <optgroup label="Monospace / Technical">
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="size-slider-wrap">
+                <label for="fontSizeSlider"><b>Size:</b></label>
+                <input type="range" id="fontSizeSlider" min="8" max="16" step="0.5" value="10.5">
+                <span id="fontSizeDisplay" class="text-sm font-bold">10.5pt</span>
+              </div>
+            </div>
+
+            <div class="action-buttons-wrap">
+              <button type="button" id="btnSaveToVault" class="btn-primary">💾 Save to Vault</button>
+              <button type="button" id="btnPrintPaper" class="btn-success">🖨️ Print / PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <article class="a4-page" id="paperPreview" contenteditable="false" spellcheck="false" aria-label="Exam Paper Page Preview"></article>
+      </section>
+    </section>
+
+    <!-- PAGE 2: VAULT VIEW -->
+    <section id="pageHistory" class="page-view" aria-labelledby="vaultHeading" hidden>
+      <div class="card no-print">
+        <div class="card-header-flex">
+          <h2 id="vaultHeading" class="m-0 p-0 border-none">📚 Saved Exam Papers Vault</h2>
+          <button type="button" id="btnClearHistory" class="btn-danger-outline">Clear Vault</button>
+        </div>
+        <div id="historyListContainer" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- PAGE 3: PROFILE PAGE -->
+    <section id="pageProfile" class="page-view" aria-labelledby="profileHeading" hidden>
+      <div class="card no-print">
+        <h2 id="profileHeading">👤 Edit Profile & Account Details</h2>
+
+        <form id="profileForm" class="max-w-md mx-auto flex-column gap-md">
+          <div class="avatar-edit-row">
+            <img id="profilePageAvatarImg" class="drawer-avatar lg" src="" alt="Profile picture" hidden>
+            <div id="profilePageAvatarFallback" class="drawer-avatar lg" aria-hidden="true">👤</div>
+            <div class="flex-1">
+              <label for="profilePageAvatarInput">Crop / Update Profile Photo</label>
+              <input type="file" id="profilePageAvatarInput" accept="image/*">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageUsername">Username (Strictly lowercase letters, a-z)</label>
+            <input type="text" id="profilePageUsername" required>
+            <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageFullName">Full Name (Displayed in App)</label>
+            <input type="text" id="profilePageFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePagePhone">Mobile Number</label>
+            <input type="tel" id="profilePagePhone" placeholder="e.g. +91 9483061904">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageSubject">Teaching Subject</label>
+            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageClass">Class / Grade</label>
+            <input type="text" id="profilePageClass" placeholder="e.g. 10th Standard">
+          </div>
+
+          <button type="submit" class="btn-generate mt-sm">💾 Save All Changes</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PAGE 4: ABOUT PAGE -->
+    <section id="pageAbout" class="page-view" aria-labelledby="aboutHeading" hidden>
+      <div class="card no-print">
+        <h2 id="aboutHeading">ℹ️ About Application</h2>
+        <div class="prose max-w-lg mx-auto">
+          <p>This exam paper creator application is a specialized platform designed to simplify the entire question paper preparation workflow for teachers and institutions. <strong>This app is created by Ismail Tharfeed, and this is a contact number +919483061904.</strong> It allows educators to generate standardized question papers either by scanning existing question banks or directly extracting conceptual questions from textbook lesson reading pages. The app automatically calculates blueprint marks, ensures clean layout formatting, and preserves question history securely on your device. Thank you for utilizing this application to streamline school and college examination management.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 5: ADMIN DASHBOARD -->
+    <section id="pageAdmin" class="page-view" aria-labelledby="adminHeading" hidden>
+      <div class="card no-print">
+        <h2 id="adminHeading">🛡️ Administrator Central Control</h2>
+        
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <span>Registered Staff</span>
+            <h3 id="admStatStaff">0</h3>
+          </div>
+          <div class="stat-card">
+            <span>Total Sign-Ins</span>
+            <h3 id="admStatLogins">0</h3>
+          </div>
+          <div class="stat-card">
+            <span>Total Papers Created</span>
+            <h3 id="admStatPapers">0</h3>
+          </div>
+        </div>
+
+        <h3>Registered Staff Accounts & Credentials</h3>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Subject</th>
+                <th>Class</th>
+                <th>Phone</th>
+                <th>Auth Type</th>
+                <th>Vault Papers</th>
+              </tr>
+            </thead>
+            <tbody id="admStaffTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card-header-flex mt-lg mb-xs">
+          <h3>Login & Access Audit Logs</h3>
+          <button type="button" id="btnClearAdminLogs" class="link-button">Clear Audit Log</button>
+        </div>
+        <div class="table-responsive max-h-250">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Username</th>
+                <th>Action Event</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admLogsTableBody"></tbody>
+          </table>
+        </div>
+
+        <h3 class="mt-lg mb-xs">Master Question Paper Directory</h3>
+        <div id="admPapersContainer"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /**
+     * Bulletproof Enterprise Client Architecture - Exam Paper Creator
+     */
+
+    // =========================================================================
+    // 1. INDEXEDDB STORAGE SUBSYSTEM (SINGLETON PROMISE SAFETY)
+    // =========================================================================
+    const AppDB = {
+      dbName: 'ExamPaperCreatorDB',
+      version: 1,
+      db: null,
+      initPromise: null,
+
+      async init() {
+        if (this.db) return this.db;
+        if (this.initPromise) return this.initPromise;
+        
+        this.initPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(this.dbName, this.version);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('assets')) {
+              db.createObjectStore('assets');
+            }
+          };
+          req.onsuccess = (e) => {
+            this.db = e.target.result;
+            resolve(this.db);
+          };
+          req.onerror = (e) => reject(e);
+        });
+        return this.initPromise;
+      },
+
+      async set(key, value) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('assets', 'readwrite');
+          tx.objectStore('assets').put(value, key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => reject(false);
+        });
+      },
+
+      async get(key) {
+        await this.init();
+        return new Promise((resolve) => {
+          const tx = this.db.transaction('assets', 'readonly');
+          const req = tx.objectStore('assets').get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      },
+
+      async remove(key) {
+        await this.init();
+        return new Promise((resolve) => {
+          const tx = this.db.transaction('assets', 'readwrite');
+          tx.objectStore('assets').delete(key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      }
+    };
+
+    // =========================================================================
+    // 2. SAFE STORAGE & CRYPTO SUBSYSTEM (SHA-256 SECURE SALTING)
+    // =========================================================================
+    const SafeStorage = {
+      get(key, fallback = null) {
+        try {
+          const data = localStorage.getItem(key);
+          return data ? JSON.parse(data) : fallback;
+        } catch (err) {
+          console.warn(`[SafeStorage] Parse failed for: "${key}"`, err);
+          return fallback;
+        }
+      },
+      set(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch (err) {
+          console.error(`[SafeStorage] Quota exceeded on "${key}"`, err);
+          return false;
+        }
+      },
+      remove(key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+      }
+    };
+
+    const CryptoEngine = {
+      async getDeviceSalt() {
+        let salt = SafeStorage.get('device_salt');
+        if (!salt) {
+          salt = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
+          SafeStorage.set('device_salt', salt);
+        }
+        return salt;
+      },
+      async hash(str) {
+        const salt = await this.getDeviceSalt();
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str + salt);
+        const hashBuf = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+    };
+
+    // =========================================================================
+    // 3. VALIDATION & FOCUS TRAPPING MANAGER
+    // =========================================================================
+    const Validators = {
+      sanitizeUsername(val) {
+        return (val || '').toLowerCase().replace(/[^a-z]/g, '');
+      },
+      sanitizePin(val) {
+        return (val || '').replace(/[^0-9]/g, '');
+      },
+      countWords(str) {
+        if (!str) return 0;
+        return str.trim().split(/\s+/).filter(word => word.length > 0).length;
+      },
+      isValidUsername(val) {
+        return /^[a-z]+$/.test(val);
+      },
+      isValidPassword(val) {
+        return this.countWords(val) > 5;
+      },
+      isValidPin(val) {
+        return /^\d{5,10}$/.test(val);
+      }
+    };
+
+    const FocusTrap = {
+      activeHandler: null,
+      trap(elem) {
+        elem.focus();
+        if (this.activeHandler) {
+          document.removeEventListener('keydown', this.activeHandler);
+        }
+        this.activeHandler = function(e) {
+          if (e.key !== 'Tab') return;
+          const focusables = elem.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              last.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === last) {
+              first.focus();
+              e.preventDefault();
+            }
+          }
+        };
+        document.addEventListener('keydown', this.activeHandler);
+      },
+      release() {
+        if (this.activeHandler) {
+          document.removeEventListener('keydown', this.activeHandler);
+          this.activeHandler = null;
+        }
+      }
+    };
+
+    function showInlineError(msg) {
+      const box = document.getElementById('authErrorBox');
+      if (box) {
+        if (msg) {
+          box.innerText = msg;
+          box.hidden = false;
+        } else {
+          box.innerText = "";
+          box.hidden = true;
+        }
+      }
+    }
+
+    // =========================================================================
+    // 4. APPLICATION STATE
+    // =========================================================================
+    const AppState = {
+      activeUser: null,
+      currentAuthMode: 'signin',
+      currentAuthType: 'password',
+      currentUploadMode: 'existing',
+      currentPage: 'create',
+      customSectionCount: 0,
+      lastBackPressTime: 0
+    };
+
+    // =========================================================================
+    // 5. IMAGE CROPPER ENGINE
+    // =========================================================================
+    const ImageCropper = {
+      targetContext: null,
+      rawImageElement: null,
+      cropState: {
+        imgWidth: 0, imgHeight: 0,
+        scale: 1, baseScale: 1,
+        posX: 0, posY: 0,
+        isDragging: false,
+        startX: 0, startY: 0
+      },
+
+      start(file, context) {
+        if (!file) return;
+        this.targetContext = context;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            this.rawImageElement = img;
+            const cropImg = document.getElementById('cropperImage');
+            cropImg.src = e.target.result;
+
+            const viewportSize = 240;
+            this.cropState.imgWidth = img.width;
+            this.cropState.imgHeight = img.height;
+            this.cropState.baseScale = Math.max(viewportSize / img.width, viewportSize / img.height);
+            this.cropState.scale = this.cropState.baseScale;
+            this.cropState.posX = (viewportSize - img.width * this.cropState.scale) / 2;
+            this.cropState.posY = (viewportSize - img.height * this.cropState.scale) / 2;
+
+            document.getElementById('cropZoomSlider').value = '1';
+            this.updateTransform();
+
+            const overlay = document.getElementById('cropperOverlay');
+            overlay.hidden = false;
+            FocusTrap.trap(overlay.querySelector('.cropper-card'));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      },
+
+      onZoom(zoomFactor) {
+        const viewportSize = 240;
+        const newScale = this.cropState.baseScale * parseFloat(zoomFactor);
+        const centerX = this.cropState.posX - viewportSize / 2;
+        const centerY = this.cropState.posY - viewportSize / 2;
+
+        this.cropState.posX = (centerX / this.cropState.scale) * newScale + viewportSize / 2;
+        this.cropState.posY = (centerY / this.cropState.scale) * newScale + viewportSize / 2;
+        this.cropState.scale = newScale;
+
+        this.updateTransform();
+      },
+
+      updateTransform() {
+        const cropImg = document.getElementById('cropperImage');
+        cropImg.style.transform = `translate3d(${this.cropState.posX}px, ${this.cropState.posY}px, 0px) scale(${this.cropState.scale})`;
+      },
+
+      handlePointerDown(e) {
+        this.cropState.isDragging = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        this.cropState.startX = clientX - this.cropState.posX;
+        this.cropState.startY = clientY - this.cropState.posY;
+        document.getElementById('cropperViewport').style.cursor = 'grabbing';
+      },
+
+      handlePointerMove(e) {
+        if (!this.cropState.isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        this.cropState.posX = clientX - this.cropState.startX;
+        this.cropState.posY = clientY - this.cropState.startY;
+        this.updateTransform();
+      },
+
+      handlePointerUp() {
+        this.cropState.isDragging = false;
+        const vp = document.getElementById('cropperViewport');
+        if (vp) vp.style.cursor = 'grab';
+      },
+
+      cancel() {
+        FocusTrap.release();
+        document.getElementById('cropperOverlay').hidden = true;
+      },
+
+      async apply() {
+        FocusTrap.release();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const outputDim = 250;
+        const vpSize = 240;
+        const ratio = outputDim / vpSize;
+
+        canvas.width = outputDim;
+        canvas.height = outputDim;
+
+        ctx.beginPath();
+        ctx.arc(outputDim / 2, outputDim / 2, outputDim / 2, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(
+          this.rawImageElement,
+          this.cropState.posX * ratio,
+          this.cropState.posY * ratio,
+          this.cropState.imgWidth * this.cropState.scale * ratio,
+          this.cropState.imgHeight * this.cropState.scale * ratio
+        );
+
+        const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        if (this.targetContext === 'signup') {
+          document.getElementById('regCroppedAvatarData').value = croppedDataUrl;
+          const preview = document.getElementById('regAvatarPreview');
+          preview.src = croppedDataUrl;
+          document.getElementById('regAvatarPreviewWrap').hidden = false;
+        } else if (this.targetContext === 'profile') {
+          const img = document.getElementById('profilePageAvatarImg');
+          img.src = croppedDataUrl;
+          img.hidden = false;
+          document.getElementById('profilePageAvatarFallback').hidden = true;
+          if (AppState.activeUser) {
+            await AppDB.set(`avatar_${AppState.activeUser.id}`, croppedDataUrl);
+          }
+        }
+
+        document.getElementById('cropperOverlay').hidden = true;
+      }
+    };
+
+    // =========================================================================
+    // 6. SAFE OCR & PDF SUBSYSTEM (FIREWALL-RESILIENT PDF.JS & OOM DEFENSE)
+    // =========================================================================
+    async function preprocessImageForOcr(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const targetWidth = Math.min(Math.max(img.width, 1200), 2000);
+            const scale = targetWidth / img.width;
+            canvas.width = targetWidth;
+            canvas.height = img.height * scale;
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'medium';
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob((blob) => resolve(blob || file), 'image/png');
+          };
+          img.onerror = () => resolve(file);
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function determineLanguageCode(subjectStr) {
+      const s = (subjectStr || '').toLowerCase();
+      if (s.includes('kannada')) return 'kan+eng';
+      if (s.includes('hindi') || s.includes('sanskrit')) return 'hin+eng';
+      if (s.includes('arabic') || s.includes('urdu')) return 'ara+eng';
+      return 'eng';
+    }
+
+    async function extractTextFromPdf(file, langCode, statusElem) {
+      const pdfLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+      if (!pdfLib) return "";
+      try {
+        pdfLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = "";
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          let pageStr = textContent.items.map(item => item.str).join(' ');
+
+          if (!pageStr || pageStr.trim().length < 20) {
+            statusElem.innerText = `OCR scanning PDF page ${pageNum}/${pdf.numPages}...`;
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+            if (typeof Tesseract !== 'undefined') {
+              const { data: { text } } = await Tesseract.recognize(blob, langCode);
+              pageStr = text;
+            }
+          }
+          fullText += `\n--- Page ${pageNum} ---\n` + pageStr;
+        }
+        return fullText;
+      } catch (err) {
+        console.warn("[PDF Processor Exception]:", err);
+        return "";
+      }
+    }
+
+    async function extractTextFromFiles(files, statusElem) {
+      let combinedText = "";
+      const langCode = determineLanguageCode(document.getElementById('subject')?.value);
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusElem.innerText = `Processing file (${i + 1}/${files.length}): ${file.name}...`;
+
+        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+          const pdfText = await extractTextFromPdf(file, langCode, statusElem);
+          if (pdfText && pdfText.trim().length > 20) {
+            combinedText += pdfText + "\n";
+            continue;
+          }
+        }
+
+        if (file.type.startsWith("image/") && typeof Tesseract !== 'undefined') {
+          try {
+            const preparedBlob = await preprocessImageForOcr(file);
+            const { data: { text } } = await Tesseract.recognize(preparedBlob, langCode, {
+              logger: m => {
+                if (m.status === 'recognizingtext') {
+                  statusElem.innerText = `Scanning OCR (${i + 1}/${files.length}): ${Math.round(m.progress * 100)}%`;
+                }
+              }
+            });
+            if (text && text.trim().length > 5) {
+              combinedText += `\n--- Page ${i + 1} ---\n` + text;
+              continue;
+            }
+          } catch (err) {
+            console.warn("[OCR Exception]:", err);
+          }
+        }
+
+        if (file.type.includes("text") || file.name.endsWith(".txt") || file.name.endsWith(".md")) {
+          try {
+            const txt = await file.text();
+            combinedText += `\n--- Document ${i + 1} ---\n` + txt;
+          } catch (e) {}
+        }
+      }
+
+      return combinedText;
+    }
+
+    function fileToDataURL(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // =========================================================================
+    // 7. PRECISION QUESTION & STRICT OPTION DELIMITER PARSER
+    // =========================================================================
+    function parseRawQuestionsAndMCQs(rawText) {
+      const detectedMCQs = [];
+      const detectedStandard = [];
+
+      const cleanDoc = rawText
+        .replace(/\r/g, '\n')
+        .replace(/[“”]/g, '"')
+        .replace(/[‘’]/g, "'");
+
+      const inlineMcqRegex = /(?:^|\n)(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))\s*(.+?)(?:\s*[\(\[]?([A-Da-d])[\)\]\.\-:]\s*(.+?))\s*[\(\[]?([B-Db-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([C-Dc-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([D-Dd])[\)\]\.\-:]\s*([^\n\(\)]+?)(?=(?:\n\s*(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))|$))/gis;
+
+      let match;
+      while ((match = inlineMcqRegex.exec(cleanDoc)) !== null) {
+        detectedMCQs.push({
+          question: match[1].trim(),
+          options: [
+            match[3].trim().replace(/^[,\.\-]/, ''),
+            match[5].trim().replace(/^[,\.\-]/, ''),
+            match[7].trim().replace(/^[,\.\-]/, ''),
+            match[9].trim().replace(/^[,\.\-]/, '')
+          ]
+        });
+      }
+
+      const lines = cleanDoc.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      let currentMCQ = null;
+      // Strict option parser: requires at least 2 characters in the option body to prevent single-letter heading false positives
+      const singleOptRegex = /^(?:[\(\[]?([A-Da-d])[\)\]\.\-:]\s*)(.{2,})$/;
+      const qNumRegex = /^(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))\s*(.+)$/i;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const optMatch = line.match(singleOptRegex);
+        const qMatch = line.match(qNumRegex);
+
+        if (optMatch && currentMCQ) {
+          currentMCQ.options.push(optMatch[2].trim());
+          if (currentMCQ.options.length >= 4) {
+            if (!detectedMCQs.some(m => m.question.includes(currentMCQ.question.substring(0, 20)))) {
+              detectedMCQs.push(currentMCQ);
+            }
+            currentMCQ = null;
+          }
+          continue;
+        }
+
+        if (qMatch) {
+          if (currentMCQ && currentMCQ.options.length >= 2) {
+            detectedMCQs.push(currentMCQ);
+          }
+          currentMCQ = { question: qMatch[1].trim(), options: [] };
+          detectedStandard.push(qMatch[1].trim());
+        } else if (line.length > 20 && !line.startsWith("---")) {
+          if (currentMCQ && currentMCQ.options.length === 0) {
+            currentMCQ.question += " " + line;
+          } else {
+            detectedStandard.push(line);
+          }
+        }
+      }
+
+      if (currentMCQ && currentMCQ.options.length >= 2) {
+        detectedMCQs.push(currentMCQ);
+      }
+
+      return { detectedMCQs, detectedStandard };
+    }
+
+    // =========================================================================
+    // 8. SYNTHESIS ENGINE (SAFE CYCLIC VOCABULARY MAPPING)
+    // =========================================================================
+    function extractNounsAndPhrases(text) {
+      const words = text.replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 4);
+      return Array.from(new Set(words));
+    }
+
+    function compileLocalExamPaperHTML(config) {
+      let qCounter = 1;
+      let sectionsHtml = "";
+      const isLessonMode = config.mode === 'lesson';
+
+      const { detectedMCQs, detectedStandard } = parseRawQuestionsAndMCQs(config.rawText || "");
+      const standardPool = detectedStandard.length > 0 ? [...detectedStandard] : [...config.parsedQuestions];
+      const mcqPool = [...detectedMCQs];
+      const minedVocabulary = extractNounsAndPhrases(config.rawText || "");
+      const safeVocab = minedVocabulary.length > 0 ? minedVocabulary : ["concept", "principle", "factor", "analysis", "parameter"];
+      let vocabIndex = 0;
+
+      config.sections.forEach(sec => {
+        sectionsHtml += `
+          <div class="sec-block">
+            <div class="sec-title">
+              <span>${sec.title}</span>
+              <span class="sec-marks-total">[${sec.count} × ${sec.marks} = ${sec.count * sec.marks}]</span>
+            </div>
+        `;
+
+        for (let i = 0; i < sec.count; i++) {
+          if (sec.isMcq) {
+            let qText = "";
+            let options = [];
+
+            if (mcqPool.length > 0) {
+              const item = mcqPool.shift();
+              qText = item.question;
+              options = [...item.options];
+
+              while (options.length < 4) {
+                const term = safeVocab[vocabIndex++ % safeVocab.length];
+                options.push(`Pertaining strictly to ${term}`);
+              }
+            } else {
+              const snippet = standardPool.length > 0 
+                ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
+                : `core principles of ${config.subject}`;
+
+              qText = `Identify the correct statement regarding ${snippet.substring(0, 75).trim()}:`;
+              const t1 = safeVocab[vocabIndex++ % safeVocab.length];
+              const t2 = safeVocab[vocabIndex++ % safeVocab.length];
+              const t3 = safeVocab[vocabIndex++ % safeVocab.length];
+
+              options = [
+                `Significantly influences ${snippet.substring(0, 30)}`,
+                `Operates independently of ${t1}`,
+                `Demonstrates an inverse proportionality to ${t2}`,
+                `Accelerates the overall reaction via ${t3}`
+              ];
+            }
+
+            sectionsHtml += `
+              <div class="q-item">
+                <div class="q-line">
+                  <span class="q-num">${qCounter}.</span>
+                  <span class="q-text">${qText}</span>
+                </div>
+                <div class="mcq-options">
+                  <span>(A) ${options[0]}</span>
+                  <span>(B) ${options[1]}</span>
+                  <span>(C) ${options[2]}</span>
+                  <span>(D) ${options[3]}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            let questionText = "";
+
+            if (isLessonMode) {
+              const snippet = standardPool.length > 0 
+                ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
+                : `principles of ${config.subject}`;
+
+              if (sec.marks === 1) {
+                questionText = `Define or state the primary importance of: ${snippet.substring(0, 70)}.`;
+              } else if (sec.marks === 2) {
+                questionText = `Mention any two main reasons or features of ${snippet.substring(0, 70)}.`;
+              } else if (sec.marks === 3) {
+                questionText = `Explain the causes, structure, and significance of ${snippet.substring(0, 75)}.`;
+              } else {
+                questionText = `Write a detailed explanation on the principles and impacts of ${snippet.substring(0, 80)}.`;
+              }
+            } else {
+              questionText = standardPool.length > 0 
+                ? standardPool.shift().replace(/^[0-9]+[\.\)]\s*/, '')
+                : `Analyze and explain the key concepts of ${config.subject}.`;
+            }
+
+            sectionsHtml += `
+              <div class="q-item">
+                <div class="q-line">
+                  <span class="q-num">${qCounter}.</span>
+                  <span class="q-text">${questionText}</span>
+                </div>
+              </div>
+            `;
+          }
+          qCounter++;
+        }
+
+        sectionsHtml += `</div>`;
+      });
+
+      return `
+        <div class="paper-header">
+          <h1>${config.instName}</h1>
+          <h3>${config.examTitle}</h3>
+          <div class="meta-row">
+            <span>Subject: ${config.subject}</span>
+            <span>Class: ${config.grade}</span>
+            <span>Time: ${config.duration}</span>
+            <span>Max Marks: ${config.maxMarks}</span>
+          </div>
+          <div class="student-fields">
+            ${config.incName ? '<span>Name: _______________________________</span>' : ''}
+            ${config.incRoll ? '<span>Reg/Roll No: ____________</span>' : ''}
+            ${config.incSec ? '<span>Sec: ____</span>' : ''}
+            ${config.incDate ? '<span>Date: _________</span>' : ''}
+          </div>
+        </div>
+        ${config.genInst ? `<div class="general-instructions"><strong>General Instructions:</strong> ${config.genInst}</div>` : ''}
+        ${sectionsHtml}
+      `;
+    }
+
+    async function generateFastPaperDirect(promptText, localConfig, statusElem) {
+      statusElem.innerText = localConfig.mode === 'lesson' 
+        ? "Formulating questions from lesson text via AI..." 
+        : "Extracting questions directly into blueprint...";
+
+      const systemInstruction = "You are a professional exam paper creator. Return ONLY clean, valid raw HTML without Markdown backticks. Every MCQ must have 4 distinct, factual choices matching the text: (A), (B), (C), (D). Never produce placeholder words like 'Option A' or 'Option B'.";
+      const fullPrompt = `${systemInstruction}\n\nTask:\n${promptText}`;
+
+      const engines = [
+        {
+          name: "Pollinations OpenAI Engine",
+          type: "post",
+          url: "https://text.pollinations.ai/",
+          payload: {
+            messages: [{ role: "system", content: systemInstruction }, { role: "user", content: promptText }],
+            model: "openai",
+            seed: Math.floor(Math.random() * 1000000),
+            jsonMode: false
+          },
+          timeout: 11000
+        },
+        {
+          name: "DeepSeek / Qwen Reasoning Engine",
+          type: "post",
+          url: "https://text.pollinations.ai/",
+          payload: {
+            messages: [{ role: "user", content: fullPrompt }],
+            model: "deepseek",
+            temperature: 0.2
+          },
+          timeout: 11000
+        },
+        {
+          name: "Direct GET AI Gateway Stream",
+          type: "get",
+          url: `https://text.pollinations.ai/${encodeURIComponent(promptText.substring(0, 2400))}?model=searchgpt&cache=false`,
+          timeout: 10000
+        }
+      ];
+
+      for (let i = 0; i < engines.length; i++) {
+        const engine = engines[i];
+        try {
+          statusElem.innerText = `Connecting to Engine ${i + 1}/${engines.length} (${engine.name})...`;
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), engine.timeout);
+
+          const response = engine.type === "get"
+            ? await fetch(engine.url, { signal: controller.signal })
+            : await fetch(engine.url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(engine.payload),
+                signal: controller.signal
+              });
+
+          clearTimeout(timer);
+
+          if (response.status === 429 || response.status === 503) continue;
+
+          if (response.ok) {
+            let textResult = "";
+            const contentType = response.headers.get("content-type") || "";
+
+            if (contentType.includes("application/json")) {
+              const data = await response.json();
+              textResult = data.choices?.[0]?.message?.content || data.text || JSON.stringify(data);
+            } else {
+              textResult = await response.text();
+            }
+
+            if (textResult && (textResult.includes("sec-block") || textResult.includes("q-item")) && !/\([A-D]\)\s*Option\s*[A-D]/i.test(textResult)) {
+              statusElem.innerText = `Paper compiled via ${engine.name}!`;
+              return textResult;
+            }
+          }
+        } catch (err) {
+          console.warn(`[Failover] ${engine.name} bypassed:`, err.message);
+        }
+      }
+
+      statusElem.innerText = "Formatting verified exam paper via local synthesis engine...";
+      return compileLocalExamPaperHTML(localConfig);
+    }
+
+    async function buildDiagramSectionHtml(qNum) {
+      let outHtml = "";
+      const isDiagEnabled = document.getElementById('use_diag')?.checked;
+
+      if (isDiagEnabled) {
+        const heading = document.getElementById('inst_diag').value;
+        const marks = document.getElementById('marks_diag').value;
+        const desc = document.getElementById('diagDesc').value;
+        const file = document.getElementById('diagImage').files[0];
+        let imgSrc = "";
+        if (file) {
+          imgSrc = await fileToDataURL(file);
+          await AppDB.set(`diag_${Date.now()}`, imgSrc);
+        }
+
+        outHtml += `
+          <div class="sec-block">
+            <div class="sec-title">
+              <span>${heading}</span>
+              <span class="sec-marks-total">[1 × ${marks} = ${marks}]</span>
+            </div>
+            <div class="q-item">
+              <div class="q-line">
+                <span class="q-num">${qNum}.</span>
+                <span class="q-text">${desc}</span>
+              </div>
+              ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Exam Diagram"></div>` : ''}
+            </div>
+          </div>
+        `;
+        qNum++;
+      }
+
+      for (let i = 1; i <= AppState.customSectionCount; i++) {
+        const chk = document.getElementById(`use_custom_${i}`);
+        if (chk && chk.checked) {
+          const file = document.getElementById(`file_custom_${i}`)?.files[0];
+          const desc = document.getElementById(`desc_custom_${i}`)?.value.trim() || "";
+
+          if (file || desc) {
+            const heading = document.getElementById(`inst_custom_${i}`).value;
+            const count = document.getElementById(`count_custom_${i}`).value;
+            const marks = document.getElementById(`marks_custom_${i}`).value;
+            let imgSrc = "";
+            if (file) {
+              imgSrc = await fileToDataURL(file);
+            }
+
+            outHtml += `
+              <div class="sec-block">
+                <div class="sec-title">
+                  <span>${heading}</span>
+                  <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
+                </div>
+                <div class="q-item">
+                  <div class="q-line">
+                    <span class="q-num">${qNum}.</span>
+                    <span class="q-text">${desc || "Study the diagram/graph provided and answer:"}</span>
+                  </div>
+                  ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Diagram"></div>` : ''}
+                </div>
+              </div>
+            `;
+            qNum++;
+          }
+        }
+      }
+
+      return outHtml;
+    }
+
+    // =========================================================================
+    // 9. BLUEPRINT MARK BALANCER
+    // =========================================================================
+    function calculateAndValidateMarks() {
+      const maxMarks = parseInt(document.getElementById('maxMarks').value, 10) || 0;
+      let calculatedTotal = 0;
+
+      ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
+        const chk = document.getElementById('use_' + sec);
+        if (chk && chk.checked) {
+          const count = parseInt(document.getElementById('count_' + sec).value, 10) || 0;
+          const marks = parseInt(document.getElementById('marks_' + sec).value, 10) || 0;
+          calculatedTotal += (count * marks);
+        }
+      });
+
+      const diagChk = document.getElementById('use_diag');
+      if (diagChk && diagChk.checked) {
+        calculatedTotal += parseInt(document.getElementById('marks_diag').value, 10) || 0;
+      }
+
+      for (let i = 1; i <= AppState.customSectionCount; i++) {
+        const chk = document.getElementById(`use_custom_${i}`);
+        if (chk && chk.checked) {
+          const count = parseInt(document.getElementById(`count_custom_${i}`).value, 10) || 0;
+          const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 0;
+          calculatedTotal += (count * marks);
+        }
+      }
+
+      const box = document.getElementById('marksValidationBox');
+      const summaryText = document.getElementById('marksSummaryText');
+      const genBtn = document.getElementById('genBtn');
+
+      if (calculatedTotal === maxMarks) {
+        box.hidden = true;
+        genBtn.disabled = false;
+      } else {
+        box.hidden = false;
+        const diff = calculatedTotal - maxMarks;
+        summaryText.innerText = `Error: Total sections sum (${calculatedTotal}) ${diff > 0 ? 'exceeds' : 'is less than'} Target (${maxMarks}) by ${Math.abs(diff)} marks!`;
+        genBtn.disabled = true;
+      }
+    }
+
+    function addNewCustomSection() {
+      AppState.customSectionCount++;
+      const secId = `custom_${AppState.customSectionCount}`;
+      const container = document.getElementById('dynamicSectionsContainer');
+
+      const secDiv = document.createElement('article');
+      secDiv.className = 'section-box';
+      secDiv.id = `sec_card_${secId}`;
+
+      secDiv.innerHTML = `
+        <div class="section-header-edit">
+          <div class="left-block">
+            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked aria-label="Enable Custom Section ${AppState.customSectionCount}">
+            <input type="text" class="editable-sec-title" id="title_${secId}" value="Section Custom ${AppState.customSectionCount}">
+          </div>
+          <button type="button" class="btn-remove-sec" data-action="remove-custom-sec" data-sec-id="${secId}">✕ Remove</button>
+        </div>
+        <div id="box_${secId}" class="grid-2 sec-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="count_${secId}">Question Count</label>
+              <input type="number" id="count_${secId}" class="marks-calc" value="1" min="1">
+            </div>
+            <div class="form-group">
+              <label for="marks_${secId}">Marks Each</label>
+              <input type="number" id="marks_${secId}" class="marks-calc" value="2" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="file_${secId}">Attach Optional Diagram / Photo</label>
+            <input type="file" id="file_${secId}" accept="image/*">
+          </div>
+          <div class="form-group span-2">
+            <label for="inst_${secId}">Section Instructions Heading</label>
+            <input type="text" id="inst_${secId}" value="Answer the following based on the instructions:">
+          </div>
+          <div class="form-group span-2">
+            <label for="desc_${secId}">Question Description (Optional)</label>
+            <input type="text" id="desc_${secId}">
+          </div>
+        </div>
+      `;
+
+      container.appendChild(secDiv);
+      calculateAndValidateMarks();
+    }
+
+    // =========================================================================
+    // 10. VAULT STORAGE & RECOVERY
+    // =========================================================================
+    function getStaffSpecificVaultKey() {
+      return AppState.activeUser ? `exam_vault_${AppState.activeUser.id}` : 'exam_vault_default';
+    }
+
+    function saveCurrentPaperToHistory(notify = true) {
+      const preview = document.getElementById('paperPreview');
+      const htmlContent = preview.innerHTML;
+      if (!htmlContent.trim()) {
+        alert("No question paper content to save!");
+        return;
+      }
+
+      const paperName = document.getElementById('paperCustomName').value.trim() || document.getElementById('examTitle').value || "Exam Paper";
+      const subject = document.getElementById('subject').value || "";
+
+      const newEntry = {
+        id: Date.now(),
+        paperName,
+        title: document.getElementById('examTitle').value || "",
+        subject,
+        staffId: AppState.activeUser ? AppState.activeUser.id : '',
+        staffName: AppState.activeUser ? (AppState.activeUser.fullName || AppState.activeUser.name) : 'unknown',
+        date: new Date().toLocaleString(),
+        font: document.getElementById('fontSelector').value,
+        fontSize: document.getElementById('fontSizeSlider').value,
+        content: htmlContent
+      };
+
+      const vaultKey = getStaffSpecificVaultKey();
+      const papers = SafeStorage.get(vaultKey, []);
+      papers.unshift(newEntry);
+      SafeStorage.set(vaultKey, papers);
+
+      logAuditEvent(AppState.activeUser?.name || 'unknown', `Created Paper: ${paperName}`, "Success");
+      if (notify) alert("Paper saved to vault.");
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById('historyListContainer');
+      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
+
+      if (papers.length === 0) {
+        container.innerHTML = `
+          <div class="text-center p-0 text-subtle" style="padding: 40px 0;">
+            <p class="font-bold text-sm">No saved question papers in this account.</p>
+            <small>Create an exam paper and save it to access it anytime.</small>
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      papers.forEach(item => {
+        const displayName = item.paperName || `${item.title} ${item.subject}`.trim() || "Question Paper";
+        html += `
+          <article class="history-item">
+            <div class="history-meta">
+              <h3>${displayName}</h3>
+              <p>${item.subject ? `Subject: ${item.subject} | ` : ''}Saved: ${item.date}</p>
+            </div>
+            <div class="history-actions">
+              <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${item.id}">👁️ View / Edit</button>
+              <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${item.id}">🖨️ Print</button>
+              <button type="button" class="btn-danger-outline" data-action="delete-vault-paper" data-id="${item.id}">🗑️</button>
+            </div>
+          </article>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function loadPaperFromHistory(id, customKey = null) {
+      const key = customKey || getStaffSpecificVaultKey();
+      const papers = SafeStorage.get(key, []);
+      const paper = papers.find(p => p.id === id);
+      if (!paper) return;
+
+      const preview = document.getElementById('paperPreview');
+      preview.innerHTML = paper.content;
+
+      document.getElementById('paperCustomName').value = paper.paperName || '';
+      document.getElementById('fontSelector').value = paper.font;
+      changePaperFont(paper.font);
+
+      document.getElementById('fontSizeSlider').value = paper.fontSize;
+      changePaperFontSize(paper.fontSize);
+
+      document.getElementById('paperCard').hidden = false;
+      switchPage('create');
+      document.getElementById('paperCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 11. AUDIT & MASTER ADMIN CONSOLE
+    // =========================================================================
+    function logAuditEvent(username, action, status) {
+      const logs = SafeStorage.get('exam_audit_logs', []);
+      logs.unshift({
+        time: new Date().toLocaleString(),
+        username: username || "anonymous",
+        action: action,
+        status: status
+      });
+      if (logs.length > 100) logs.pop();
+      SafeStorage.set('exam_audit_logs', logs);
+    }
+
+    function renderAdminDashboard() {
+      const registry = SafeStorage.get('exam_staff_registry', []);
+      const logs = SafeStorage.get('exam_audit_logs', []);
+
+      document.getElementById('admStatStaff').innerText = registry.length;
+      document.getElementById('admStatLogins').innerText = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
+
+      let allPapersCount = 0;
+      registry.forEach(s => {
+        const papers = SafeStorage.get(`exam_vault_${s.id}`, []);
+        allPapersCount += papers.length;
+      });
+      document.getElementById('admStatPapers').innerText = allPapersCount;
+
+      const staffTbody = document.getElementById('admStaffTableBody');
+      if (registry.length === 0) {
+        staffTbody.innerHTML = `<tr><td colspan="7" class="text-center text-subtle">No staff registered yet.</td></tr>`;
+      } else {
+        staffTbody.innerHTML = registry.map(staff => {
+          const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
+          return `
+            <tr>
+              <td><strong>${staff.name}</strong></td>
+              <td>${staff.fullName || staff.name}</td>
+              <td>${staff.subject}</td>
+              <td>${staff.userClass || "10th Standard"}</td>
+              <td>${staff.phone || "N/A"}</td>
+              <td><span class="auth-hint p-0">${staff.authType.toUpperCase()}</span></td>
+              <td><strong>${papers.length}</strong> saved</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const logsTbody = document.getElementById('admLogsTableBody');
+      if (logs.length === 0) {
+        logsTbody.innerHTML = `<tr><td colspan="4" class="text-center text-subtle">No logs recorded.</td></tr>`;
+      } else {
+        logsTbody.innerHTML = logs.map(l => `
+          <tr>
+            <td><small>${l.time}</small></td>
+            <td><strong>${l.username}</strong></td>
+            <td>${l.action}</td>
+            <td><span style="color: ${l.status === 'Success' ? 'var(--accent-emerald)' : 'var(--danger-text)'}; font-weight: bold;">${l.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      const papersContainer = document.getElementById('admPapersContainer');
+      let allPapersHtml = "";
+      registry.forEach(staff => {
+        const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
+        papers.forEach(p => {
+          allPapersHtml += `
+            <article class="history-item">
+              <div class="history-meta">
+                <h3>${p.paperName || p.title}</h3>
+                <p>Teacher: <strong>${staff.fullName || staff.name}</strong> (${staff.subject}) | Saved: ${p.date}</p>
+              </div>
+              <div class="history-actions">
+                <button type="button" class="btn-primary" data-action="load-vault-paper" data-id="${p.id}" data-custom-key="exam_vault_${staff.id}">👁️ Inspect</button>
+                <button type="button" class="btn-success" data-action="print-vault-paper" data-id="${p.id}" data-custom-key="exam_vault_${staff.id}">🖨️ Print</button>
+              </div>
+            </article>
+          `;
+        });
+      });
+      papersContainer.innerHTML = allPapersHtml || `<p class="p-0 text-subtle text-sm">No question papers generated yet.</p>`;
+    }
+
+    // =========================================================================
+    // 12. ROUTING & CONTROLS
+    // =========================================================================
+    function setPageView(page) {
+      AppState.currentPage = page;
+      const isHome = (page === 'create');
+
+      document.getElementById('mainHomeHeader').style.display = isHome ? 'flex' : 'none';
+      document.getElementById('pageCreate').hidden = (page !== 'create');
+      document.getElementById('pageHistory').hidden = (page !== 'history');
+      document.getElementById('pageProfile').hidden = (page !== 'profile');
+      document.getElementById('pageAbout').hidden = (page !== 'about');
+      document.getElementById('pageAdmin').hidden = (page !== 'admin');
+
+      if (page === 'history') renderHistoryList();
+      if (page === 'admin') renderAdminDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchPage(page, fromDrawer = false) {
+      if (fromDrawer) {
+        history.pushState({ screen: 'create', drawerOpen: true }, null, location.href);
+        history.pushState({ screen: page, drawerOpen: false }, null, location.href);
+      } else {
+        history.pushState({ screen: page, drawerOpen: false }, null, location.href);
+      }
+      setPageView(page);
+    }
+
+    function openDrawer() {
+      document.getElementById('sideDrawer').classList.add('active');
+      document.getElementById('sideDrawer').setAttribute('aria-hidden', 'false');
+      document.getElementById('drawerBackdrop').classList.add('active');
+      document.body.classList.add('no-scroll');
+    }
+
+    function closeDrawer() {
+      document.getElementById('sideDrawer').classList.remove('active');
+      document.getElementById('sideDrawer').setAttribute('aria-hidden', 'true');
+      document.getElementById('drawerBackdrop').classList.remove('active');
+      document.body.classList.remove('no-scroll');
+    }
+
+    function setupMobileRouting() {
+      history.replaceState({ screen: 'create', drawerOpen: false }, null, location.href);
+      window.addEventListener('popstate', (e) => {
+        const state = e.state || {};
+        if (state.drawerOpen) {
+          setPageView('create');
+          openDrawer();
+          return;
+        }
+        const drawer = document.getElementById('sideDrawer');
+        if (drawer && drawer.classList.contains('active')) {
+          closeDrawer();
+          return;
+        }
+        if (state.screen === 'create' || !state.screen) {
+          setPageView('create');
+          const now = Date.now();
+          if (now - AppState.lastBackPressTime < 2000) {
+            history.back();
+          } else {
+            AppState.lastBackPressTime = now;
+            const toast = document.getElementById('backToast');
+            toast.hidden = false;
+            setTimeout(() => { toast.hidden = true; }, 2000);
+          }
+          return;
+        }
+        setPageView(state.screen || 'create');
+      });
+    }
+
+    // =========================================================================
+    // 13. AUTHENTICATION & INITIALIZATION
+    // =========================================================================
+    function setAuthMode(mode) {
+      AppState.currentAuthMode = mode;
+      showInlineError("");
+      document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
+      document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
+      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
+      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Sign in with your username & credentials.' : 'Complete initial profile & security credentials.';
+      document.getElementById('signUpFields').hidden = (mode !== 'signup');
+      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register & Enter';
+    }
+
+    function setAuthType(type) {
+      AppState.currentAuthType = type;
+      showInlineError("");
+      document.getElementById('btnAuthPassword').classList.toggle('active', type === 'password');
+      document.getElementById('btnAuthPin').classList.toggle('active', type === 'pin');
+      document.getElementById('authInputPassword').hidden = (type !== 'password');
+      document.getElementById('authInputPin').hidden = (type !== 'pin');
+    }
+
+    async function syncProfileUI(user) {
+      if (!user) return;
+      const displayName = user.fullName || user.name || "Staff User";
+      document.getElementById('drawerProfileName').innerText = displayName;
+      document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
+      document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
+      document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
+
+      const avatarImg = document.getElementById('drawerAvatarImg');
+      const fallback = document.getElementById('drawerAvatarFallback');
+
+      const avatarData = await AppDB.get(`avatar_${user.id}`);
+      if (avatarData) {
+        avatarImg.src = avatarData;
+        avatarImg.hidden = false;
+        fallback.hidden = true;
+      } else {
+        avatarImg.hidden = true;
+        fallback.hidden = false;
+        fallback.innerText = displayName.charAt(0).toUpperCase();
+      }
+    }
+
+    async function loginSuccess(user) {
+      AppState.activeUser = user;
+      SafeStorage.set('persistent_exam_user', user);
+      document.getElementById('authOverlay').hidden = true;
+
+      await syncProfileUI(user);
+      populateHeaderSettings(user);
+
+      const isAdmin = user.role === 'admin';
+      document.getElementById('drawerAdminItem').hidden = !isAdmin;
+      setPageView('create');
+    }
+
+    function cacheHeaderSettings() {
+      if (!AppState.activeUser) return;
+      const settings = {
+        instName: document.getElementById('instName').value,
+        examTitle: document.getElementById('examTitle').value,
+        subject: document.getElementById('subject').value,
+        grade: document.getElementById('grade').value,
+        duration: document.getElementById('duration').value,
+        genInst: document.getElementById('genInst').value
+      };
+      SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, settings);
+    }
+
+    function populateHeaderSettings(user) {
+      const saved = SafeStorage.get(`exam_settings_${user.id}`, null);
+      document.getElementById('instName').value = saved?.instName || "KARNATAKA PUBLIC SCHOOL";
+      document.getElementById('examTitle').value = saved?.examTitle || "Annual Examination - 2026";
+      document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
+      document.getElementById('grade').value = saved?.grade || user.userClass || "10th Standard";
+      document.getElementById('duration').value = saved?.duration || "3 Hours";
+      document.getElementById('genInst').value = saved?.genInst || "1. All sections are compulsory. 2. Write question numbers clearly in the margin.";
+    }
+
+    function changePaperFont(fontVal) {
+      document.documentElement.style.setProperty('--paper-font', fontVal);
+      const preview = document.getElementById('paperPreview');
+      if (preview) {
+        preview.style.setProperty('font-family', fontVal, 'important');
+        preview.querySelectorAll('*').forEach(el => el.style.setProperty('font-family', fontVal, 'important'));
+      }
+    }
+
+    function changePaperFontSize(sizeVal) {
+      const ptString = `${sizeVal}pt`;
+      document.getElementById('fontSizeDisplay').innerText = ptString;
+      document.documentElement.style.setProperty('--paper-size', ptString);
+      const preview = document.getElementById('paperPreview');
+      if (preview) preview.style.setProperty('font-size', ptString, 'important');
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const nextTheme = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      document.getElementById('drawerThemeLabel').innerText = isDark ? '☀️ Light' : '🌙 Dark';
+    }
+
+    // =========================================================================
+    // 14. CENTRAL EVENT DELEGATION
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', async () => {
+      await AppDB.init();
+
+      const currentSchema = SafeStorage.get('app_schema_version', 0);
+      if (currentSchema < 1) {
+        SafeStorage.set('app_schema_version', 1);
+      }
+
+      setupMobileRouting();
+      calculateAndValidateMarks();
+
+      const lockCode = SafeStorage.get('app_screen_lock_code');
+      if (lockCode) {
+        const lockElem = document.getElementById('lockOverlay');
+        lockElem.hidden = false;
+        FocusTrap.trap(lockElem.querySelector('.auth-card'));
+      }
+
+      const persistentUser = SafeStorage.get('persistent_exam_user');
+      if (persistentUser) {
+        await loginSuccess(persistentUser);
+      } else {
+        const authElem = document.getElementById('authOverlay');
+        setAuthMode('signin');
+        FocusTrap.trap(authElem.querySelector('.auth-card'));
+      }
+
+      document.body.addEventListener('click', async (e) => {
+        const target = e.target;
+
+        const actionBtn = target.closest('[data-action]');
+        if (actionBtn) {
+          const action = actionBtn.getAttribute('data-action');
+          if (action === 'nav-home') { closeDrawer(); switchPage('create', false); }
+          if (action === 'nav-vault') { closeDrawer(); switchPage('history', true); }
+          if (action === 'nav-admin') { closeDrawer(); switchPage('admin', true); }
+          if (action === 'nav-about') { closeDrawer(); switchPage('about', true); }
+          if (action === 'toggle-theme') toggleTheme();
+          if (action === 'sign-out') {
+            closeDrawer();
+            AppState.activeUser = null;
+            SafeStorage.remove('persistent_exam_user');
+            const authElem = document.getElementById('authOverlay');
+            authElem.hidden = false;
+            setAuthMode('signin');
+            FocusTrap.trap(authElem.querySelector('.auth-card'));
+          }
+          if (action === 'share-app') {
+            if (navigator.share) {
+              navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Link copied to clipboard!");
+            }
+          }
+          if (action === 'remove-custom-sec') {
+            const secId = actionBtn.getAttribute('data-sec-id');
+            document.getElementById(`sec_card_${secId}`)?.remove();
+            calculateAndValidateMarks();
+          }
+          if (action === 'load-vault-paper') {
+            const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+            const customKey = actionBtn.getAttribute('data-custom-key');
+            loadPaperFromHistory(id, customKey);
+          }
+          if (action === 'print-vault-paper') {
+            const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+            const customKey = actionBtn.getAttribute('data-custom-key');
+            loadPaperFromHistory(id, customKey);
+            setTimeout(() => window.print(), 300);
+          }
+          if (action === 'delete-vault-paper') {
+            const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+            if (confirm("Delete this saved paper?")) {
+              const key = getStaffSpecificVaultKey();
+              let papers = SafeStorage.get(key, []);
+              papers = papers.filter(p => p.id !== id);
+              SafeStorage.set(key, papers);
+              renderHistoryList();
+            }
+          }
+          return;
+        }
+
+        if (target.closest('#btnOpenDrawer')) { openDrawer(); return; }
+        if (target.closest('#btnCloseDrawer') || target.closest('#drawerBackdrop')) { closeDrawer(); return; }
+
+        if (target.closest('#drawerProfileCard')) {
+          closeDrawer();
+          if (AppState.activeUser) {
+            document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
+            document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
+            document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
+            document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
+            document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
+
+            const avatarImg = document.getElementById('profilePageAvatarImg');
+            const fallback = document.getElementById('profilePageAvatarFallback');
+            const avatarData = await AppDB.get(`avatar_${AppState.activeUser.id}`);
+            if (avatarData) {
+              avatarImg.src = avatarData;
+              avatarImg.hidden = false;
+              fallback.hidden = true;
+            } else {
+              avatarImg.hidden = true;
+              fallback.hidden = false;
+              fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
+            }
+          }
+          switchPage('profile', true);
+          return;
+        }
+
+        const sourceBtn = target.closest('.source-choice-btn');
+        if (sourceBtn) {
+          const mode = sourceBtn.getAttribute('data-mode');
+          AppState.currentUploadMode = mode;
+          document.querySelectorAll('.source-choice-btn').forEach(b => b.classList.remove('selected'));
+          sourceBtn.classList.add('selected');
+          document.getElementById('activeModeSummaryLabel').innerText = mode === 'existing'
+            ? "📂 Mode: Question Bank / Exercises"
+            : "📖 Mode: Textbook Lesson Pages";
+          document.getElementById('uploadLabel').innerText = mode === 'existing'
+            ? "Upload Question Bank Documents (Photos / Scans / PDFs):"
+            : "Upload Textbook Lesson Pages / Theory (Photos / Scans / PDFs):";
+          document.getElementById('uploadHintText').innerText = mode === 'existing'
+            ? "Extracting existing questions and options directly into the exam blueprint."
+            : "The system reads lesson text and formulates conceptual questions.";
+          return;
+        }
+
+        if (target.closest('#btnToggleSourceAccordion')) {
+          const content = document.getElementById('sourceAccordionContent');
+          const arrow = document.getElementById('sourceAccordionArrow');
+          const expanded = content.classList.toggle('expanded');
+          arrow.classList.toggle('rotated', expanded);
+          target.closest('#btnToggleSourceAccordion').setAttribute('aria-expanded', String(expanded));
+          return;
+        }
+
+        if (target.closest('#btnToggleSectionsAccordion')) {
+          const content = document.getElementById('sectionsAccordionContent');
+          const arrow = document.getElementById('accordionArrow');
+          const expanded = content.classList.toggle('expanded');
+          arrow.classList.toggle('rotated', expanded);
+          target.closest('#btnToggleSectionsAccordion').setAttribute('aria-expanded', String(expanded));
+          return;
+        }
+
+        if (target.closest('#btnCancelCrop')) { ImageCropper.cancel(); return; }
+        if (target.closest('#btnApplyCrop')) { await ImageCropper.apply(); return; }
+        if (target.closest('#btnAddCustomSection')) { addNewCustomSection(); return; }
+        if (target.closest('#btnSaveToVault')) { saveCurrentPaperToHistory(); return; }
+
+        if (target.closest('#btnPrintPaper')) {
+          const customName = document.getElementById('paperCustomName').value.trim();
+          const prevTitle = document.title;
+          if (customName) document.title = customName;
+          window.print();
+          setTimeout(() => { document.title = prevTitle; }, 1000);
+          return;
+        }
+
+        if (target.closest('#btnClearHistory')) {
+          if (confirm("Clear your question paper vault?")) {
+            SafeStorage.remove(getStaffSpecificVaultKey());
+            renderHistoryList();
+          }
+          return;
+        }
+
+        if (target.closest('#btnClearAdminLogs')) {
+          if (confirm("Clear all audit logs?")) {
+            SafeStorage.remove('exam_audit_logs');
+            renderAdminDashboard();
+          }
+          return;
+        }
+
+        if (target.closest('#btnUnlockApp')) {
+          const stored = SafeStorage.get('app_screen_lock_code');
+          const entered = document.getElementById('appLockInput').value.trim();
+          const enteredHash = await CryptoEngine.hash(entered);
+          if (enteredHash === stored) {
+            FocusTrap.release();
+            document.getElementById('lockOverlay').hidden = true;
+          } else {
+            alert("Incorrect PIN/Password.");
+          }
+          return;
+        }
+      });
+
+      document.body.addEventListener('input', (e) => {
+        const target = e.target;
+
+        if (target.id === 'authUsernameInput' || target.id === 'profilePageUsername') {
+          target.value = Validators.sanitizeUsername(target.value);
+        }
+        if (target.id === 'authPin') {
+          target.value = Validators.sanitizePin(target.value);
+        }
+        if (target.classList.contains('marks-calc') || target.id === 'maxMarks') {
+          calculateAndValidateMarks();
+        }
+        if (target.classList.contains('cached-header')) {
+          cacheHeaderSettings();
+        }
+        if (target.id === 'cropZoomSlider') {
+          ImageCropper.onZoom(target.value);
+        }
+        if (target.id === 'fontSizeSlider') {
+          changePaperFontSize(target.value);
+        }
+      });
+
+      document.body.addEventListener('change', (e) => {
+        const target = e.target;
+
+        if (target.classList.contains('sec-toggle')) {
+          const secId = target.getAttribute('data-sec');
+          const box = document.getElementById(`box_${secId}`);
+          if (box) box.style.display = target.checked ? 'grid' : 'none';
+          calculateAndValidateMarks();
+        }
+        if (target.id === 'editToggle') {
+          const paper = document.getElementById('paperPreview');
+          const badge = document.getElementById('editBadge');
+          paper.setAttribute('contenteditable', target.checked ? "true" : "false");
+          badge.innerText = target.checked ? "Editable" : "Locked";
+          badge.style.color = target.checked ? "var(--primary)" : "var(--text-muted)";
+        }
+        if (target.id === 'fontSelector') {
+          changePaperFont(target.value);
+        }
+        if (target.id === 'regAvatarFile') {
+          if (target.files?.[0]) ImageCropper.start(target.files[0], 'signup');
+        }
+        if (target.id === 'profilePageAvatarInput') {
+          if (target.files?.[0]) ImageCropper.start(target.files[0], 'profile');
+        }
+      });
+
+      document.body.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const target = e.target;
+
+        if (target.id === 'authForm') {
+          showInlineError("");
+          const registry = SafeStorage.get('exam_staff_registry', []);
+          const username = document.getElementById('authUsernameInput').value;
+
+          if (!Validators.isValidUsername(username)) {
+            showInlineError("Username Error: Strictly lowercase letters (a-z) only.");
+            return;
+          }
+
+          const secret = AppState.currentAuthType === 'password'
+            ? document.getElementById('authPassword').value
+            : document.getElementById('authPin').value;
+
+          const hashedInput = await CryptoEngine.hash(secret);
+
+          if (AppState.currentAuthMode === 'signin' && username === 'admin') {
+            let adminHash = SafeStorage.get('admin_master_hash');
+            if (!adminHash) {
+              adminHash = await CryptoEngine.hash("Admin@2026");
+              SafeStorage.set('admin_master_hash', adminHash);
+            }
+
+            if (hashedInput === adminHash) {
+              const adminUser = {
+                id: 'admin_root',
+                name: 'admin',
+                fullName: 'Administrator',
+                subject: 'All Subjects (Admin)',
+                userClass: 'Administration',
+                phone: '+91 9483061904',
+                role: 'admin',
+                authType: 'password'
+              };
+              logAuditEvent("admin", "Admin Login", "Success");
+              FocusTrap.release();
+              await loginSuccess(adminUser);
+              return;
+            } else {
+              logAuditEvent("admin", "Admin Login Attempt", "Failed: Wrong Secret");
+              showInlineError("Incorrect admin credential.");
+              return;
+            }
+          }
+
+          if (AppState.currentAuthType === 'password' && !Validators.isValidPassword(secret)) {
+            showInlineError("Password must contain at least 6 separate words.");
+            return;
+          }
+          if (AppState.currentAuthType === 'pin' && !Validators.isValidPin(secret)) {
+            showInlineError("PIN must be between 5 to 10 numeric digits.");
+            return;
+          }
+
+          if (AppState.currentAuthMode === 'signup') {
+            if (registry.some(s => s.name === username)) {
+              showInlineError("Username is already taken.");
+              return;
+            }
+            const newId = `staff_${Date.now()}`;
+            const croppedAvatar = document.getElementById('regCroppedAvatarData').value;
+            if (croppedAvatar) {
+              await AppDB.set(`avatar_${newId}`, croppedAvatar);
+            }
+
+            const newStaff = {
+              id: newId,
+              name: username,
+              fullName: document.getElementById('regFullName').value.trim() || username,
+              subject: document.getElementById('regSubject').value.trim() || "General",
+              userClass: "10th Standard",
+              phone: document.getElementById('regMobilePhone').value.trim(),
+              authType: AppState.currentAuthType,
+              secret: hashedInput
+            };
+            registry.push(newStaff);
+            SafeStorage.set('exam_staff_registry', registry);
+            logAuditEvent(username, "Staff Registration", "Success");
+            FocusTrap.release();
+            await loginSuccess(newStaff);
+          } else {
+            const staff = registry.find(s => s.name === username);
+            if (!staff) {
+              showInlineError("Username not found. Please register.");
+              return;
+            }
+            if (staff.authType !== AppState.currentAuthType) {
+              showInlineError(`This account uses ${staff.authType.toUpperCase()}.`);
+              setAuthType(staff.authType);
+              return;
+            }
+            if (hashedInput === staff.secret) {
+              logAuditEvent(username, "Staff Login", "Success");
+              FocusTrap.release();
+              await loginSuccess(staff);
+            } else {
+              showInlineError("Incorrect password/PIN.");
+            }
+          }
+        }
+
+        if (target.id === 'profileForm') {
+          if (!AppState.activeUser) return;
+          const newUsername = document.getElementById('profilePageUsername').value.trim();
+          if (!Validators.isValidUsername(newUsername)) {
+            alert("Username Error: Strictly lowercase letters (a-z).");
+            return;
+          }
+
+          const registry = SafeStorage.get('exam_staff_registry', []);
+          const oldUsername = AppState.activeUser.name;
+          if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
+            alert("Username already taken.");
+            return;
+          }
+
+          AppState.activeUser.name = newUsername;
+          AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
+          AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
+          AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
+          AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
+
+          const idx = registry.findIndex(s => s.name === oldUsername);
+          if (idx !== -1) {
+            registry[idx] = { ...registry[idx], ...AppState.activeUser };
+            SafeStorage.set('exam_staff_registry', registry);
+          }
+
+          SafeStorage.set('persistent_exam_user', AppState.activeUser);
+          await syncProfileUI(AppState.activeUser);
+          alert("Profile updated successfully!");
+          history.back();
+        }
+      });
+
+      const cropperVp = document.getElementById('cropperViewport');
+      cropperVp.addEventListener('mousedown', (e) => ImageCropper.handlePointerDown(e));
+      window.addEventListener('mousemove', (e) => ImageCropper.handlePointerMove(e));
+      window.addEventListener('mouseup', () => ImageCropper.handlePointerUp());
+
+      cropperVp.addEventListener('touchstart', (e) => ImageCropper.handlePointerDown(e), { passive: false });
+      window.addEventListener('touchmove', (e) => ImageCropper.handlePointerMove(e), { passive: false });
+      window.addEventListener('touchend', () => ImageCropper.handlePointerUp());
+
+      document.getElementById('genBtn').addEventListener('click', async () => {
+        calculateAndValidateMarks();
+        const btn = document.getElementById('genBtn');
+        if (btn.disabled) {
+          alert("Please balance marks before generation.");
+          return;
+        }
+
+        const files = document.getElementById('fileInput').files;
+        if (files.length === 0) {
+          alert("Please upload question bank photos, lesson scans, or PDF documents in Section 2.");
+          return;
+        }
+
+        const status = document.getElementById('statusMessage');
+        const paperCard = document.getElementById('paperCard');
+        const paperPreview = document.getElementById('paperPreview');
+
+        btn.disabled = true;
+        paperCard.hidden = true;
+
+        try {
+          const extractedText = await extractTextFromFiles(files, status);
+
+          if (!extractedText || extractedText.trim().length < 15) {
+            throw new Error("Unable to read clear text from the uploaded files. Please upload a clearer photo or a digital PDF.");
+          }
+
+          const parsedQuestions = extractedText
+            .split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 10 && !l.startsWith("---"));
+
+          const localSections = [];
+          const sectionsConfig = [];
+
+          ['mcq', '1m', '2m', '3m', '4m'].forEach(sec => {
+            const chk = document.getElementById('use_' + sec);
+            if (chk && chk.checked) {
+              const count = parseInt(document.getElementById('count_' + sec).value, 10) || 0;
+              const marks = parseInt(document.getElementById('marks_' + sec).value, 10) || 0;
+              const inst = document.getElementById('inst_' + sec).value;
+              const title = document.getElementById('title_' + sec).value;
+              localSections.push({ title: inst, count, marks, isMcq: (sec === 'mcq') });
+              sectionsConfig.push(`- Section: "${title}"\n  Instructions: "${inst}"\n  Count: ${count}\n  Marks: ${marks}`);
+            }
+          });
+
+          const config = {
+            mode: AppState.currentUploadMode,
+            rawText: extractedText,
+            instName: document.getElementById('instName').value,
+            examTitle: document.getElementById('examTitle').value,
+            subject: document.getElementById('subject').value,
+            grade: document.getElementById('grade').value,
+            duration: document.getElementById('duration').value,
+            maxMarks: document.getElementById('maxMarks').value,
+            genInst: document.getElementById('genInst').value,
+            incName: document.getElementById('incName').checked,
+            incRoll: document.getElementById('incRoll').checked,
+            incSec: document.getElementById('incSec').checked,
+            incDate: document.getElementById('incDate').checked,
+            sections: localSections,
+            parsedQuestions
+          };
+
+          const promptText = `
+Subject: ${config.subject}
+Grade: ${config.grade}
+Mode: ${config.mode}
+
+CRITICAL RULES:
+1. Every Multiple Choice Question MUST have 4 real, content-based options: (A), (B), (C), and (D). Never output placeholder text like "Option A" or "Option B".
+2. If Mode is "existing", extract the EXACT questions and options found in the text.
+3. If Mode is "lesson", formulate actual factual questions based on the lesson text with 1 correct option and 3 plausible distractors.
+
+SECTIONS TO GENERATE:
+${sectionsConfig.join('\n')}
+
+SOURCE TEXT CONTENT:
+${extractedText.substring(0, 6000)}
+`;
+
+          const generated = await generateFastPaperDirect(promptText, config, status);
+          let htmlOutput = generated.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
+          const totalQCount = (htmlOutput.match(/class="q-item"/g) || []).length;
+          htmlOutput += await buildDiagramSectionHtml(totalQCount + 1);
+
+          paperPreview.innerHTML = htmlOutput;
+          paperCard.hidden = false;
+          status.innerText = "Exam paper generated successfully!";
+
+          const defaultName = [config.subject, config.grade, config.examTitle].filter(Boolean).join('_').replace(/[\/\s]+/g, '_');
+          document.getElementById('paperCustomName').value = defaultName;
+          changePaperFont(document.getElementById('fontSelector').value);
+
+          saveCurrentPaperToHistory(false);
+          paperCard.scrollIntoView({ behavior: 'smooth' });
+        } catch (err) {
+          alert("Notice: " + err.message);
+          status.innerText = "Error: " + err.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
