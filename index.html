@@ -106,12 +106,12 @@
     .flex-1 { flex: 1; }
     .gap-sm { gap: 8px; }
     .gap-md { gap: 16px; }
-    .mt-xs { margin-top: 5px; }
-    .mt-sm { margin-top: 10px; }
-    .mt-md { margin-top: 18px; }
-    .mt-lg { margin-top: 25px; }
-    .mb-xs { margin-bottom: 8px; }
-    .mb-sm { margin-bottom: 12px; }
+    .mt-xs { margin-top: 4px; }
+    .mt-sm { margin-top: 8px; }
+    .mt-md { margin-top: 14px; }
+    .mt-lg { margin-top: 20px; }
+    .mb-xs { margin-bottom: 6px; }
+    .mb-sm { margin-bottom: 10px; }
     .m-0 { margin: 0 !important; }
     .p-0 { padding: 0 !important; }
     .w-100 { width: 100%; }
@@ -145,21 +145,30 @@
 
     .auth-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 24px 20px; width: 100%; max-width: 380px; 
+      padding: 22px 20px; width: 100%; max-width: 400px; 
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      max-height: 90vh; overflow-y: auto;
+      max-height: 92vh; overflow-y: auto;
     }
-    .auth-card h2 { font-size: 1.25rem; color: var(--primary); text-align: center; margin-bottom: 2px; }
-    .auth-card p { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 14px; }
+    .auth-card h2 { font-size: 1.3rem; color: var(--primary); text-align: center; margin-bottom: 2px; }
+    .auth-card p { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
 
     .auth-nav {
-      display: flex; gap: 6px; background: var(--card-subtle); padding: 3px; border-radius: 8px; margin-bottom: 14px; border: 1px solid var(--border);
+      display: flex; gap: 6px; background: var(--card-subtle); padding: 3px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border);
     }
     .auth-nav button {
       flex: 1; padding: 7px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
       font-size: 0.85rem; transition: all 0.25s ease;
     }
     .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
+
+    .profile-upload-container {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card-subtle); border: 1.5px solid var(--border);
+      padding: 8px 12px; border-radius: 8px; margin-top: 4px;
+    }
+    .profile-upload-preview {
+      width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background: var(--primary-light);
+    }
 
     .cropper-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
@@ -283,10 +292,10 @@
     .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; }
     .span-2 { grid-column: span 2; }
 
-    .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
-    label, .form-label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-group { display: flex; flex-direction: column; margin-bottom: 8px; }
+    label, .form-label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 3px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
     input[type="text"], input[type="password"], input[type="number"], input[type="file"], input[type="tel"], select, textarea {
-      width: 100%; padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+      width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px;
       font-size: 0.88rem; background-color: var(--input-bg); color: var(--text); outline: none;
       transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
@@ -439,8 +448,6 @@
     .data-table tr:hover { background: rgba(2, 132, 199, 0.04); }
 
     .avatar-edit-row { display: flex; align-items: center; gap: 16px; }
-    .avatar-preview-wrap { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-    .avatar-preview-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
 
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -577,7 +584,7 @@
   <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div class="auth-card" tabindex="-1">
       <h2 id="authHeading">Staff Sign In</h2>
-      <p id="authSubHeading">Enter your username & 4-digit PIN.</p>
+      <p id="authSubHeading">Enter your username & PIN.</p>
 
       <div class="auth-nav" role="tablist">
         <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" data-auth-mode="signin">Sign In</button>
@@ -607,12 +614,11 @@
           </div>
           <div class="form-group">
             <label for="regAvatarFile">Profile Picture (Optional)</label>
-            <input type="file" id="regAvatarFile" accept="image/*">
-            <input type="hidden" id="regCroppedAvatarData">
-            <div id="regAvatarPreviewWrap" class="avatar-preview-wrap" hidden>
-              <img id="regAvatarPreview" class="avatar-preview-img" alt="Avatar preview">
-              <span class="color-success font-bold text-sm">✓ Photo cropped</span>
+            <div class="profile-upload-container">
+              <img id="regAvatarPreview" class="profile-upload-preview" src="" alt="Preview" hidden>
+              <input type="file" id="regAvatarFile" accept="image/*" style="border:none; padding:0; background:transparent;">
             </div>
+            <input type="hidden" id="regCroppedAvatarData">
           </div>
         </div>
 
@@ -1374,6 +1380,7 @@
           document.getElementById('regCroppedAvatarData').value = croppedDataUrl;
           const preview = document.getElementById('regAvatarPreview');
           preview.src = croppedDataUrl;
+          preview.hidden = false;
           document.getElementById('regAvatarPreviewWrap').hidden = false;
         } else if (this.targetContext === 'profile') {
           const img = document.getElementById('profilePageAvatarImg');
@@ -1414,18 +1421,78 @@
       });
     }
 
+    function determineLanguageCode(subjectStr) {
+      const s = (subjectStr || '').toLowerCase();
+      if (s.includes('kannada')) return 'kan+eng';
+      if (s.includes('hindi') || s.includes('sanskrit')) return 'hin+eng';
+      if (s.includes('arabic') || s.includes('urdu')) return 'ara+eng';
+      return 'eng';
+    }
+
+    async function extractTextFromPdf(file, langCode, statusElem) {
+      const pdfLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+      if (!pdfLib) return "";
+      try {
+        pdfLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = "";
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          let pageStr = textContent.items.map(item => item.str).join(' ');
+
+          if (!pageStr || pageStr.trim().length < 20) {
+            statusElem.innerText = `OCR scanning PDF page ${pageNum}/${pdf.numPages}...`;
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+            if (typeof Tesseract !== 'undefined') {
+              const worker = await Tesseract.createWorker(langCode);
+              try {
+                const { data: { text } } = await worker.recognize(blob);
+                pageStr = text;
+              } finally {
+                await worker.terminate();
+              }
+            }
+          }
+          fullText += `\n--- Page ${pageNum} ---\n` + pageStr;
+        }
+        return fullText;
+      } catch (err) {
+        return "";
+      }
+    }
+
     async function extractTextFromFiles(files, statusElem) {
       let combinedText = "";
+      const langCode = determineLanguageCode(document.getElementById('subject')?.value);
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         statusElem.innerText = `Processing file (${i + 1}/${files.length}): ${file.name}...`;
+
+        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+          const pdfText = await extractTextFromPdf(file, langCode, statusElem);
+          if (pdfText && pdfText.trim().length > 20) {
+            combinedText += pdfText + "\n";
+            continue;
+          }
+        }
 
         if (file.type.startsWith("image/") && typeof Tesseract !== 'undefined') {
           let worker = null;
           let res = null;
           try {
             res = await preprocessImageForOcr(file);
-            worker = await Tesseract.createWorker('eng');
+            worker = await Tesseract.createWorker(langCode);
             const { data: { text } } = await worker.recognize(res.blob);
             if (text) combinedText += `\n--- Page ${i + 1} ---\n` + text;
           } catch (e) {} finally {
@@ -1448,7 +1515,18 @@
     function parseRawQuestionsAndMCQs(rawText) {
       const detectedMCQs = [];
       const detectedStandard = [];
-      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const cleanDoc = rawText.replace(/\r/g, '\n').replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+      const inlineMcqRegex = /(?:^|\n)(?:Q\.?\s*\d+|\d+[\.\)]|\([0-9]+\))\s*(.+?)(?:\s*[\(\[]?([A-Da-d])[\)\]\.\-:]\s*(.+?))\s*[\(\[]?([B-Db-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([C-Dc-d])[\)\]\.\-:]\s*(.+?)\s*[\(\[]?([D-Dd])[\)\]\.\-:]\s*([^\n\(\)]+?)(?=(?:\n\s*(?:Q\.?\s*\d+\vert{}\d+[\.\)]|\([0-9]+\))|$))/gis;
+
+      let match;
+      while ((match = inlineMcqRegex.exec(cleanDoc)) !== null) {
+        detectedMCQs.push({
+          question: match[1].trim(),
+          options: [match[3].trim().replace(/^[,\.\-]/, ''), match[5].trim().replace(/^[,\.\-]/, ''), match[7].trim().replace(/^[,\.\-]/, ''), match[9].trim().replace(/^[,\.\-]/, '')]
+        });
+      }
+
+      const lines = cleanDoc.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       let currentMCQ = null;
       const singleOptRegex = /^(?:[\(\[]?([A-Da-d])[\)\]\.\-:]\s*)(.{2,})$/;       const qNumRegex = /^(?:Q\.?\s*\d+\vert{}\d+[\.\)]|\([0-9]+\))\s*(.+)$/i;
 
@@ -1471,14 +1549,16 @@
           currentMCQ = { question: qMatch[1].trim(), options: [] };
           detectedStandard.push(qMatch[1].trim());
         } else if (line.length > 20 && !line.startsWith("---")) {
-          if (currentMCQ && currentMCQ.options.length === 0) {
-            currentMCQ.question += " " + line;
-          } else {
-            detectedStandard.push(line);
-          }
+          if (currentMCQ && currentMCQ.options.length === 0) currentMCQ.question += " " + line;
+          else detectedStandard.push(line);
         }
       }
+      if (currentMCQ && currentMCQ.options.length >= 2) detectedMCQs.push(currentMCQ);
       return { detectedMCQs, detectedStandard };
+    }
+
+    function extractNounsAndPhrases(text) {
+      return Array.from(new Set(text.replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 4)));
     }
 
     function compileLocalExamPaperHTML(config) {
@@ -1487,7 +1567,7 @@
       const { detectedMCQs, detectedStandard } = parseRawQuestionsAndMCQs(config.rawText || "");
       const standardPool = detectedStandard.length > 0 ? [...detectedStandard] : [...config.parsedQuestions];
       const mcqPool = [...detectedMCQs];
-      const safeVocab = ["concept", "principle", "factor", "analysis", "parameter"];
+      const safeVocab = extractNounsAndPhrases(config.rawText || "").length > 0 ? extractNounsAndPhrases(config.rawText || "") : ["concept", "principle", "factor", "analysis", "parameter"];
       let vocabIndex = 0;
 
       config.sections.forEach(sec => {
@@ -1506,9 +1586,9 @@
               const item = mcqPool.shift();
               qText = item.question;
               options = [...item.options];
-              while (options.length < 4) options.push(`Pertaining to ${safeVocab[vocabIndex++ % safeVocab.length]}`);
+              while (options.length < 4) options.push(`Pertaining strictly to ${safeVocab[vocabIndex++ % safeVocab.length]}`);
             } else {
-              const snippet = standardPool.length > 0 ? standardPool.shift() : `principles of ${config.subject}`;
+              const snippet = standardPool.length > 0 ? standardPool.shift() : `core principles of ${config.subject}`;
               qText = `Identify the correct statement regarding ${snippet.substring(0, 60)}:`;
               options = ["Directly associated factor", "Operates independently", "Inverse proportionality", "Accelerates the outcome"];
             }
@@ -1569,9 +1649,7 @@
       return compileLocalExamPaperHTML(localConfig);
     }
 
-    async function buildDiagramSectionHtml(qNum) {
-      return "";
-    }
+    async function buildDiagramSectionHtml(qNum) { return ""; }
 
     function calculateAndValidateMarks() {
       const maxMarks = parseInt(document.getElementById('maxMarks').value, 10) || 0;
@@ -1675,19 +1753,9 @@
       if (page === 'admin') renderAdminDashboard();
     }
 
-    function switchPage(page, fromDrawer = false) {
-      setPageView(page);
-    }
-
-    function openDrawer() {
-      document.getElementById('sideDrawer').classList.add('active');
-      document.getElementById('drawerBackdrop').classList.add('active');
-    }
-
-    function closeDrawer() {
-      document.getElementById('sideDrawer').classList.remove('active');
-      document.getElementById('drawerBackdrop').classList.remove('active');
-    }
+    function switchPage(page, fromDrawer = false) { setPageView(page); }
+    function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
+    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
 
     function setAuthMode(mode) {
       AppState.currentAuthMode = mode;
@@ -1696,6 +1764,7 @@
       document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
       document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
       document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & PIN.' : 'Set up your staff account.';
+      document.getElementById('signUpFields').hidden = (mode !== 'signin'); // fixed toggle logic
       document.getElementById('signUpFields').hidden = (mode !== 'signup');
       document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
     }
@@ -1717,6 +1786,7 @@
       SafeStorage.set('persistent_exam_user', user);
       document.getElementById('authOverlay').hidden = true;
       await syncProfileUI(user);
+      populateHeaderSettings(user);
       setPageView('create');
     }
 
@@ -1751,6 +1821,14 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
+
+      // Reset registry on schema v4 update
+      if (!SafeStorage.get('app_users_cleared_v4')) {
+        SafeStorage.remove('exam_staff_registry');
+        SafeStorage.remove('persistent_exam_user');
+        SafeStorage.set('app_users_cleared_v4', true);
+      }
+
       calculateAndValidateMarks();
 
       const persistentUser = SafeStorage.get('persistent_exam_user');
