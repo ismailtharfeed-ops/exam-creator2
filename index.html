@@ -1453,7 +1453,7 @@
     };
 
     // =========================================================================
-    // 6. SAFE OCR & PDF SUBSYSTEM (FIREWALL-RESILIENT PDF.JS & WORKER CLEANUP)
+    // 6. SAFE OCR & PDF SUBSYSTEM
     // =========================================================================
     async function preprocessImageForOcr(file) {
       return new Promise((resolve) => {
@@ -2447,6 +2447,18 @@
       document.body.addEventListener('click', async (e) => {
         const target = e.target;
 
+        const authModeBtn = target.closest('[data-auth-mode]');
+        if (authModeBtn) {
+          setAuthMode(authModeBtn.getAttribute('data-auth-mode'));
+          return;
+        }
+
+        const authTypeBtn = target.closest('[data-auth-type]');
+        if (authTypeBtn) {
+          setAuthType(authTypeBtn.getAttribute('data-auth-type'));
+          return;
+        }
+
         const actionBtn = target.closest('[data-action]');
         if (actionBtn) {
           const action = actionBtn.getAttribute('data-action');
@@ -2455,6 +2467,25 @@
           if (action === 'nav-admin') { closeDrawer(); switchPage('admin', true); }
           if (action === 'nav-about') { closeDrawer(); switchPage('about', true); }
           if (action === 'toggle-theme') toggleTheme();
+          if (action === 'app-lock') {
+            closeDrawer();
+            const existingLock = SafeStorage.get('app_screen_lock_code');
+            if (existingLock) {
+              if (confirm("App Lock is enabled. Remove App Lock?")) {
+                SafeStorage.remove('app_screen_lock_code');
+                alert("App Lock removed.");
+              }
+            } else {
+              const newPin = prompt("Set a PIN or Password (minimum 4 characters):");
+              if (newPin && newPin.trim().length >= 4) {
+                const hashed = await CryptoEngine.hash(newPin.trim());
+                SafeStorage.set('app_screen_lock_code', hashed);
+                alert("App Lock enabled successfully.");
+              } else if (newPin) {
+                alert("PIN / Password must be at least 4 characters.");
+              }
+            }
+          }
           if (action === 'sign-out') {
             closeDrawer();
             AppState.activeUser = null;
@@ -2667,7 +2698,7 @@
         if (target.id === 'authForm') {
           showInlineError("");
           const registry = SafeStorage.get('exam_staff_registry', []);
-          const username = document.getElementById('authUsernameInput').value;
+          const username = document.getElementById('authUsernameInput').value.trim().toLowerCase();
 
           if (!Validators.isValidUsername(username)) {
             showInlineError("Username Error: Strictly lowercase letters (a-z) only.");
@@ -2710,7 +2741,7 @@
           }
 
           if (AppState.currentAuthType === 'password' && !Validators.isValidPassword(secret)) {
-            showInlineError("Password must contain at least 6 separate words.");
+            showInlineError("Password must contain more than 5 words (at least 6 words separated by spaces).");
             return;
           }
           if (AppState.currentAuthType === 'pin' && !Validators.isValidPin(secret)) {
@@ -2747,7 +2778,7 @@
           } else {
             const staff = registry.find(s => s.name === username);
             if (!staff) {
-              showInlineError("Username not found. Please register.");
+              showInlineError("Username not found. Please register first.");
               return;
             }
             if (staff.authType !== AppState.currentAuthType) {
@@ -2760,7 +2791,7 @@
               FocusTrap.release();
               await loginSuccess(staff);
             } else {
-              showInlineError("Incorrect password/PIN.");
+              showInlineError("Incorrect password or PIN code.");
             }
           }
         }
