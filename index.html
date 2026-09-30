@@ -430,20 +430,6 @@
     .history-meta p { font-size: 0.85rem; color: var(--text-muted); }
     .history-actions { display: flex; gap: 8px; }
 
-    .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
-    .stat-card { background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 12px; padding: 18px; text-align: center; }
-    .stat-card span { font-size: 0.82rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
-    .stat-card h3 { font-size: 1.9rem; color: var(--primary); margin-top: 6px; }
-
-    .table-responsive { overflow-x: auto; }
-    .max-h-250 { max-height: 250px; overflow-y: auto; }
-    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
-    .data-table th, .data-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
-    .data-table th { background: var(--card-subtle); font-weight: bold; }
-    .data-table tr:hover { background: rgba(2, 132, 199, 0.04); }
-
-    .avatar-edit-row { display: flex; align-items: center; gap: 16px; }
-
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: rgba(15, 23, 42, 0.94); color: #fff; padding: 10px 22px;
@@ -470,23 +456,6 @@
 </head>
 <body>
 
-  <div id="backToast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
-    Press back again to exit
-  </div>
-
-  <!-- IN-APP LOCK SCREEN MODAL -->
-  <div id="lockOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lockTitle" hidden>
-    <div class="auth-card text-center" tabindex="-1">
-      <h2 id="lockTitle">🔒 App Locked</h2>
-      <p>Enter your PIN to continue.</p>
-      <div class="form-group">
-        <label for="appLockInput" class="sr-only">App Lock PIN</label>
-        <input type="password" id="appLockInput" placeholder="Enter PIN" class="text-center tracking-wide" maxlength="10">
-      </div>
-      <button type="button" id="btnUnlockApp" class="btn-generate" onclick="unlockAppModal()">Unlock App</button>
-    </div>
-  </div>
-
   <!-- CIRCULAR IMAGE CROPPER MODAL -->
   <div id="cropperOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cropperTitle" hidden>
     <div class="cropper-card" tabindex="-1">
@@ -505,25 +474,26 @@
       </div>
 
       <div class="button-row">
-        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1" onclick="ImageCropper.cancel()">Cancel</button>
-        <button type="button" id="btnApplyCrop" class="btn-primary flex-1" onclick="ImageCropper.apply()">Apply Crop</button>
+        <button type="button" class="btn-secondary flex-1" onclick="ImageCropper.cancel()">Cancel</button>
+        <button type="button" class="btn-primary flex-1" onclick="ImageCropper.apply()">Apply Crop</button>
       </div>
     </div>
   </div>
 
   <!-- SLIDE-OUT LEFT DRAWER -->
-  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1" onclick="closeDrawer()"></div>
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
   <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
     <header class="drawer-header">
       <h3>⚙️ Menu & Settings</h3>
-      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu" onclick="closeDrawer()">✕</button>
+      <button type="button" class="drawer-close-btn" aria-label="Close menu" onclick="closeDrawer()">✕</button>
     </header>
 
     <div class="drawer-scroll-body">
       <section aria-labelledby="drawerProfileSection">
         <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
-        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile" onclick="openProfilePage()">
+        <div class="drawer-profile-card" role="button" tabindex="0" aria-label="Edit Profile" onclick="openProfilePage()">
           <div class="drawer-profile-top">
+            <!-- Single Clean Avatar Container -->
             <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
             <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
             <div class="drawer-profile-info">
@@ -545,9 +515,6 @@
           <button type="button" class="drawer-item" onclick="navigatePage('history')">
             <span>📚 Saved Papers Vault</span>
           </button>
-          <button type="button" class="drawer-item" id="drawerAdminItem" onclick="navigatePage('admin')" hidden>
-            <span>🛡️ Admin Dashboard</span>
-          </button>
         </div>
       </nav>
 
@@ -557,9 +524,6 @@
           <button type="button" class="drawer-item" onclick="toggleTheme()">
             <span>Theme Mode</span>
             <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
-          </button>
-          <button type="button" class="drawer-item" onclick="toggleAppLock()">
-            <span>App Screen Lock</span>
           </button>
           <button type="button" class="drawer-item" onclick="shareApp()">
             <span>Share Application</span>
@@ -576,7 +540,7 @@
   </aside>
 
   <!-- AUTHENTICATION OVERLAY -->
-  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading" hidden>
+  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div class="auth-card" tabindex="-1">
       <h2 id="authHeading">Staff Sign In</h2>
       <p id="authSubHeading">Enter your username & PIN.</p>
@@ -631,7 +595,7 @@
     <header class="app-header no-print" id="mainHomeHeader">
       <div class="header-watermark" aria-hidden="true"></div>
       
-      <button type="button" class="menu-lines-btn" id="btnOpenDrawer" aria-label="Open Navigation Menu" onclick="openDrawer()">
+      <button type="button" class="menu-lines-btn" aria-label="Open Navigation Menu" onclick="openDrawer()">
         <span></span>
         <span></span>
         <span></span>
@@ -839,6 +803,7 @@
           <div class="form-group">
             <label for="profilePageUsername">Username (Strictly lowercase letters, a-z)</label>
             <input type="text" id="profilePageUsername" required oninput="this.value = Validators.sanitizeUsername(this.value)">
+            <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
           </div>
 
           <div class="form-group">
@@ -853,7 +818,7 @@
 
           <div class="form-group">
             <label for="profilePageSubject">Teaching Subject</label>
-            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science">
+            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
           </div>
 
           <div class="form-group">
@@ -873,66 +838,6 @@
         <div class="prose max-w-lg mx-auto">
           <p>This exam paper creator application is a specialized platform designed to simplify the entire question paper preparation workflow for teachers and institutions. <strong>This app is created by Ismail Tharfeed, and this is a contact number +919483061904.</strong> It allows educators to generate standardized question papers either by scanning existing question banks or directly extracting conceptual questions from textbook lesson reading pages. The app automatically calculates blueprint marks, ensures clean layout formatting, and preserves question history securely on your device. Thank you for utilizing this application to streamline school and college examination management.</p>
         </div>
-      </div>
-    </section>
-
-    <!-- PAGE 5: ADMIN DASHBOARD -->
-    <section id="pageAdmin" class="page-view" aria-labelledby="adminHeading" hidden>
-      <div class="card no-print">
-        <h2 id="adminHeading">🛡️ Administrator Central Control</h2>
-        
-        <div class="admin-stats-grid">
-          <div class="stat-card">
-            <span>Registered Staff</span>
-            <h3 id="admStatStaff">0</h3>
-          </div>
-          <div class="stat-card">
-            <span>Total Sign-Ins</span>
-            <h3 id="admStatLogins">0</h3>
-          </div>
-          <div class="stat-card">
-            <span>Total Papers Created</span>
-            <h3 id="admStatPapers">0</h3>
-          </div>
-        </div>
-
-        <h3>Registered Staff Accounts & Credentials</h3>
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Full Name</th>
-                <th>Subject</th>
-                <th>Class</th>
-                <th>Phone</th>
-                <th>Vault Papers</th>
-              </tr>
-            </thead>
-            <tbody id="admStaffTableBody"></tbody>
-          </table>
-        </div>
-
-        <div class="card-header-flex mt-lg mb-xs">
-          <h3>Login & Access Audit Logs</h3>
-          <button type="button" class="link-button" onclick="clearAdminLogs()">Clear Audit Log</button>
-        </div>
-        <div class="table-responsive max-h-250">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Username</th>
-                <th>Action Event</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="admLogsTableBody"></tbody>
-          </table>
-        </div>
-
-        <h3 class="mt-lg mb-xs">Master Question Paper Directory</h3>
-        <div id="admPapersContainer"></div>
       </div>
     </section>
   </main>
@@ -1091,22 +996,6 @@
       const hashedPin = await CryptoEngine.hash(pin);
       const registry = SafeStorage.get('exam_staff_registry', []);
 
-      if (username === 'admin' && pin === '2026') {
-        const adminUser = {
-          id: 'admin_root',
-          name: 'admin',
-          fullName: 'Administrator',
-          subject: 'All Subjects (Admin)',
-          userClass: 'Administration',
-          phone: '+91 9483061904',
-          role: 'admin',
-          secret: hashedPin
-        };
-        logAuditEvent("admin", "Admin Login", "Success");
-        await loginSuccess(adminUser);
-        return;
-      }
-
       if (AppState.currentAuthMode === 'signup') {
         if (registry.some(s => s.name === username)) {
           showInlineError("Username is already taken.");
@@ -1123,12 +1012,10 @@
           subject: document.getElementById('regSubject').value.trim() || "General",
           userClass: "10th Standard",
           phone: document.getElementById('regMobilePhone').value.trim(),
-          role: 'staff',
           secret: hashedPin
         };
         registry.push(staff);
         SafeStorage.set('exam_staff_registry', registry);
-        logAuditEvent(username, "Staff Registration", "Success");
         await loginSuccess(staff);
       } else {
         const staff = registry.find(s => s.name === username);
@@ -1137,10 +1024,8 @@
           return;
         }
         if (staff.secret === hashedPin) {
-          logAuditEvent(username, "Staff Login", "Success");
           await loginSuccess(staff);
         } else {
-          logAuditEvent(username, "Staff Login Attempt", "Failed: Wrong PIN");
           showInlineError("Incorrect security PIN.");
         }
       }
@@ -1152,8 +1037,6 @@
       document.getElementById('authOverlay').hidden = true;
       await syncProfileUI(user);
       populateHeaderSettings(user);
-      const isAdmin = (user.name === 'admin');
-      document.getElementById('drawerAdminItem').hidden = !isAdmin;
       navigatePage('create');
     }
 
@@ -1188,13 +1071,17 @@
       document.getElementById('pageHistory').hidden = (page !== 'history');
       document.getElementById('pageProfile').hidden = (page !== 'profile');
       document.getElementById('pageAbout').hidden = (page !== 'about');
-      document.getElementById('pageAdmin').hidden = (page !== 'admin');
 
       if (page === 'history') renderHistoryList();
-      if (page === 'admin') renderAdminDashboard();
       if (page === 'profile') loadProfileFormValues();
       window.history.pushState({ page }, '');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openProfilePage() {
+      closeDrawer();
+      loadProfileFormValues();
+      navigatePage('profile');
     }
 
     function toggleAccordion(contentId, arrowId) {
@@ -1361,29 +1248,6 @@
       document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
     }
 
-    function toggleAppLock() {
-      closeDrawer();
-      const existing = SafeStorage.get('app_screen_lock_code');
-      if (existing) {
-        if (confirm("Remove App Lock?")) SafeStorage.remove('app_screen_lock_code');
-      } else {
-        const pin = prompt("Set a PIN or Password (min 4 chars):");
-        if (pin && pin.trim().length >= 4) {
-          CryptoEngine.hash(pin.trim()).then(h => SafeStorage.set('app_screen_lock_code', h));
-          alert("App lock enabled.");
-        }
-      }
-    }
-
-    function unlockAppModal() {
-      const stored = SafeStorage.get('app_screen_lock_code');
-      const entered = document.getElementById('appLockInput').value.trim();
-      CryptoEngine.hash(entered).then(h => {
-        if (h === stored) document.getElementById('lockOverlay').hidden = true;
-        else alert("Incorrect PIN.");
-      });
-    }
-
     function shareApp() {
       if (navigator.share) navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
       else { navigator.clipboard.writeText(window.location.href); alert("Link copied to clipboard!"); }
@@ -1474,66 +1338,61 @@
       document.getElementById('duration').value = saved?.duration || "3 Hours";
     }
 
-    function logAuditEvent(username, action, status) {
-      const logs = SafeStorage.get('exam_audit_logs', []);
-      logs.unshift({ time: new Date().toLocaleString(), username: username || "anonymous", action, status });
-      if (logs.length > 100) logs.pop();
-      SafeStorage.set('exam_audit_logs', logs);
-    }
-
-    function renderAdminDashboard() {
-      const registry = SafeStorage.get('exam_staff_registry', []);
-      const logs = SafeStorage.get('exam_audit_logs', []);
-
-      document.getElementById('admStatStaff').innerText = registry.length;
-      document.getElementById('admStatLogins').innerText = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
-
-      let allPapersCount = 0;
-      registry.forEach(s => {
-        const papers = SafeStorage.get(`exam_vault_${s.id}`, []);
-        allPapersCount += papers.length;
+    async function preprocessImageForOcr(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const targetWidth = Math.min(Math.max(img.width, 1200), 2000);
+            const scale = targetWidth / img.width;
+            canvas.width = targetWidth;
+            canvas.height = img.height * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              const blobUrl = URL.createObjectURL(blob);
+              resolve({ blob, url: blobUrl });
+            }, 'image/png');
+          };
+          img.onerror = () => resolve({ blob: file, url: null });
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve({ blob: file, url: null });
+        reader.readAsDataURL(file);
       });
-      document.getElementById('admStatPapers').innerText = allPapersCount;
-
-      const staffTbody = document.getElementById('admStaffTableBody');
-      if (registry.length === 0) {
-        staffTbody.innerHTML = `<tr><td colspan="6" class="text-center text-subtle">No staff registered yet.</td></tr>`;
-      } else {
-        staffTbody.innerHTML = registry.map(staff => {
-          const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
-          return `
-            <tr>
-              <td><strong>${staff.name}</strong></td>
-              <td>${staff.fullName || staff.name}</td>
-              <td>${staff.subject}</td>
-              <td>${staff.userClass || "10th Standard"}</td>
-              <td>${staff.phone || "N/A"}</td>
-              <td><strong>${papers.length}</strong> saved</td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      const logsTbody = document.getElementById('admLogsTableBody');
-      if (logs.length === 0) {
-        logsTbody.innerHTML = `<tr><td colspan="4" class="text-center text-subtle">No logs recorded.</td></tr>`;
-      } else {
-        logsTbody.innerHTML = logs.map(l => `
-          <tr>
-            <td><small>${l.time}</small></td>
-            <td><strong>${l.username}</strong></td>
-            <td>${l.action}</td>
-            <td><span style="color: ${l.status === 'Success' ? 'var(--accent-emerald)' : 'var(--danger-text)'}; font-weight: bold;">${l.status}</span></td>
-          </tr>
-        `).join('');
-      }
     }
 
-    function clearAdminLogs() {
-      if (confirm("Clear all audit logs?")) {
-        SafeStorage.remove('exam_audit_logs');
-        renderAdminDashboard();
+    async function extractTextFromFiles(files, statusElem) {
+      let combinedText = "";
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusElem.innerText = `Processing file (${i + 1}/${files.length}): ${file.name}...`;
+
+        if (file.type.startsWith("image/") && typeof Tesseract !== 'undefined') {
+          let worker = null;
+          let res = null;
+          try {
+            res = await preprocessImageForOcr(file);
+            worker = await Tesseract.createWorker('eng');
+            const { data: { text } } = await worker.recognize(res.blob);
+            if (text) combinedText += `\n--- Page ${i + 1} ---\n` + text;
+          } catch (e) {} finally {
+            if (worker) await worker.terminate();
+            if (res?.url) URL.revokeObjectURL(res.url);
+          }
+        }
       }
+      return combinedText;
+    }
+
+    function fileToDataURL(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1553,13 +1412,6 @@
         if (state && state.page) navigatePage(state.page);
         else navigatePage('create');
       });
-
-      const lockCode = SafeStorage.get('app_screen_lock_code');
-      if (lockCode) {
-        const lockElem = document.getElementById('lockOverlay');
-        lockElem.hidden = false;
-        FocusTrap.trap(lockElem.querySelector('.auth-card'));
-      }
 
       // Exam Paper Generation Trigger
       document.getElementById('genBtn').addEventListener('click', async () => {
