@@ -91,6 +91,11 @@
       transition: background-color 0.35s ease, color 0.35s ease; 
     }
 
+    body.no-scroll {
+      overflow: hidden !important;
+      touch-action: none !important;
+    }
+
     .sr-only {
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
       overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
@@ -126,11 +131,59 @@
     .color-success { color: var(--accent-emerald) !important; }
     .text-subtle { color: var(--text-muted); }
 
+    .inline-error-banner {
+      background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger-text);
+      padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; margin-bottom: 12px;
+    }
+    .inline-error-banner[hidden] { display: none !important; }
+
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 9999;
       display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px);
     }
     .modal-backdrop[hidden] { display: none !important; }
+
+    .auth-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 22px 20px; width: 100%; max-width: 400px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-height: 92vh; overflow-y: auto;
+    }
+    .auth-card h2 { font-size: 1.3rem; color: var(--primary); text-align: center; margin-bottom: 2px; }
+    .auth-card p { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
+
+    .auth-nav {
+      display: flex; gap: 6px; background: var(--card-subtle); padding: 3px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border);
+    }
+    .auth-nav button {
+      flex: 1; padding: 7px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
+      font-size: 0.85rem; transition: all 0.25s ease;
+    }
+    .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
+
+    .profile-upload-container {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card-subtle); border: 1.5px solid var(--border);
+      padding: 8px 12px; border-radius: 8px; margin-top: 4px;
+    }
+    .profile-upload-preview {
+      width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background: var(--primary-light);
+    }
+
+    .cropper-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .cropper-viewport-wrap { width: 240px; height: 240px; overflow: hidden; position: relative; }
+    .cropper-viewport {
+      width: 240px; height: 240px; position: relative; overflow: hidden;
+      border-radius: 50%; border: 3px solid var(--primary); background: #000;
+      touch-action: none; cursor: grab; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.75);
+    }
+    .cropper-img { position: absolute; top: 0; left: 0; transform-origin: 0 0; user-select: none; pointer-events: none; }
+    .zoom-controls { width: 100%; display: flex; align-items: center; gap: 10px; }
+    .button-row { display: flex; gap: 10px; width: 100%; }
 
     .app-header {
       position: relative; overflow: hidden; background: var(--card);
@@ -164,7 +217,13 @@
     }
     .header-center-title h1 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin: 0; }
     .header-center-title h1 span { color: var(--primary); }
-    .header-spacer { width: 44px; }
+
+    .header-right-profile {
+      width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+      object-fit: cover; border: 2px solid var(--primary); background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem;
+      position: relative; z-index: 2;
+    }
 
     .drawer-backdrop {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
@@ -197,6 +256,20 @@
       padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;
       overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
     }
+    .drawer-profile-card {
+      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 14px;
+      padding: 15px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
+    }
+    .drawer-profile-top { display: flex; align-items: center; gap: 14px; }
+    .drawer-avatar {
+      width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
+      background: linear-gradient(135deg, var(--primary), #0284c7); color: #fff; 
+      display: flex; align-items: center; justify-content: center; 
+      font-size: 1.3rem; font-weight: bold; border: 2.5px solid var(--card); flex-shrink: 0;
+    }
+    .drawer-profile-info { flex: 1; overflow: hidden; }
+    .drawer-profile-name { font-weight: 800; font-size: 1.05rem; }
+    .drawer-profile-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; }
     .drawer-section-title {
       font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
       color: var(--primary); margin-bottom: 6px;
@@ -207,6 +280,7 @@
       font-size: 0.92rem; font-weight: 600; color: var(--text); cursor: pointer; text-align: left; width: 100%;
     }
     .drawer-item:hover { border-color: var(--primary); transform: translateX(3px); background: var(--primary-light); }
+    .drawer-item.item-danger { color: var(--danger-text); border-color: var(--danger-border); background: var(--danger-bg); }
 
     .page-view { display: flex; flex-direction: column; gap: 16px; animation: pageSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     .page-view[hidden] { display: none !important; }
@@ -397,6 +471,22 @@
     </header>
 
     <div class="drawer-scroll-body">
+      <section aria-labelledby="drawerProfileSection">
+        <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
+        <div class="drawer-profile-card" role="button" tabindex="0" aria-label="Edit Profile" onclick="openProfilePage()">
+          <div class="drawer-profile-top">
+            <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
+            <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
+            <div class="drawer-profile-info">
+              <div class="drawer-profile-name" id="drawerProfileName">Staff User</div>
+              <div class="drawer-profile-sub" id="drawerProfileSubject">Subject: General</div>
+              <div class="drawer-profile-sub" id="drawerProfileClass">Class: 10th Standard</div>
+              <div class="drawer-profile-sub" id="drawerProfilePhone">No Phone Set</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <nav aria-label="Application Sections">
         <h4 class="drawer-section-title">Navigation & Vault</h4>
         <div class="flex-column gap-sm">
@@ -410,8 +500,11 @@
       </nav>
 
       <section aria-label="Preferences">
-        <h4 class="drawer-section-title">Preferences</h4>
+        <h4 class="drawer-section-title">Preferences & Settings</h4>
         <div class="flex-column gap-sm">
+          <button type="button" class="drawer-item" onclick="openProfilePage()">
+            <span>👤 Edit Name, Subject & Photo</span>
+          </button>
           <button type="button" class="drawer-item" onclick="toggleTheme()">
             <span>Theme Mode</span>
             <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
@@ -419,10 +512,65 @@
           <button type="button" class="drawer-item" onclick="navigatePage('about')">
             <span>ℹ️ About Application</span>
           </button>
+          <button type="button" class="drawer-item item-danger" onclick="signOutUser()">
+            <span>Sign Out / Switch Profile</span>
+          </button>
         </div>
       </section>
     </div>
   </aside>
+
+  <!-- AUTHENTICATION OVERLAY (6-Digit PIN) -->
+  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+    <div class="auth-card" tabindex="-1">
+      <h2 id="authHeading">Secure Staff Sign In</h2>
+      <p id="authSubHeading">Enter your username & 6-digit PIN.</p>
+
+      <div class="auth-nav" role="tablist">
+        <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" onclick="switchAuthMode('signin')">Sign In</button>
+        <button type="button" id="navSignUp" role="tab" aria-selected="false" onclick="switchAuthMode('signup')">Sign Up</button>
+      </div>
+
+      <div id="authErrorBox" class="inline-error-banner" hidden></div>
+
+      <form id="authForm" onsubmit="handleAuthSubmit(event)">
+        <div class="form-group">
+          <label for="authUsernameInput">Username</label>
+          <input type="text" id="authUsernameInput" autocomplete="username" placeholder="e.g. ismail" required oninput="this.value = Validators.sanitizeUsername(this.value)">
+        </div>
+
+        <div id="signUpFields" hidden>
+          <div class="form-group">
+            <label for="regFullName">Full Name</label>
+            <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+          <div class="form-group">
+            <label for="regMobilePhone">Mobile Number</label>
+            <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
+          </div>
+          <div class="form-group">
+            <label for="regSubject">Teaching Subject</label>
+            <input type="text" id="regSubject" placeholder="e.g. Social Science">
+          </div>
+          <div class="form-group">
+            <label for="regAvatarFile">Profile Picture (Optional)</label>
+            <div class="profile-upload-container">
+              <img id="regAvatarPreview" class="profile-upload-preview" src="" alt="Preview" hidden>
+              <input type="file" id="regAvatarFile" accept="image/*" onchange="handleAvatarSelect(event)" style="border:none; padding:0; background:transparent;">
+            </div>
+            <input type="hidden" id="regCroppedAvatarData">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="authPin">6-Digit Security PIN</label>
+          <input type="password" id="authPin" maxlength="6" inputmode="numeric" placeholder="••••••" required oninput="this.value = Validators.sanitizePin(this.value)">
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn-generate mt-sm">Sign In</button>
+      </form>
+    </div>
+  </div>
 
   <main class="container">
     <header class="app-header no-print" id="mainHomeHeader">
@@ -438,7 +586,9 @@
         <h1>Exam Paper <span>Creator</span></h1>
       </div>
 
-      <div class="header-spacer" aria-hidden="true"></div>
+      <!-- Top Right Small Circular Profile Avatar -->
+      <img id="headerRightAvatarImg" class="header-right-profile" src="" alt="Profile" onclick="openProfilePage()" hidden title="Click to edit profile">
+      <div id="headerRightAvatarFallback" class="header-right-profile" onclick="openProfilePage()" title="Click to edit profile">👤</div>
     </header>
 
     <!-- PAGE 1: CREATE PAPER VIEW -->
@@ -450,26 +600,26 @@
         <div class="grid-2">
           <div class="form-group">
             <label for="instName">Institution / School / College Name</label>
-            <input type="text" id="instName" value="KARNATAKA PUBLIC SCHOOL">
+            <input type="text" id="instName" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="examTitle">Examination Title</label>
-            <input type="text" id="examTitle" value="Annual Examination - 2026">
+            <input type="text" id="examTitle" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
         </div>
 
         <div class="grid-4 mt-sm">
           <div class="form-group">
             <label for="subject">Subject</label>
-            <input type="text" id="subject" value="Social Science">
+            <input type="text" id="subject" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="grade">Class / Grade</label>
-            <input type="text" id="grade" value="10th Standard">
+            <input type="text" id="grade" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="duration">Time Allowed</label>
-            <input type="text" id="duration" value="3 Hours">
+            <input type="text" id="duration" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="maxMarks">Total Max Marks (Target)</label>
@@ -487,7 +637,7 @@
 
         <div class="form-group mt-sm">
           <label for="genInst">General Instructions for Students (Optional):</label>
-          <input type="text" id="genInst" value="1. All sections are compulsory. 2. Write question numbers clearly in the margin.">
+          <input type="text" id="genInst" class="cached-header" oninput="cacheHeaderSettings()">
         </div>
       </section>
 
@@ -618,7 +768,52 @@
       </div>
     </section>
 
-    <!-- PAGE 3: ABOUT PAGE -->
+    <!-- PAGE 3: PROFILE PAGE -->
+    <section id="pageProfile" class="page-view" aria-labelledby="profileHeading" hidden>
+      <div class="card no-print">
+        <h2 id="profileHeading">👤 Edit Profile & Account Details</h2>
+
+        <form id="profileForm" onsubmit="handleProfileUpdate(event)" class="max-w-md mx-auto flex-column gap-md">
+          <div class="avatar-edit-row">
+            <img id="profilePageAvatarImg" class="drawer-avatar lg" src="" alt="Profile picture" hidden>
+            <div id="profilePageAvatarFallback" class="drawer-avatar lg" aria-hidden="true">👤</div>
+            <div class="flex-1">
+              <label for="profilePageAvatarInput">Update Profile Photo</label>
+              <input type="file" id="profilePageAvatarInput" accept="image/*" onchange="handleProfileAvatarSelect(event)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageUsername">Username</label>
+            <input type="text" id="profilePageUsername" required oninput="this.value = Validators.sanitizeUsername(this.value)">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageFullName">Full Name (Displayed in App)</label>
+            <input type="text" id="profilePageFullName" placeholder="e.g. Ismail Tharfeed">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePagePhone">Mobile Number</label>
+            <input type="tel" id="profilePagePhone" placeholder="e.g. +91 9483061904">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageSubject">Teaching Subject</label>
+            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
+          </div>
+
+          <div class="form-group">
+            <label for="profilePageClass">Class / Grade</label>
+            <input type="text" id="profilePageClass" placeholder="e.g. 10th Standard">
+          </div>
+
+          <button type="submit" class="btn-generate mt-sm">💾 Save All Changes</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PAGE 4: ABOUT PAGE -->
     <section id="pageAbout" class="page-view" aria-labelledby="aboutHeading" hidden>
       <div class="card no-print">
         <h2 id="aboutHeading">ℹ️ About Application</h2>
@@ -630,6 +825,45 @@
   </main>
 
   <script>
+    const AppDB = {
+      dbName: 'ExamPaperCreatorDB',
+      version: 1,
+      db: null,
+      initPromise: null,
+      async init() {
+        if (this.db) return this.db;
+        if (this.initPromise) return this.initPromise;
+        this.initPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(this.dbName, this.version);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('assets')) db.createObjectStore('assets');
+          };
+          req.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
+          req.onerror = (e) => reject(e);
+        });
+        return this.initPromise;
+      },
+      async set(key, value) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction('assets', 'readwrite');
+          tx.objectStore('assets').put(value, key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => reject(false);
+        });
+      },
+      async get(key) {
+        await this.init();
+        return new Promise((resolve) => {
+          const tx = this.db.transaction('assets', 'readonly');
+          const req = tx.objectStore('assets').get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      }
+    };
+
     const SafeStorage = {
       get(key, fallback = null) {
         try {
@@ -643,11 +877,185 @@
       remove(key) { try { localStorage.removeItem(key); } catch (e) {} }
     };
 
+    const CryptoEngine = {
+      async getDeviceSalt() {
+        let salt = SafeStorage.get('device_salt');
+        if (!salt) {
+          salt = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
+          SafeStorage.set('device_salt', salt);
+        }
+        return salt;
+      },
+      async hash(str) {
+        const salt = await this.getDeviceSalt();
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str + salt);
+        const hashBuf = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+    };
+
+    const Validators = {
+      sanitizeUsername(val) { return (val || '').toLowerCase().replace(/[^a-z]/g, ''); },
+      sanitizePin(val) { return (val || '').replace(/[^0-9]/g, ''); },
+      isValidUsername(val) { return /^[a-z]{3,15}$/.test(val); },
+      isValidPin(val) { return /^\d{6}$/.test(val); }
+    };
+
     const AppState = {
+      activeUser: null,
+      currentAuthMode: 'signin',
       currentUploadMode: 'existing',
       currentPage: 'create',
       customSectionCount: 0
     };
+
+    function showInlineError(msg) {
+      const box = document.getElementById('authErrorBox');
+      if (box) {
+        if (msg) { box.innerText = msg; box.hidden = false; }
+        else { box.innerText = ""; box.hidden = true; }
+      }
+    }
+
+    function switchAuthMode(mode) {
+      AppState.currentAuthMode = mode;
+      showInlineError("");
+      document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
+      document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
+      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
+      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & 6-digit PIN.' : 'Set up your secure profile.';
+      document.getElementById('signUpFields').hidden = (mode !== 'signup');
+      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
+    }
+
+    function handleAvatarSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const dataUrl = evt.target.result;
+        document.getElementById('regCroppedAvatarData').value = dataUrl;
+        const prev = document.getElementById('regAvatarPreview');
+        prev.src = dataUrl;
+        prev.hidden = false;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleProfileAvatarSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const dataUrl = evt.target.result;
+        document.getElementById('profilePageAvatarImg').src = dataUrl;
+        document.getElementById('profilePageAvatarImg').hidden = false;
+        document.getElementById('profilePageAvatarFallback').hidden = true;
+        if (AppState.activeUser) {
+          await AppDB.set(`avatar_${AppState.activeUser.id}`, dataUrl);
+          await syncProfileUI(AppState.activeUser);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      showInlineError("");
+
+      const username = document.getElementById('authUsernameInput').value.trim().toLowerCase();
+      const pin = document.getElementById('authPin').value.trim();
+
+      if (!Validators.isValidUsername(username)) {
+        showInlineError("Username must be 3-15 lowercase letters.");
+        return;
+      }
+      if (!Validators.isValidPin(pin)) {
+        showInlineError("Security PIN must be exactly 6 digits.");
+        return;
+      }
+
+      const hashedPin = await CryptoEngine.hash(pin);
+      const registry = SafeStorage.get('exam_staff_registry', []);
+
+      if (AppState.currentAuthMode === 'signup') {
+        if (registry.some(s => s.name === username)) {
+          showInlineError("Username is already taken.");
+          return;
+        }
+        const newId = `staff_${Date.now()}`;
+        const avatar = document.getElementById('regCroppedAvatarData').value;
+        if (avatar) await AppDB.set(`avatar_${newId}`, avatar);
+
+        const staff = {
+          id: newId,
+          name: username,
+          fullName: document.getElementById('regFullName').value.trim() || username,
+          subject: document.getElementById('regSubject').value.trim() || "General",
+          userClass: "10th Standard",
+          phone: document.getElementById('regMobilePhone').value.trim(),
+          secret: hashedPin
+        };
+        registry.push(staff);
+        SafeStorage.set('exam_staff_registry', registry);
+        await loginSuccess(staff);
+      } else {
+        const staff = registry.find(s => s.name === username);
+        if (!staff) {
+          showInlineError("Username not found. Please Sign Up first.");
+          return;
+        }
+        if (staff.secret === hashedPin) {
+          await loginSuccess(staff);
+        } else {
+          showInlineError("Incorrect 6-digit security PIN.");
+        }
+      }
+    }
+
+    async function loginSuccess(user) {
+      AppState.activeUser = user;
+      SafeStorage.set('persistent_exam_user', user);
+      document.getElementById('authOverlay').hidden = true;
+      await syncProfileUI(user);
+      populateHeaderSettings(user);
+      navigatePage('create');
+    }
+
+    async function syncProfileUI(user) {
+      if (!user) return;
+      document.getElementById('drawerProfileName').innerText = user.fullName || user.name;
+      document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
+      document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
+      document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
+
+      const avatarData = await AppDB.get(`avatar_${user.id}`);
+      const drawerImg = document.getElementById('drawerAvatarImg');
+      const drawerFallback = document.getElementById('drawerAvatarFallback');
+      const headerImg = document.getElementById('headerRightAvatarImg');
+      const headerFallback = document.getElementById('headerRightAvatarFallback');
+
+      const initial = (user.fullName || user.name || "S").charAt(0).toUpperCase();
+
+      if (avatarData) {
+        drawerImg.src = avatarData;
+        drawerImg.hidden = false;
+        drawerFallback.hidden = true;
+
+        headerImg.src = avatarData;
+        headerImg.hidden = false;
+        headerFallback.hidden = true;
+      } else {
+        drawerImg.hidden = true;
+        drawerFallback.hidden = false;
+        drawerFallback.innerText = initial;
+
+        headerImg.hidden = true;
+        headerFallback.hidden = false;
+        headerFallback.innerText = initial;
+      }
+    }
 
     function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
     function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
@@ -657,11 +1065,19 @@
       AppState.currentPage = page;
       document.getElementById('pageCreate').hidden = (page !== 'create');
       document.getElementById('pageHistory').hidden = (page !== 'history');
+      document.getElementById('pageProfile').hidden = (page !== 'profile');
       document.getElementById('pageAbout').hidden = (page !== 'about');
 
       if (page === 'history') renderHistoryList();
+      if (page === 'profile') loadProfileFormValues();
       window.history.pushState({ page }, '');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openProfilePage() {
+      closeDrawer();
+      loadProfileFormValues();
+      navigatePage('profile');
     }
 
     function toggleAccordion(contentId, arrowId) {
@@ -747,21 +1163,25 @@
       }
     }
 
+    function getStaffSpecificVaultKey() {
+      return AppState.activeUser ? `exam_vault_${AppState.activeUser.id}` : 'exam_vault_default';
+    }
+
     function saveCurrentPaperToHistory(notify = true) {
       const preview = document.getElementById('paperPreview');
       const htmlContent = preview.innerHTML;
       if (!htmlContent.trim()) return;
       const paperName = document.getElementById('paperCustomName').value.trim() || "Exam Paper";
       const newEntry = { id: Date.now(), paperName, subject: document.getElementById('subject').value || "", date: new Date().toLocaleString(), font: document.getElementById('fontSelector').value, fontSize: document.getElementById('fontSizeSlider').value, content: htmlContent };
-      const papers = SafeStorage.get('exam_vault_global', []);
+      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
       papers.unshift(newEntry);
-      SafeStorage.set('exam_vault_global', papers);
+      SafeStorage.set(getStaffSpecificVaultKey(), papers);
       if (notify) alert("Paper saved to vault.");
     }
 
     function renderHistoryList() {
       const container = document.getElementById('historyListContainer');
-      const papers = SafeStorage.get('exam_vault_global', []);
+      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
       if (papers.length === 0) {
         container.innerHTML = `<p class="text-center text-subtle">No saved question papers.</p>`;
         return;
@@ -780,22 +1200,23 @@
 
     function deleteVaultPaper(id) {
       if (confirm("Delete this saved paper?")) {
-        let papers = SafeStorage.get('exam_vault_global', []);
+        const key = getStaffSpecificVaultKey();
+        let papers = SafeStorage.get(key, []);
         papers = papers.filter(p => p.id !== id);
-        SafeStorage.set('exam_vault_global', papers);
+        SafeStorage.set(key, papers);
         renderHistoryList();
       }
     }
 
     function clearVaultHistory() {
       if (confirm("Clear your question paper vault?")) {
-        SafeStorage.remove('exam_vault_global');
+        SafeStorage.remove(getStaffSpecificVaultKey());
         renderHistoryList();
       }
     }
 
     function loadPaperFromHistory(id) {
-      const papers = SafeStorage.get('exam_vault_global', []);
+      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
       const paper = papers.find(p => p.id === id);
       if (!paper) return;
       document.getElementById('paperPreview').innerHTML = paper.content;
@@ -823,6 +1244,91 @@
     function shareApp() {
       if (navigator.share) navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
       else { navigator.clipboard.writeText(window.location.href); alert("Link copied to clipboard!"); }
+    }
+
+    function signOutUser() {
+      closeDrawer();
+      AppState.activeUser = null;
+      SafeStorage.remove('persistent_exam_user');
+      document.getElementById('authOverlay').hidden = false;
+      switchAuthMode('signin');
+    }
+
+    async function loadProfileFormValues() {
+      if (!AppState.activeUser) return;
+      document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
+      document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
+      document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
+      document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
+      document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
+
+      const avatarImg = document.getElementById('profilePageAvatarImg');
+      const fallback = document.getElementById('profilePageAvatarFallback');
+      const avatarData = await AppDB.get(`avatar_${AppState.activeUser.id}`);
+      if (avatarData) {
+        avatarImg.src = avatarData;
+        avatarImg.hidden = false;
+        fallback.hidden = true;
+      } else {
+        avatarImg.hidden = true;
+        fallback.hidden = false;
+        fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
+      }
+    }
+
+    async function handleProfileUpdate(e) {
+      e.preventDefault();
+      if (!AppState.activeUser) return;
+      const newUsername = document.getElementById('profilePageUsername').value.trim();
+      if (!Validators.isValidUsername(newUsername)) {
+        alert("Username must be 3-15 lowercase letters.");
+        return;
+      }
+
+      const registry = SafeStorage.get('exam_staff_registry', []);
+      const oldUsername = AppState.activeUser.name;
+      if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
+        alert("Username already taken.");
+        return;
+      }
+
+      AppState.activeUser.name = newUsername;
+      AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
+      AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
+      AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
+      AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
+
+      const idx = registry.findIndex(s => s.name === oldUsername);
+      if (idx !== -1) {
+        registry[idx] = { ...registry[idx], ...AppState.activeUser };
+        SafeStorage.set('exam_staff_registry', registry);
+      }
+
+      SafeStorage.set('persistent_exam_user', AppState.activeUser);
+      await syncProfileUI(AppState.activeUser);
+      alert("Profile updated successfully!");
+      navigatePage('create');
+    }
+
+    function cacheHeaderSettings() {
+      if (!AppState.activeUser) return;
+      SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, {
+        instName: document.getElementById('instName').value,
+        examTitle: document.getElementById('examTitle').value,
+        subject: document.getElementById('subject').value,
+        grade: document.getElementById('grade').value,
+        duration: document.getElementById('duration').value,
+        genInst: document.getElementById('genInst').value
+      });
+    }
+
+    function populateHeaderSettings(user) {
+      const saved = SafeStorage.get(`exam_settings_${user.id}`, null);
+      document.getElementById('instName').value = saved?.instName || "KARNATAKA PUBLIC SCHOOL";
+      document.getElementById('examTitle').value = saved?.examTitle || "Annual Examination - 2026";
+      document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
+      document.getElementById('grade').value = saved?.grade || "10th Standard";
+      document.getElementById('duration').value = saved?.duration || "3 Hours";
     }
 
     async function preprocessImageForOcr(file) {
@@ -882,8 +1388,17 @@
       });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await AppDB.init();
       addNewCustomSection();
+
+      const persistentUser = SafeStorage.get('persistent_exam_user');
+      if (persistentUser) {
+        await loginSuccess(persistentUser);
+      } else {
+        setAuthMode('signin');
+        document.getElementById('authOverlay').hidden = false;
+      }
 
       window.history.replaceState({ page: 'create' }, '');
       window.addEventListener('popstate', (e) => {
