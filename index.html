@@ -456,30 +456,6 @@
 </head>
 <body>
 
-  <!-- CIRCULAR IMAGE CROPPER MODAL -->
-  <div id="cropperOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cropperTitle" hidden>
-    <div class="cropper-card" tabindex="-1">
-      <h3 id="cropperTitle" class="color-primary">Crop Profile Picture</h3>
-      <p class="text-subtle text-center text-sm">Drag photo to reposition inside circle</p>
-      
-      <div class="cropper-viewport-wrap">
-        <div class="cropper-viewport" id="cropperViewport" tabindex="0" role="region" aria-label="Image Cropping Viewport">
-          <img id="cropperImage" class="cropper-img" src="" alt="Cropping preview">
-        </div>
-      </div>
-
-      <div class="zoom-controls">
-        <label for="cropZoomSlider" class="text-sm font-bold">Zoom:</label>
-        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider" oninput="ImageCropper.onZoom(this.value)">
-      </div>
-
-      <div class="button-row">
-        <button type="button" class="btn-secondary flex-1" onclick="ImageCropper.cancel()">Cancel</button>
-        <button type="button" class="btn-primary flex-1" onclick="ImageCropper.apply()">Apply Crop</button>
-      </div>
-    </div>
-  </div>
-
   <!-- SLIDE-OUT LEFT DRAWER -->
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
   <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
@@ -493,7 +469,6 @@
         <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
         <div class="drawer-profile-card" role="button" tabindex="0" aria-label="Edit Profile" onclick="openProfilePage()">
           <div class="drawer-profile-top">
-            <!-- Single Clean Avatar Container -->
             <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
             <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
             <div class="drawer-profile-info">
@@ -524,9 +499,6 @@
           <button type="button" class="drawer-item" onclick="toggleTheme()">
             <span>Theme Mode</span>
             <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
-          </button>
-          <button type="button" class="drawer-item" onclick="shareApp()">
-            <span>Share Application</span>
           </button>
           <button type="button" class="drawer-item" onclick="navigatePage('about')">
             <span>ℹ️ About Application</span>
@@ -795,7 +767,7 @@
             <img id="profilePageAvatarImg" class="drawer-avatar lg" src="" alt="Profile picture" hidden>
             <div id="profilePageAvatarFallback" class="drawer-avatar lg" aria-hidden="true">👤</div>
             <div class="flex-1">
-              <label for="profilePageAvatarInput">Crop / Update Profile Photo</label>
+              <label for="profilePageAvatarInput">Update Profile Photo</label>
               <input type="file" id="profilePageAvatarInput" accept="image/*" onchange="handleProfileAvatarSelect(event)">
             </div>
           </div>
@@ -803,7 +775,6 @@
           <div class="form-group">
             <label for="profilePageUsername">Username (Strictly lowercase letters, a-z)</label>
             <input type="text" id="profilePageUsername" required oninput="this.value = Validators.sanitizeUsername(this.value)">
-            <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
           </div>
 
           <div class="form-group">
@@ -952,9 +923,10 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        document.getElementById('regCroppedAvatarData').value = evt.target.result;
+        const dataUrl = evt.target.result;
+        document.getElementById('regCroppedAvatarData').value = dataUrl;
         const prev = document.getElementById('regAvatarPreview');
-        prev.src = evt.target.result;
+        prev.src = dataUrl;
         prev.hidden = false;
       };
       reader.readAsDataURL(file);
@@ -1100,9 +1072,6 @@
       document.getElementById('activeModeSummaryLabel').innerText = mode === 'existing'
         ? "📂 Mode: Question Bank / Exercises"
         : "📖 Mode: Textbook Lesson Pages";
-      document.getElementById('uploadLabel').innerText = mode === 'existing'
-        ? "Upload Documents (Photos / Scans / PDFs):"
-        : "Upload Textbook Lesson Pages / Theory (Photos / Scans / PDFs):";
     }
 
     function addNewCustomSection() {
@@ -1245,7 +1214,7 @@
     function toggleTheme() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
+      document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️️ Light';
     }
 
     function shareApp() {
@@ -1336,63 +1305,6 @@
       document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
       document.getElementById('grade').value = saved?.grade || "10th Standard";
       document.getElementById('duration').value = saved?.duration || "3 Hours";
-    }
-
-    async function preprocessImageForOcr(file) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const targetWidth = Math.min(Math.max(img.width, 1200), 2000);
-            const scale = targetWidth / img.width;
-            canvas.width = targetWidth;
-            canvas.height = img.height * scale;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob((blob) => {
-              const blobUrl = URL.createObjectURL(blob);
-              resolve({ blob, url: blobUrl });
-            }, 'image/png');
-          };
-          img.onerror = () => resolve({ blob: file, url: null });
-          img.src = e.target.result;
-        };
-        reader.onerror = () => resolve({ blob: file, url: null });
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function extractTextFromFiles(files, statusElem) {
-      let combinedText = "";
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        statusElem.innerText = `Processing file (${i + 1}/${files.length}): ${file.name}...`;
-
-        if (file.type.startsWith("image/") && typeof Tesseract !== 'undefined') {
-          let worker = null;
-          let res = null;
-          try {
-            res = await preprocessImageForOcr(file);
-            worker = await Tesseract.createWorker('eng');
-            const { data: { text } } = await worker.recognize(res.blob);
-            if (text) combinedText += `\n--- Page ${i + 1} ---\n` + text;
-          } catch (e) {} finally {
-            if (worker) await worker.terminate();
-            if (res?.url) URL.revokeObjectURL(res.url);
-          }
-        }
-      }
-      return combinedText;
-    }
-
-    function fileToDataURL(file) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
