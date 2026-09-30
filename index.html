@@ -483,7 +483,7 @@
         <label for="appLockInput" class="sr-only">App Lock PIN</label>
         <input type="password" id="appLockInput" placeholder="Enter PIN" class="text-center tracking-wide" maxlength="10">
       </div>
-      <button type="button" id="btnUnlockApp" class="btn-generate">Unlock App</button>
+      <button type="button" id="btnUnlockApp" class="btn-generate" onclick="unlockAppModal()">Unlock App</button>
     </div>
   </div>
 
@@ -501,28 +501,28 @@
 
       <div class="zoom-controls">
         <label for="cropZoomSlider" class="text-sm font-bold">Zoom:</label>
-        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider">
+        <input type="range" id="cropZoomSlider" min="0.5" max="3" step="0.05" value="1" aria-label="Image zoom slider" oninput="ImageCropper.onZoom(this.value)">
       </div>
 
       <div class="button-row">
-        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1">Cancel</button>
-        <button type="button" id="btnApplyCrop" class="btn-primary flex-1">Apply Crop</button>
+        <button type="button" id="btnCancelCrop" class="btn-secondary flex-1" onclick="ImageCropper.cancel()">Cancel</button>
+        <button type="button" id="btnApplyCrop" class="btn-primary flex-1" onclick="ImageCropper.apply()">Apply Crop</button>
       </div>
     </div>
   </div>
 
   <!-- SLIDE-OUT LEFT DRAWER -->
-  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1"></div>
+  <div class="drawer-backdrop" id="drawerBackdrop" tabindex="-1" onclick="closeDrawer()"></div>
   <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
     <header class="drawer-header">
       <h3>⚙️ Menu & Settings</h3>
-      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button>
+      <button type="button" class="drawer-close-btn" id="btnCloseDrawer" aria-label="Close menu" onclick="closeDrawer()">✕</button>
     </header>
 
     <div class="drawer-scroll-body">
       <section aria-labelledby="drawerProfileSection">
         <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
-        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile">
+        <div class="drawer-profile-card" id="drawerProfileCard" role="button" tabindex="0" aria-label="Edit Profile" onclick="openProfilePage()">
           <div class="drawer-profile-top">
             <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
             <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
@@ -539,13 +539,13 @@
       <nav aria-label="Application Sections">
         <h4 class="drawer-section-title">Navigation & Vault</h4>
         <div class="flex-column gap-sm">
-          <button type="button" class="drawer-item" data-action="nav-home">
+          <button type="button" class="drawer-item" onclick="navigatePage('create')">
             <span>🏠 Home Page</span>
           </button>
-          <button type="button" class="drawer-item" data-action="nav-vault">
+          <button type="button" class="drawer-item" onclick="navigatePage('history')">
             <span>📚 Saved Papers Vault</span>
           </button>
-          <button type="button" class="drawer-item" id="drawerAdminItem" data-action="nav-admin" hidden>
+          <button type="button" class="drawer-item" id="drawerAdminItem" onclick="navigatePage('admin')" hidden>
             <span>🛡️ Admin Dashboard</span>
           </button>
         </div>
@@ -554,20 +554,20 @@
       <section aria-label="Preferences">
         <h4 class="drawer-section-title">Preferences & Security</h4>
         <div class="flex-column gap-sm">
-          <button type="button" class="drawer-item" data-action="toggle-theme">
+          <button type="button" class="drawer-item" onclick="toggleTheme()">
             <span>Theme Mode</span>
             <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
           </button>
-          <button type="button" class="drawer-item" data-action="app-lock">
+          <button type="button" class="drawer-item" onclick="toggleAppLock()">
             <span>App Screen Lock</span>
           </button>
-          <button type="button" class="drawer-item" data-action="share-app">
+          <button type="button" class="drawer-item" onclick="shareApp()">
             <span>Share Application</span>
           </button>
-          <button type="button" class="drawer-item" data-action="nav-about">
+          <button type="button" class="drawer-item" onclick="navigatePage('about')">
             <span>ℹ️ About Application</span>
           </button>
-          <button type="button" class="drawer-item item-danger" data-action="sign-out">
+          <button type="button" class="drawer-item item-danger" onclick="signOutUser()">
             <span>Sign Out / Switch Profile</span>
           </button>
         </div>
@@ -576,7 +576,7 @@
   </aside>
 
   <!-- AUTHENTICATION OVERLAY -->
-  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+  <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading" hidden>
     <div class="auth-card" tabindex="-1">
       <h2 id="authHeading">Staff Sign In</h2>
       <p id="authSubHeading">Enter your username & PIN.</p>
@@ -591,7 +591,7 @@
       <form id="authForm" onsubmit="handleAuthSubmit(event)">
         <div class="form-group">
           <label for="authUsernameInput">Username</label>
-          <input type="text" id="authUsernameInput" autocomplete="username" placeholder="e.g. ismail" required>
+          <input type="text" id="authUsernameInput" autocomplete="username" placeholder="e.g. ismail" required oninput="this.value = Validators.sanitizeUsername(this.value)">
         </div>
 
         <div id="signUpFields" hidden>
@@ -619,7 +619,7 @@
 
         <div class="form-group">
           <label for="authPin">Security PIN (4–8 Digits)</label>
-          <input type="password" id="authPin" maxlength="8" inputmode="numeric" placeholder="••••" required>
+          <input type="password" id="authPin" maxlength="8" inputmode="numeric" placeholder="••••" required oninput="this.value = Validators.sanitizePin(this.value)">
         </div>
 
         <button type="submit" id="authSubmitBtn" class="btn-generate mt-sm">Sign In</button>
@@ -653,30 +653,30 @@
         <div class="grid-2">
           <div class="form-group">
             <label for="instName">Institution / School / College Name</label>
-            <input type="text" id="instName" class="cached-header">
+            <input type="text" id="instName" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="examTitle">Examination Title</label>
-            <input type="text" id="examTitle" class="cached-header">
+            <input type="text" id="examTitle" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
         </div>
 
         <div class="grid-4 mt-sm">
           <div class="form-group">
             <label for="subject">Subject</label>
-            <input type="text" id="subject" class="cached-header">
+            <input type="text" id="subject" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="grade">Class / Grade</label>
-            <input type="text" id="grade" class="cached-header">
+            <input type="text" id="grade" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="duration">Time Allowed</label>
-            <input type="text" id="duration" class="cached-header">
+            <input type="text" id="duration" class="cached-header" oninput="cacheHeaderSettings()">
           </div>
           <div class="form-group">
             <label for="maxMarks">Total Max Marks (Target)</label>
-            <input type="number" id="maxMarks" value="25" min="1">
+            <input type="number" id="maxMarks" value="25" min="1" oninput="calculateAndValidateMarks()">
           </div>
         </div>
 
@@ -690,22 +690,22 @@
 
         <div class="form-group mt-sm">
           <label for="genInst">General Instructions for Students (Optional):</label>
-          <input type="text" id="genInst" class="cached-header">
+          <input type="text" id="genInst" class="cached-header" oninput="cacheHeaderSettings()">
         </div>
       </section>
 
       <section class="card no-print">
-        <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" aria-expanded="false" aria-controls="sourceAccordionContent">
+        <button type="button" class="accordion-trigger w-100 mb-sm" id="btnToggleSourceAccordion" onclick="toggleAccordion('sourceAccordionContent', 'sourceAccordionArrow')">
           <span id="activeModeSummaryLabel" class="font-bold">📂 2. Source Material Upload Mode</span>
           <span class="arrow-icon" id="sourceAccordionArrow" aria-hidden="true">▼</span>
         </button>
 
         <div class="accordion-content" id="sourceAccordionContent">
           <div class="source-mode-choice-grid mt-sm">
-            <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" data-mode="existing">
+            <button type="button" class="source-choice-btn selected" id="btnChoiceExisting" onclick="setSourceMode('existing')">
               📚 Question Bank / Exercises
             </button>
-            <button type="button" class="source-choice-btn" id="btnChoiceLesson" data-mode="lesson">
+            <button type="button" class="source-choice-btn" id="btnChoiceLesson" onclick="setSourceMode('lesson')">
               📖 Textbook Lesson Pages
             </button>
           </div>
@@ -720,7 +720,7 @@
       </section>
 
       <section class="card no-print">
-        <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" aria-expanded="false" aria-controls="sectionsAccordionContent">
+        <button type="button" class="accordion-trigger w-100" id="btnToggleSectionsAccordion" onclick="toggleAccordion('sectionsAccordionContent', 'accordionArrow')">
           <h2>
             <span>⚙️ 3. Question Paper Structure & Sections</span>
             <span class="accordion-subtext">(Customizable Sections & Diagrams)</span>
@@ -729,11 +729,8 @@
         </button>
 
         <div class="accordion-content" id="sectionsAccordionContent">
-          <div id="dynamicSectionsContainer" class="mt-sm">
-            <!-- Starting clean with 1 default custom section ready -->
-          </div>
-
-          <button type="button" class="btn-add-sec" id="btnAddCustomSection" onclick="addNewCustomSection()">➕ Add Custom Section (With Photo / Diagram Option)</button>
+          <div id="dynamicSectionsContainer" class="mt-sm"></div>
+          <button type="button" class="btn-add-sec" onclick="addNewCustomSection()">➕ Add Custom Section (With Photo / Diagram Option)</button>
         </div>
 
         <div id="marksValidationBox" role="alert" aria-live="assertive" hidden>
@@ -759,7 +756,7 @@
               <div class="toggle-wrap">
                 <span class="text-sm font-semibold">Direct Edit:</span>
                 <label class="switch">
-                  <input type="checkbox" id="editToggle" aria-label="Toggle direct paper editing">
+                  <input type="checkbox" id="editToggle" onchange="toggleDirectEdit(this.checked)">
                   <span class="slider"></span>
                 </label>
                 <span id="editBadge" class="text-xs font-bold text-subtle">Locked</span>
@@ -767,7 +764,7 @@
 
               <div class="font-select-wrap">
                 <label for="fontSelector"><b>Font:</b></label>
-                <select id="fontSelector">
+                <select id="fontSelector" onchange="changePaperFont(this.value)">
                   <optgroup label="Academic & Standard Serifs">
                     <option value="'Tinos', 'Noto Serif', serif" selected>Academic Serif (Default)</option>
                     <option value="'Times New Roman', Times, serif">Times New Roman</option>
@@ -797,14 +794,14 @@
 
               <div class="size-slider-wrap">
                 <label for="fontSizeSlider"><b>Size:</b></label>
-                <input type="range" id="fontSizeSlider" min="8" max="16" step="0.5" value="10.5">
+                <input type="range" id="fontSizeSlider" min="8" max="16" step="0.5" value="10.5" oninput="changePaperFontSize(this.value)">
                 <span id="fontSizeDisplay" class="text-sm font-bold">10.5pt</span>
               </div>
             </div>
 
             <div class="action-buttons-wrap">
-              <button type="button" id="btnSaveToVault" class="btn-primary">💾 Save to Vault</button>
-              <button type="button" id="btnPrintPaper" class="btn-success">🖨️ Print / PDF</button>
+              <button type="button" class="btn-primary" onclick="saveCurrentPaperToHistory()">💾 Save to Vault</button>
+              <button type="button" class="btn-success" onclick="window.print()">🖨️ Print / PDF</button>
             </div>
           </div>
         </div>
@@ -818,7 +815,7 @@
       <div class="card no-print">
         <div class="card-header-flex">
           <h2 id="vaultHeading" class="m-0 p-0 border-none">📚 Saved Exam Papers Vault</h2>
-          <button type="button" id="btnClearHistory" class="btn-danger-outline">Clear Vault</button>
+          <button type="button" class="btn-danger-outline" onclick="clearVaultHistory()">Clear Vault</button>
         </div>
         <div id="historyListContainer" class="history-list"></div>
       </div>
@@ -829,20 +826,19 @@
       <div class="card no-print">
         <h2 id="profileHeading">👤 Edit Profile & Account Details</h2>
 
-        <form id="profileForm" class="max-w-md mx-auto flex-column gap-md">
+        <form id="profileForm" onsubmit="handleProfileUpdate(event)" class="max-w-md mx-auto flex-column gap-md">
           <div class="avatar-edit-row">
             <img id="profilePageAvatarImg" class="drawer-avatar lg" src="" alt="Profile picture" hidden>
             <div id="profilePageAvatarFallback" class="drawer-avatar lg" aria-hidden="true">👤</div>
             <div class="flex-1">
               <label for="profilePageAvatarInput">Crop / Update Profile Photo</label>
-              <input type="file" id="profilePageAvatarInput" accept="image/*">
+              <input type="file" id="profilePageAvatarInput" accept="image/*" onchange="handleProfileAvatarSelect(event)">
             </div>
           </div>
 
           <div class="form-group">
             <label for="profilePageUsername">Username (Strictly lowercase letters, a-z)</label>
-            <input type="text" id="profilePageUsername" required>
-            <span class="auth-hint">No spaces, numbers, capitals, or special characters.</span>
+            <input type="text" id="profilePageUsername" required oninput="this.value = Validators.sanitizeUsername(this.value)">
           </div>
 
           <div class="form-group">
@@ -857,7 +853,7 @@
 
           <div class="form-group">
             <label for="profilePageSubject">Teaching Subject</label>
-            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
+            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science">
           </div>
 
           <div class="form-group">
@@ -910,7 +906,6 @@
                 <th>Subject</th>
                 <th>Class</th>
                 <th>Phone</th>
-                <th>Auth Type</th>
                 <th>Vault Papers</th>
               </tr>
             </thead>
@@ -920,7 +915,7 @@
 
         <div class="card-header-flex mt-lg mb-xs">
           <h3>Login & Access Audit Logs</h3>
-          <button type="button" id="btnClearAdminLogs" class="link-button">Clear Audit Log</button>
+          <button type="button" class="link-button" onclick="clearAdminLogs()">Clear Audit Log</button>
         </div>
         <div class="table-responsive max-h-250">
           <table class="data-table">
@@ -1060,6 +1055,23 @@
       reader.readAsDataURL(file);
     }
 
+    function handleProfileAvatarSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const dataUrl = evt.target.result;
+        document.getElementById('profilePageAvatarImg').src = dataUrl;
+        document.getElementById('profilePageAvatarImg').hidden = false;
+        document.getElementById('profilePageAvatarFallback').hidden = true;
+        if (AppState.activeUser) {
+          await AppDB.set(`avatar_${AppState.activeUser.id}`, dataUrl);
+          await syncProfileUI(AppState.activeUser);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
     async function handleAuthSubmit(e) {
       e.preventDefault();
       showInlineError("");
@@ -1090,6 +1102,7 @@
           role: 'admin',
           secret: hashedPin
         };
+        logAuditEvent("admin", "Admin Login", "Success");
         await loginSuccess(adminUser);
         return;
       }
@@ -1115,6 +1128,7 @@
         };
         registry.push(staff);
         SafeStorage.set('exam_staff_registry', registry);
+        logAuditEvent(username, "Staff Registration", "Success");
         await loginSuccess(staff);
       } else {
         const staff = registry.find(s => s.name === username);
@@ -1123,8 +1137,10 @@
           return;
         }
         if (staff.secret === hashedPin) {
+          logAuditEvent(username, "Staff Login", "Success");
           await loginSuccess(staff);
         } else {
+          logAuditEvent(username, "Staff Login Attempt", "Failed: Wrong PIN");
           showInlineError("Incorrect security PIN.");
         }
       }
@@ -1138,13 +1154,16 @@
       populateHeaderSettings(user);
       const isAdmin = (user.name === 'admin');
       document.getElementById('drawerAdminItem').hidden = !isAdmin;
-      setPageView('create');
+      navigatePage('create');
     }
 
     async function syncProfileUI(user) {
       if (!user) return;
       document.getElementById('drawerProfileName').innerText = user.fullName || user.name;
       document.getElementById('drawerProfileSubject').innerText = `Subject: ${user.subject || 'General'}`;
+      document.getElementById('drawerProfileClass').innerText = `Class: ${user.userClass || '10th Standard'}`;
+      document.getElementById('drawerProfilePhone').innerText = user.phone ? `Phone: ${user.phone}` : "No Phone Set";
+
       const avatarData = await AppDB.get(`avatar_${user.id}`);
       const avatarImg = document.getElementById('drawerAvatarImg');
       const fallback = document.getElementById('drawerAvatarFallback');
@@ -1162,14 +1181,41 @@
     function openDrawer() { document.getElementById('sideDrawer').classList.add('active'); document.getElementById('drawerBackdrop').classList.add('active'); }
     function closeDrawer() { document.getElementById('sideDrawer').classList.remove('active'); document.getElementById('drawerBackdrop').classList.remove('active'); }
 
-    function setPageView(page) {
+    function navigatePage(page) {
+      closeDrawer();
       AppState.currentPage = page;
       document.getElementById('pageCreate').hidden = (page !== 'create');
       document.getElementById('pageHistory').hidden = (page !== 'history');
       document.getElementById('pageProfile').hidden = (page !== 'profile');
       document.getElementById('pageAbout').hidden = (page !== 'about');
       document.getElementById('pageAdmin').hidden = (page !== 'admin');
+
       if (page === 'history') renderHistoryList();
+      if (page === 'admin') renderAdminDashboard();
+      if (page === 'profile') loadProfileFormValues();
+      window.history.pushState({ page }, '');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleAccordion(contentId, arrowId) {
+      const content = document.getElementById(contentId);
+      const arrow = document.getElementById(arrowId);
+      content.classList.toggle('expanded');
+      arrow.classList.toggle('rotated');
+    }
+
+    function setSourceMode(mode) {
+      AppState.currentUploadMode = mode;
+      document.querySelectorAll('.source-choice-btn').forEach(b => b.classList.remove('selected'));
+      if (mode === 'existing') document.getElementById('btnChoiceExisting').classList.add('selected');
+      else document.getElementById('btnChoiceLesson').classList.add('selected');
+
+      document.getElementById('activeModeSummaryLabel').innerText = mode === 'existing'
+        ? "📂 Mode: Question Bank / Exercises"
+        : "📖 Mode: Textbook Lesson Pages";
+      document.getElementById('uploadLabel').innerText = mode === 'existing'
+        ? "Upload Documents (Photos / Scans / PDFs):"
+        : "Upload Textbook Lesson Pages / Theory (Photos / Scans / PDFs):";
     }
 
     function addNewCustomSection() {
@@ -1182,7 +1228,7 @@
       secDiv.innerHTML = `
         <div class="section-header-edit">
           <div class="left-block">
-            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked>
+            <input type="checkbox" id="use_${secId}" class="sec-toggle" data-sec="${secId}" checked onchange="calculateAndValidateMarks()">
             <input type="text" class="editable-sec-title" id="title_${secId}" value="Section ${String.fromCharCode(64 + AppState.customSectionCount)}: Custom Questions">
           </div>
           <button type="button" class="btn-remove-sec" onclick="document.getElementById('sec_card_${secId}').remove(); calculateAndValidateMarks();">✕</button>
@@ -1282,13 +1328,129 @@
       }
     }
 
+    function clearVaultHistory() {
+      if (confirm("Clear your question paper vault?")) {
+        SafeStorage.remove(getStaffSpecificVaultKey());
+        renderHistoryList();
+      }
+    }
+
     function loadPaperFromHistory(id) {
       const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
       const paper = papers.find(p => p.id === id);
       if (!paper) return;
       document.getElementById('paperPreview').innerHTML = paper.content;
       document.getElementById('paperCard').hidden = false;
-      setPageView('create');
+      navigatePage('create');
+    }
+
+    function toggleDirectEdit(isEditable) {
+      const paper = document.getElementById('paperPreview');
+      const badge = document.getElementById('editBadge');
+      paper.setAttribute('contenteditable', isEditable ? "true" : "false");
+      badge.innerText = isEditable ? "Editable" : "Locked";
+      badge.style.color = isEditable ? "var(--primary)" : "var(--text-muted)";
+    }
+
+    function changePaperFont(val) { document.documentElement.style.setProperty('--paper-font', val); }
+    function changePaperFontSize(val) { document.documentElement.style.setProperty('--paper-size', `${val}pt`); document.getElementById('fontSizeDisplay').innerText = `${val}pt`; }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
+    }
+
+    function toggleAppLock() {
+      closeDrawer();
+      const existing = SafeStorage.get('app_screen_lock_code');
+      if (existing) {
+        if (confirm("Remove App Lock?")) SafeStorage.remove('app_screen_lock_code');
+      } else {
+        const pin = prompt("Set a PIN or Password (min 4 chars):");
+        if (pin && pin.trim().length >= 4) {
+          CryptoEngine.hash(pin.trim()).then(h => SafeStorage.set('app_screen_lock_code', h));
+          alert("App lock enabled.");
+        }
+      }
+    }
+
+    function unlockAppModal() {
+      const stored = SafeStorage.get('app_screen_lock_code');
+      const entered = document.getElementById('appLockInput').value.trim();
+      CryptoEngine.hash(entered).then(h => {
+        if (h === stored) document.getElementById('lockOverlay').hidden = true;
+        else alert("Incorrect PIN.");
+      });
+    }
+
+    function shareApp() {
+      if (navigator.share) navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
+      else { navigator.clipboard.writeText(window.location.href); alert("Link copied to clipboard!"); }
+    }
+
+    function signOutUser() {
+      closeDrawer();
+      AppState.activeUser = null;
+      SafeStorage.remove('persistent_exam_user');
+      document.getElementById('authOverlay').hidden = false;
+      switchAuthMode('signin');
+    }
+
+    async function loadProfileFormValues() {
+      if (!AppState.activeUser) return;
+      document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
+      document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
+      document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
+      document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
+      document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
+
+      const avatarImg = document.getElementById('profilePageAvatarImg');
+      const fallback = document.getElementById('profilePageAvatarFallback');
+      const avatarData = await AppDB.get(`avatar_${AppState.activeUser.id}`);
+      if (avatarData) {
+        avatarImg.src = avatarData;
+        avatarImg.hidden = false;
+        fallback.hidden = true;
+      } else {
+        avatarImg.hidden = true;
+        fallback.hidden = false;
+        fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
+      }
+    }
+
+    async function handleProfileUpdate(e) {
+      e.preventDefault();
+      if (!AppState.activeUser) return;
+      const newUsername = document.getElementById('profilePageUsername').value.trim();
+      if (!Validators.isValidUsername(newUsername)) {
+        alert("Username must be 3-15 lowercase letters.");
+        return;
+      }
+
+      const registry = SafeStorage.get('exam_staff_registry', []);
+      const oldUsername = AppState.activeUser.name;
+      if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
+        alert("Username already taken.");
+        return;
+      }
+
+      AppState.activeUser.name = newUsername;
+      AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
+      AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
+      AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
+      AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
+
+      const idx = registry.findIndex(s => s.name === oldUsername);
+      if (idx !== -1) {
+        registry[idx] = { ...registry[idx], ...AppState.activeUser };
+        SafeStorage.set('exam_staff_registry', registry);
+      }
+
+      SafeStorage.set('persistent_exam_user', AppState.activeUser);
+      await syncProfileUI(AppState.activeUser);
+      alert("Profile updated successfully!");
+      navigatePage('create');
     }
 
     function cacheHeaderSettings() {
@@ -1312,17 +1474,71 @@
       document.getElementById('duration').value = saved?.duration || "3 Hours";
     }
 
-    function changePaperFont(val) { document.documentElement.style.setProperty('--paper-font', val); }
-    function changePaperFontSize(val) { document.documentElement.style.setProperty('--paper-size', `${val}pt`); document.getElementById('fontSizeDisplay').innerText = `${val}pt`; }
-    function toggleTheme() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
+    function logAuditEvent(username, action, status) {
+      const logs = SafeStorage.get('exam_audit_logs', []);
+      logs.unshift({ time: new Date().toLocaleString(), username: username || "anonymous", action, status });
+      if (logs.length > 100) logs.pop();
+      SafeStorage.set('exam_audit_logs', logs);
+    }
+
+    function renderAdminDashboard() {
+      const registry = SafeStorage.get('exam_staff_registry', []);
+      const logs = SafeStorage.get('exam_audit_logs', []);
+
+      document.getElementById('admStatStaff').innerText = registry.length;
+      document.getElementById('admStatLogins').innerText = logs.filter(l => l.action.includes("Login") && l.status === "Success").length;
+
+      let allPapersCount = 0;
+      registry.forEach(s => {
+        const papers = SafeStorage.get(`exam_vault_${s.id}`, []);
+        allPapersCount += papers.length;
+      });
+      document.getElementById('admStatPapers').innerText = allPapersCount;
+
+      const staffTbody = document.getElementById('admStaffTableBody');
+      if (registry.length === 0) {
+        staffTbody.innerHTML = `<tr><td colspan="6" class="text-center text-subtle">No staff registered yet.</td></tr>`;
+      } else {
+        staffTbody.innerHTML = registry.map(staff => {
+          const papers = SafeStorage.get(`exam_vault_${staff.id}`, []);
+          return `
+            <tr>
+              <td><strong>${staff.name}</strong></td>
+              <td>${staff.fullName || staff.name}</td>
+              <td>${staff.subject}</td>
+              <td>${staff.userClass || "10th Standard"}</td>
+              <td>${staff.phone || "N/A"}</td>
+              <td><strong>${papers.length}</strong> saved</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const logsTbody = document.getElementById('admLogsTableBody');
+      if (logs.length === 0) {
+        logsTbody.innerHTML = `<tr><td colspan="4" class="text-center text-subtle">No logs recorded.</td></tr>`;
+      } else {
+        logsTbody.innerHTML = logs.map(l => `
+          <tr>
+            <td><small>${l.time}</small></td>
+            <td><strong>${l.username}</strong></td>
+            <td>${l.action}</td>
+            <td><span style="color: ${l.status === 'Success' ? 'var(--accent-emerald)' : 'var(--danger-text)'}; font-weight: bold;">${l.status}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function clearAdminLogs() {
+      if (confirm("Clear all audit logs?")) {
+        SafeStorage.remove('exam_audit_logs');
+        renderAdminDashboard();
+      }
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
       await AppDB.init();
-      
+
       const persistentUser = SafeStorage.get('persistent_exam_user');
       if (persistentUser) {
         await loginSuccess(persistentUser);
@@ -1331,73 +1547,28 @@
         document.getElementById('authOverlay').hidden = false;
       }
 
-      document.body.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.closest('[data-action="nav-home"]')) { closeDrawer(); setPageView('create'); return; }
-        if (target.closest('[data-action="nav-vault"]')) { closeDrawer(); setPageView('history'); return; }
-        if (target.closest('[data-action="nav-admin"]')) { closeDrawer(); if (AppState.activeUser?.name === 'admin') setPageView('admin'); return; }
-        if (target.closest('[data-action="nav-about"]')) { closeDrawer(); setPageView('about'); return; }
-        if (target.closest('[data-action="toggle-theme"]')) { toggleTheme(); return; }
-        if (target.closest('[data-action="sign-out"]')) {
-          closeDrawer();
-          AppState.activeUser = null;
-          SafeStorage.remove('persistent_exam_user');
-          document.getElementById('authOverlay').hidden = false;
-          setAuthMode('signin');
-          return;
-        }
-        if (target.closest('#btnCloseDrawer') || target.closest('#drawerBackdrop')) { closeDrawer(); return; }
-        if (target.closest('#btnSaveToVault')) { saveCurrentPaperToHistory(); return; }
-        if (target.closest('#btnPrintPaper')) { window.print(); return; }
-        if (target.closest('#btnClearHistory')) { SafeStorage.remove(getStaffSpecificVaultKey()); renderHistoryList(); return; }
-
-        if (target.closest('#drawerProfileCard')) {
-          closeDrawer();
-          loadProfileFormValues();
-          setPageView('profile');
-          return;
-        }
-
-        if (target.closest('#btnToggleSourceAccordion')) {
-          const content = document.getElementById('sourceAccordionContent');
-          const arrow = document.getElementById('sourceAccordionArrow');
-          content.classList.toggle('expanded');
-          arrow.classList.toggle('rotated');
-          return;
-        }
-        if (target.closest('#btnToggleSectionsAccordion')) {
-          const content = document.getElementById('sectionsAccordionContent');
-          const arrow = document.getElementById('accordionArrow');
-          content.classList.toggle('expanded');
-          arrow.classList.toggle('rotated');
-          return;
-        }
+      window.history.replaceState({ page: 'create' }, '');
+      window.addEventListener('popstate', (e) => {
+        const state = e.state;
+        if (state && state.page) navigatePage(state.page);
+        else navigatePage('create');
       });
 
-      document.body.addEventListener('input', (e) => {
-        const target = e.target;
-        if (target.id === 'authUsernameInput') target.value = Validators.sanitizeUsername(target.value);
-        if (target.id === 'authPin') target.value = Validators.sanitizePin(target.value);
-        if (target.classList.contains('marks-calc') || target.id === 'maxMarks') calculateAndValidateMarks();
-        if (target.classList.contains('cached-header')) cacheHeaderSettings();
-        if (target.id === 'fontSizeSlider') changePaperFontSize(target.value);
-      });
+      const lockCode = SafeStorage.get('app_screen_lock_code');
+      if (lockCode) {
+        const lockElem = document.getElementById('lockOverlay');
+        lockElem.hidden = false;
+        FocusTrap.trap(lockElem.querySelector('.auth-card'));
+      }
 
-      document.body.addEventListener('change', (e) => {
-        const target = e.target;
-        if (target.id === 'editToggle') {
-          const paper = document.getElementById('paperPreview');
-          const badge = document.getElementById('editBadge');
-          paper.setAttribute('contenteditable', target.checked ? "true" : "false");
-          badge.innerText = target.checked ? "Editable" : "Locked";
-          badge.style.color = target.checked ? "var(--primary)" : "var(--text-muted)";
-        }
-      });
-
+      // Exam Paper Generation Trigger
       document.getElementById('genBtn').addEventListener('click', async () => {
         calculateAndValidateMarks();
         const btn = document.getElementById('genBtn');
-        if (btn.disabled) { alert("Please balance marks before generation."); return; }
+        if (btn.disabled) {
+          alert("Please balance marks before generation.");
+          return;
+        }
 
         const files = document.getElementById('fileInput').files;
         const status = document.getElementById('statusMessage');
@@ -1409,7 +1580,9 @@
 
         try {
           let extractedText = "";
-          if (files.length > 0) extractedText = await extractTextFromFiles(files, status);
+          if (files.length > 0) {
+            extractedText = await extractTextFromFiles(files, status);
+          }
 
           const parsedQuestions = extractedText
             ? extractedText.split('\n').map(l => l.trim()).filter(l => l.length > 10 && !l.startsWith("---"))
@@ -1505,15 +1678,6 @@
         }
       });
     });
-
-    async function loadProfileFormValues() {
-      if (!AppState.activeUser) return;
-      document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
-      document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
-      document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
-      document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
-      document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
-    }
   </script>
 </body>
 </html>
