@@ -171,7 +171,7 @@
     }
 
     .cropper-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 16px;
       padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       display: flex; flex-direction: column; align-items: center; gap: 14px;
     }
@@ -473,7 +473,7 @@
     <div class="drawer-scroll-body">
       <section aria-labelledby="drawerProfileSection">
         <h4 id="drawerProfileSection" class="drawer-section-title">Teacher Profile</h4>
-        <div class="drawer-profile-card" role="button" tabindex="0" aria-label="Edit Profile" onclick="openProfilePage()">
+        <div class="drawer-profile-card">
           <div class="drawer-profile-top">
             <img id="drawerAvatarImg" class="drawer-avatar" src="" alt="Profile avatar" hidden>
             <div id="drawerAvatarFallback" class="drawer-avatar" aria-hidden="true">👤</div>
@@ -500,11 +500,8 @@
       </nav>
 
       <section aria-label="Preferences">
-        <h4 class="drawer-section-title">Preferences & Settings</h4>
+        <h4 class="drawer-section-title">Preferences</h4>
         <div class="flex-column gap-sm">
-          <button type="button" class="drawer-item" onclick="openProfilePage()">
-            <span>👤 Edit Name, Subject & Photo</span>
-          </button>
           <button type="button" class="drawer-item" onclick="toggleTheme()">
             <span>Theme Mode</span>
             <span id="drawerThemeLabel" class="text-subtle text-sm">🌙 Dark</span>
@@ -587,8 +584,8 @@
       </div>
 
       <!-- Top Right Small Circular Profile Avatar -->
-      <img id="headerRightAvatarImg" class="header-right-profile" src="" alt="Profile" onclick="openProfilePage()" hidden title="Click to edit profile">
-      <div id="headerRightAvatarFallback" class="header-right-profile" onclick="openProfilePage()" title="Click to edit profile">👤</div>
+      <img id="headerRightAvatarImg" class="header-right-profile" src="" alt="Profile" onclick="openDrawer()" hidden title="Open Menu">
+      <div id="headerRightAvatarFallback" class="header-right-profile" onclick="openDrawer()" title="Open Menu">👤</div>
     </header>
 
     <!-- PAGE 1: CREATE PAPER VIEW -->
@@ -768,52 +765,7 @@
       </div>
     </section>
 
-    <!-- PAGE 3: PROFILE PAGE -->
-    <section id="pageProfile" class="page-view" aria-labelledby="profileHeading" hidden>
-      <div class="card no-print">
-        <h2 id="profileHeading">👤 Edit Profile & Account Details</h2>
-
-        <form id="profileForm" onsubmit="handleProfileUpdate(event)" class="max-w-md mx-auto flex-column gap-md">
-          <div class="avatar-edit-row">
-            <img id="profilePageAvatarImg" class="drawer-avatar lg" src="" alt="Profile picture" hidden>
-            <div id="profilePageAvatarFallback" class="drawer-avatar lg" aria-hidden="true">👤</div>
-            <div class="flex-1">
-              <label for="profilePageAvatarInput">Update Profile Photo</label>
-              <input type="file" id="profilePageAvatarInput" accept="image/*" onchange="handleProfileAvatarSelect(event)">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="profilePageUsername">Username</label>
-            <input type="text" id="profilePageUsername" required oninput="this.value = Validators.sanitizeUsername(this.value)">
-          </div>
-
-          <div class="form-group">
-            <label for="profilePageFullName">Full Name (Displayed in App)</label>
-            <input type="text" id="profilePageFullName" placeholder="e.g. Ismail Tharfeed">
-          </div>
-
-          <div class="form-group">
-            <label for="profilePagePhone">Mobile Number</label>
-            <input type="tel" id="profilePagePhone" placeholder="e.g. +91 9483061904">
-          </div>
-
-          <div class="form-group">
-            <label for="profilePageSubject">Teaching Subject</label>
-            <input type="text" id="profilePageSubject" placeholder="e.g. Social Science, Mathematics">
-          </div>
-
-          <div class="form-group">
-            <label for="profilePageClass">Class / Grade</label>
-            <input type="text" id="profilePageClass" placeholder="e.g. 10th Standard">
-          </div>
-
-          <button type="submit" class="btn-generate mt-sm">💾 Save All Changes</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- PAGE 4: ABOUT PAGE -->
+    <!-- PAGE 3: ABOUT PAGE -->
     <section id="pageAbout" class="page-view" aria-labelledby="aboutHeading" hidden>
       <div class="card no-print">
         <h2 id="aboutHeading">ℹ️ About Application</h2>
@@ -923,7 +875,7 @@
       showInlineError("");
       document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
       document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
-      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
+      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Secure Staff Sign In' : 'Create Staff Account';
       document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & 6-digit PIN.' : 'Set up your secure profile.';
       document.getElementById('signUpFields').hidden = (mode !== 'signup');
       document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
@@ -939,23 +891,6 @@
         const prev = document.getElementById('regAvatarPreview');
         prev.src = dataUrl;
         prev.hidden = false;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function handleProfileAvatarSelect(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        const dataUrl = evt.target.result;
-        document.getElementById('profilePageAvatarImg').src = dataUrl;
-        document.getElementById('profilePageAvatarImg').hidden = false;
-        document.getElementById('profilePageAvatarFallback').hidden = true;
-        if (AppState.activeUser) {
-          await AppDB.set(`avatar_${AppState.activeUser.id}`, dataUrl);
-          await syncProfileUI(AppState.activeUser);
-        }
       };
       reader.readAsDataURL(file);
     }
@@ -1065,19 +1000,11 @@
       AppState.currentPage = page;
       document.getElementById('pageCreate').hidden = (page !== 'create');
       document.getElementById('pageHistory').hidden = (page !== 'history');
-      document.getElementById('pageProfile').hidden = (page !== 'profile');
       document.getElementById('pageAbout').hidden = (page !== 'about');
 
       if (page === 'history') renderHistoryList();
-      if (page === 'profile') loadProfileFormValues();
       window.history.pushState({ page }, '');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function openProfilePage() {
-      closeDrawer();
-      loadProfileFormValues();
-      navigatePage('profile');
     }
 
     function toggleAccordion(contentId, arrowId) {
@@ -1241,73 +1168,12 @@
       document.getElementById('drawerThemeLabel').innerText = isDark ? '🌙 Dark' : '☀️ Light';
     }
 
-    function shareApp() {
-      if (navigator.share) navigator.share({ title: 'Exam Paper Creator', url: window.location.href }).catch(() => {});
-      else { navigator.clipboard.writeText(window.location.href); alert("Link copied to clipboard!"); }
-    }
-
     function signOutUser() {
       closeDrawer();
       AppState.activeUser = null;
       SafeStorage.remove('persistent_exam_user');
       document.getElementById('authOverlay').hidden = false;
       switchAuthMode('signin');
-    }
-
-    async function loadProfileFormValues() {
-      if (!AppState.activeUser) return;
-      document.getElementById('profilePageUsername').value = AppState.activeUser.name || "";
-      document.getElementById('profilePageFullName').value = AppState.activeUser.fullName || AppState.activeUser.name || "";
-      document.getElementById('profilePageSubject').value = AppState.activeUser.subject || "";
-      document.getElementById('profilePageClass').value = AppState.activeUser.userClass || "10th Standard";
-      document.getElementById('profilePagePhone').value = AppState.activeUser.phone || "";
-
-      const avatarImg = document.getElementById('profilePageAvatarImg');
-      const fallback = document.getElementById('profilePageAvatarFallback');
-      const avatarData = await AppDB.get(`avatar_${AppState.activeUser.id}`);
-      if (avatarData) {
-        avatarImg.src = avatarData;
-        avatarImg.hidden = false;
-        fallback.hidden = true;
-      } else {
-        avatarImg.hidden = true;
-        fallback.hidden = false;
-        fallback.innerText = (AppState.activeUser.fullName || AppState.activeUser.name || "S").charAt(0).toUpperCase();
-      }
-    }
-
-    async function handleProfileUpdate(e) {
-      e.preventDefault();
-      if (!AppState.activeUser) return;
-      const newUsername = document.getElementById('profilePageUsername').value.trim();
-      if (!Validators.isValidUsername(newUsername)) {
-        alert("Username must be 3-15 lowercase letters.");
-        return;
-      }
-
-      const registry = SafeStorage.get('exam_staff_registry', []);
-      const oldUsername = AppState.activeUser.name;
-      if (newUsername !== oldUsername && registry.some(s => s.name === newUsername)) {
-        alert("Username already taken.");
-        return;
-      }
-
-      AppState.activeUser.name = newUsername;
-      AppState.activeUser.fullName = document.getElementById('profilePageFullName').value.trim() || newUsername;
-      AppState.activeUser.subject = document.getElementById('profilePageSubject').value.trim() || "General";
-      AppState.activeUser.userClass = document.getElementById('profilePageClass').value.trim() || "10th Standard";
-      AppState.activeUser.phone = document.getElementById('profilePagePhone').value.trim();
-
-      const idx = registry.findIndex(s => s.name === oldUsername);
-      if (idx !== -1) {
-        registry[idx] = { ...registry[idx], ...AppState.activeUser };
-        SafeStorage.set('exam_staff_registry', registry);
-      }
-
-      SafeStorage.set('persistent_exam_user', AppState.activeUser);
-      await syncProfileUI(AppState.activeUser);
-      alert("Profile updated successfully!");
-      navigatePage('create');
     }
 
     function cacheHeaderSettings() {
