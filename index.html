@@ -422,7 +422,7 @@
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
   <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
     <header class="drawer-header">
-      <h3>⚙️️ Menu & Settings</h3>
+      <h3>⚙️ Menu & Settings</h3>
       <button type="button" class="drawer-close-btn" aria-label="Close menu" onclick="closeDrawer()">✕</button>
     </header>
 
@@ -457,7 +457,7 @@
     </div>
   </aside>
 
-  <!-- AUTHENTICATION OVERLAY (6-Digit PIN, No Profile Pictures) -->
+  <!-- AUTHENTICATION OVERLAY (Strictly 6-Digit PIN) -->
   <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div class="auth-card" tabindex="-1">
       <h2 id="authHeading">Staff Sign In</h2>
@@ -698,7 +698,7 @@
     <!-- PAGE 3: ABOUT PAGE -->
     <section id="pageAbout" class="page-view" aria-labelledby="aboutHeading" hidden>
       <div class="card no-print">
-        <h2 id="aboutHeading">ℹ️️ About Application</h2>
+        <h2 id="aboutHeading">ℹ️ About Application</h2>
         <div class="prose max-w-lg mx-auto">
           <p>This exam paper creator application is a specialized platform designed to simplify the entire question paper preparation workflow for teachers and institutions. <strong>This app is created by Ismail Tharfeed, and this is a contact number +919483061904.</strong> It allows educators to generate standardized question papers either by scanning existing question banks or directly extracting conceptual questions from textbook lesson reading pages. The app automatically calculates blueprint marks, ensures clean layout formatting, and preserves question history securely on your device. Thank you for utilizing this application to streamline school and college examination management.</p>
         </div>
@@ -740,7 +740,7 @@
 
     const Validators = {
       sanitizeUsername(val) { return (val || '').toLowerCase().replace(/[^a-z]/g, ''); },
-      sanitizePin(val) { return (val || '').replace(/[^0-9]/g, ''); },
+      sanitizePin(val) { return (val || '').replace(/[^0-9]/g, '').substring(0, 6); },
       isValidUsername(val) { return /^[a-z]{3,15}$/.test(val); },
       isValidPin(val) { return /^\d{6}$/.test(val); }
     };
