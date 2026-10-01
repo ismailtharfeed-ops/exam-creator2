@@ -123,7 +123,7 @@
     .text-xs { font-size: 0.78rem; }
     .font-bold { font-weight: 700; }
     .font-semibold { font-weight: 600; }
-    .tracking-wide { letter-spacing: 2px; }
+    .tracking-wide { letter-spacing: 4px; }
     .block { display: block; }
     .nowrap { white-space: nowrap; }
     .border-none { border: none !important; }
@@ -145,21 +145,12 @@
 
     .auth-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 22px 20px; width: 100%; max-width: 400px; 
+      padding: 24px 20px; width: 100%; max-width: 360px; 
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      max-height: 92vh; overflow-y: auto;
+      text-align: center;
     }
-    .auth-card h2 { font-size: 1.3rem; color: var(--primary); text-align: center; margin-bottom: 2px; }
-    .auth-card p { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
-
-    .auth-nav {
-      display: flex; gap: 6px; background: var(--card-subtle); padding: 3px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border);
-    }
-    .auth-nav button {
-      flex: 1; padding: 7px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
-      font-size: 0.85rem; transition: all 0.25s ease;
-    }
-    .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
+    .auth-card h2 { font-size: 1.4rem; color: var(--primary); margin-bottom: 4px; }
+    .auth-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
 
     .app-header {
       position: relative; overflow: hidden; background: var(--card);
@@ -422,7 +413,7 @@
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
   <aside class="side-drawer" id="sideDrawer" role="dialog" aria-label="Main Navigation Drawer" aria-hidden="true">
     <header class="drawer-header">
-      <h3>⚙️ Menu & Settings</h3>
+      <h3>⚙️️ Menu & Settings</h3>
       <button type="button" class="drawer-close-btn" aria-label="Close menu" onclick="closeDrawer()">✕</button>
     </header>
 
@@ -450,53 +441,33 @@
             <span>ℹ️ About Application</span>
           </button>
           <button type="button" class="drawer-item item-danger" onclick="signOutUser()">
-            <span>Sign Out / Switch Profile</span>
+            <span>Sign Out / Lock Vault</span>
           </button>
         </div>
       </section>
     </div>
   </aside>
 
-  <!-- AUTHENTICATION OVERLAY (Strictly 6-Digit PIN) -->
+  <!-- AUTHENTICATION OVERLAY (6-Digit PIN Only) -->
   <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div class="auth-card" tabindex="-1">
-      <h2 id="authHeading">Staff Sign In</h2>
-      <p id="authSubHeading">Enter your username & 6-digit PIN.</p>
+      <h2 id="authHeading">Vault Sign In</h2>
+      <p id="authSubHeading">Enter your 6-digit PIN code to access your vault.</p>
 
       <div class="auth-nav" role="tablist">
         <button type="button" class="active" id="navSignIn" role="tab" aria-selected="true" onclick="switchAuthMode('signin')">Sign In</button>
-        <button type="button" id="navSignUp" role="tab" aria-selected="false" onclick="switchAuthMode('signup')">Sign Up</button>
+        <button type="button" id="navSignUp" role="tab" aria-selected="false" onclick="switchAuthMode('signup')">New PIN</button>
       </div>
 
       <div id="authErrorBox" class="inline-error-banner" hidden></div>
 
       <form id="authForm" onsubmit="handleAuthSubmit(event)">
         <div class="form-group">
-          <label for="authUsernameInput">Username</label>
-          <input type="text" id="authUsernameInput" autocomplete="username" placeholder="e.g. ismail" required oninput="this.value = Validators.sanitizeUsername(this.value)">
+          <label for="authPin">6-Digit Security PIN Code</label>
+          <input type="password" id="authPin" maxlength="6" inputmode="numeric" placeholder="••••••" class="text-center tracking-wide font-bold" style="font-size: 1.3rem;" required oninput="this.value = Validators.sanitizePin(this.value)">
         </div>
 
-        <div id="signUpFields" hidden>
-          <div class="form-group">
-            <label for="regFullName">Full Name</label>
-            <input type="text" id="regFullName" placeholder="e.g. Ismail Tharfeed">
-          </div>
-          <div class="form-group">
-            <label for="regMobilePhone">Mobile Number</label>
-            <input type="tel" id="regMobilePhone" placeholder="e.g. +91 9483061904">
-          </div>
-          <div class="form-group">
-            <label for="regSubject">Teaching Subject</label>
-            <input type="text" id="regSubject" placeholder="e.g. Social Science">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="authPin">6-Digit Security PIN</label>
-          <input type="password" id="authPin" maxlength="6" inputmode="numeric" placeholder="••••••" required oninput="this.value = Validators.sanitizePin(this.value)">
-        </div>
-
-        <button type="submit" id="authSubmitBtn" class="btn-generate mt-sm">Sign In</button>
+        <button type="submit" id="authSubmitBtn" class="btn-generate mt-sm">Access Vault</button>
       </form>
     </div>
   </div>
@@ -739,14 +710,12 @@
     };
 
     const Validators = {
-      sanitizeUsername(val) { return (val || '').toLowerCase().replace(/[^a-z]/g, ''); },
       sanitizePin(val) { return (val || '').replace(/[^0-9]/g, '').substring(0, 6); },
-      isValidUsername(val) { return /^[a-z]{3,15}$/.test(val); },
       isValidPin(val) { return /^\d{6}$/.test(val); }
     };
 
     const AppState = {
-      activeUser: null,
+      activePinHash: null,
       currentAuthMode: 'signin',
       currentUploadMode: 'existing',
       currentPage: 'create',
@@ -766,68 +735,55 @@
       showInlineError("");
       document.getElementById('navSignIn').classList.toggle('active', mode === 'signin');
       document.getElementById('navSignUp').classList.toggle('active', mode === 'signup');
-      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Staff Sign In' : 'Create Staff Account';
-      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your username & 6-digit PIN.' : 'Set up your secure profile.';
-      document.getElementById('signUpFields').hidden = (mode !== 'signup');
-      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Sign In' : 'Register';
+      document.getElementById('authHeading').innerText = mode === 'signin' ? 'Vault Sign In' : 'Set New 6-Digit PIN';
+      document.getElementById('authSubHeading').innerText = mode === 'signin' ? 'Enter your 6-digit PIN code.' : 'Create a secure 6-digit PIN for your vault.';
+      document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Access Vault' : 'Save PIN & Enter';
     }
 
     async function handleAuthSubmit(e) {
       e.preventDefault();
       showInlineError("");
 
-      const username = document.getElementById('authUsernameInput').value.trim().toLowerCase();
       const pin = document.getElementById('authPin').value.trim();
 
-      if (!Validators.isValidUsername(username)) {
-        showInlineError("Username must be 3-15 lowercase letters.");
-        return;
-      }
       if (!Validators.isValidPin(pin)) {
         showInlineError("Security PIN must be exactly 6 digits.");
         return;
       }
 
       const hashedPin = await CryptoEngine.hash(pin);
-      const registry = SafeStorage.get('exam_staff_registry', []);
+      const pinsRegistry = SafeStorage.get('exam_pins_registry', []);
 
       if (AppState.currentAuthMode === 'signup') {
-        if (registry.some(s => s.name === username)) {
-          showInlineError("Username is already taken.");
+        if (pinsRegistry.includes(hashedPin)) {
+          showInlineError("This 6-digit PIN is already registered. Please Sign In.");
           return;
         }
-        const newId = `staff_${Date.now()}`;
-        const staff = {
-          id: newId,
-          name: username,
-          fullName: document.getElementById('regFullName').value.trim() || username,
-          subject: document.getElementById('regSubject').value.trim() || "General",
-          userClass: "10th Standard",
-          phone: document.getElementById('regMobilePhone').value.trim(),
-          secret: hashedPin
-        };
-        registry.push(staff);
-        SafeStorage.set('exam_staff_registry', registry);
-        await loginSuccess(staff);
+        pinsRegistry.push(hashedPin);
+        SafeStorage.set('exam_pins_registry', pinsRegistry);
+        await loginSuccess(hashedPin);
       } else {
-        const staff = registry.find(s => s.name === username);
-        if (!staff) {
-          showInlineError("Username not found. Please Sign Up first.");
+        if (pinsRegistry.length === 0) {
+          // Auto register first PIN if registry is empty
+          pinsRegistry.push(hashedPin);
+          SafeStorage.set('exam_pins_registry', pinsRegistry);
+          await loginSuccess(hashedPin);
           return;
         }
-        if (staff.secret === hashedPin) {
-          await loginSuccess(staff);
+
+        if (pinsRegistry.includes(hashedPin)) {
+          await loginSuccess(hashedPin);
         } else {
           showInlineError("Incorrect 6-digit security PIN.");
         }
       }
     }
 
-    async function loginSuccess(user) {
-      AppState.activeUser = user;
-      SafeStorage.set('persistent_exam_user', user);
+    async function loginSuccess(pinHash) {
+      AppState.activePinHash = pinHash;
+      SafeStorage.set('persistent_exam_pin_hash', pinHash);
       document.getElementById('authOverlay').hidden = true;
-      populateHeaderSettings(user);
+      populateHeaderSettings();
       navigatePage('create');
     }
 
@@ -929,8 +885,8 @@
       }
     }
 
-    function getStaffSpecificVaultKey() {
-      return AppState.activeUser ? `exam_vault_${AppState.activeUser.id}` : 'exam_vault_default';
+    function getPinSpecificVaultKey() {
+      return AppState.activePinHash ? `exam_vault_${AppState.activePinHash}` : 'exam_vault_default';
     }
 
     function saveCurrentPaperToHistory(notify = true) {
@@ -939,15 +895,15 @@
       if (!htmlContent.trim()) return;
       const paperName = document.getElementById('paperCustomName').value.trim() || "Exam Paper";
       const newEntry = { id: Date.now(), paperName, subject: document.getElementById('subject').value || "", date: new Date().toLocaleString(), font: document.getElementById('fontSelector').value, fontSize: document.getElementById('fontSizeSlider').value, content: htmlContent };
-      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
+      const papers = SafeStorage.get(getPinSpecificVaultKey(), []);
       papers.unshift(newEntry);
-      SafeStorage.set(getStaffSpecificVaultKey(), papers);
+      SafeStorage.set(getPinSpecificVaultKey(), papers);
       if (notify) alert("Paper saved to vault.");
     }
 
     function renderHistoryList() {
       const container = document.getElementById('historyListContainer');
-      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
+      const papers = SafeStorage.get(getPinSpecificVaultKey(), []);
       if (papers.length === 0) {
         container.innerHTML = `<p class="text-center text-subtle">No saved question papers.</p>`;
         return;
@@ -966,7 +922,7 @@
 
     function deleteVaultPaper(id) {
       if (confirm("Delete this saved paper?")) {
-        const key = getStaffSpecificVaultKey();
+        const key = getPinSpecificVaultKey();
         let papers = SafeStorage.get(key, []);
         papers = papers.filter(p => p.id !== id);
         SafeStorage.set(key, papers);
@@ -976,13 +932,13 @@
 
     function clearVaultHistory() {
       if (confirm("Clear your question paper vault?")) {
-        SafeStorage.remove(getStaffSpecificVaultKey());
+        SafeStorage.remove(getPinSpecificVaultKey());
         renderHistoryList();
       }
     }
 
     function loadPaperFromHistory(id) {
-      const papers = SafeStorage.get(getStaffSpecificVaultKey(), []);
+      const papers = SafeStorage.get(getPinSpecificVaultKey(), []);
       const paper = papers.find(p => p.id === id);
       if (!paper) return;
       document.getElementById('paperPreview').innerHTML = paper.content;
@@ -1009,15 +965,16 @@
 
     function signOutUser() {
       closeDrawer();
-      AppState.activeUser = null;
-      SafeStorage.remove('persistent_exam_user');
+      AppState.activePinHash = null;
+      SafeStorage.remove('persistent_exam_pin_hash');
+      document.getElementById('authPin').value = "";
       document.getElementById('authOverlay').hidden = false;
       switchAuthMode('signin');
     }
 
     function cacheHeaderSettings() {
-      if (!AppState.activeUser) return;
-      SafeStorage.set(`exam_settings_${AppState.activeUser.id}`, {
+      if (!AppState.activePinHash) return;
+      SafeStorage.set(`exam_settings_${AppState.activePinHash}`, {
         instName: document.getElementById('instName').value,
         examTitle: document.getElementById('examTitle').value,
         subject: document.getElementById('subject').value,
@@ -1027,11 +984,11 @@
       });
     }
 
-    function populateHeaderSettings(user) {
-      const saved = SafeStorage.get(`exam_settings_${user.id}`, null);
+    function populateHeaderSettings() {
+      const saved = SafeStorage.get(`exam_settings_${AppState.activePinHash}`, null);
       document.getElementById('instName').value = saved?.instName || "KARNATAKA PUBLIC SCHOOL";
       document.getElementById('examTitle').value = saved?.examTitle || "Annual Examination - 2026";
-      document.getElementById('subject').value = saved?.subject || user.subject || "Social Science";
+      document.getElementById('subject').value = saved?.subject || "Social Science";
       document.getElementById('grade').value = saved?.grade || "10th Standard";
       document.getElementById('duration').value = saved?.duration || "3 Hours";
     }
@@ -1096,11 +1053,11 @@
     document.addEventListener('DOMContentLoaded', async () => {
       addNewCustomSection();
 
-      const persistentUser = SafeStorage.get('persistent_exam_user');
-      if (persistentUser) {
-        await loginSuccess(persistentUser);
+      const persistentPinHash = SafeStorage.get('persistent_exam_pin_hash');
+      if (persistentPinHash) {
+        await loginSuccess(persistentPinHash);
       } else {
-        setAuthMode('signin');
+        switchAuthMode('signin');
         document.getElementById('authOverlay').hidden = false;
       }
 
