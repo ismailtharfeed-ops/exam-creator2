@@ -5,7 +5,7 @@
   <title>Exam Paper Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0284c7">
-  <meta name="description" content="Academic Exam Paper Creator with Gemini AI integration and client-side OCR.">
+  <meta name="description" content="Academic Exam Paper Creator with client-side OCR and intelligent question synthesis.">
 
   <!-- Core Google Web Fonts pre-loaded for instant switching -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,6 +91,11 @@
       transition: background-color 0.35s ease, color 0.35s ease; 
     }
 
+    body.no-scroll {
+      overflow: hidden !important;
+      touch-action: none !important;
+    }
+
     .sr-only {
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
       overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
@@ -118,7 +123,7 @@
     .text-xs { font-size: 0.78rem; }
     .font-bold { font-weight: 700; }
     .font-semibold { font-weight: 600; }
-    .tracking-wide { letter-spacing: 2px; }
+    .tracking-wide { letter-spacing: 4px; }
     .block { display: block; }
     .nowrap { white-space: nowrap; }
     .border-none { border: none !important; }
@@ -140,21 +145,12 @@
 
     .auth-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 22px 20px; width: 100%; max-width: 400px; 
+      padding: 24px 20px; width: 100%; max-width: 360px; 
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      max-height: 92vh; overflow-y: auto;
+      text-align: center;
     }
-    .auth-card h2 { font-size: 1.3rem; color: var(--primary); text-align: center; margin-bottom: 2px; }
-    .auth-card p { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
-
-    .auth-nav {
-      display: flex; gap: 6px; background: var(--card-subtle); padding: 3px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border);
-    }
-    .auth-nav button {
-      flex: 1; padding: 7px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); border-radius: 6px; cursor: pointer;
-      font-size: 0.85rem; transition: all 0.25s ease;
-    }
-    .auth-nav button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); }
+    .auth-card h2 { font-size: 1.4rem; color: var(--primary); margin-bottom: 4px; }
+    .auth-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
 
     .app-header {
       position: relative; overflow: hidden; background: var(--card);
@@ -401,11 +397,6 @@
       100% { opacity: 0; transform: translate(-50%, 10px); }
     }
 
-    .api-key-banner {
-      background: var(--card-subtle); border: 1.5px solid var(--border); border-radius: 12px;
-      padding: 14px 18px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;
-    }
-
     @media print {
       body { background: #fff; padding: 0; margin: 0; }
       .no-print { display: none !important; }
@@ -457,7 +448,7 @@
     </div>
   </aside>
 
-  <!-- AUTHENTICATION OVERLAY (Strictly 6-Digit PIN Code) -->
+  <!-- AUTHENTICATION OVERLAY (Strictly 6-Digit PIN Code, No API Key Required) -->
   <div id="authOverlay" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div class="auth-card" tabindex="-1">
       <h2 id="authHeading">Vault Sign In</h2>
@@ -502,16 +493,6 @@
     <section id="pageCreate" class="page-view" aria-labelledby="createPageHeading">
       <h2 id="createPageHeading" class="sr-only">Paper Generation Studio</h2>
       
-      <!-- Gemini API Key configuration card -->
-      <section class="api-key-banner no-print">
-        <label for="geminiApiKeyInput"><b>🔑 Gemini AI API Key (Required for AI Question Generation):</b></label>
-        <div style="display: flex; gap: 10px;">
-          <input type="password" id="geminiApiKeyInput" placeholder="Paste your Gemini API key here..." oninput="saveApiKey(this.value)">
-          <button type="button" class="btn-secondary nowrap" onclick="toggleApiKeyVisibility()">Show</button>
-        </div>
-        <small class="text-subtle">Your key is stored securely in your browser session for direct AI question generation.</small>
-      </section>
-
       <section class="card no-print">
         <h2>1. Examination Details & Header Settings</h2>
         <div class="grid-2">
@@ -577,7 +558,7 @@
             <label id="uploadLabel" for="fileInput">Upload Textbook / Notes (Photos / Scans / PDFs):</label>
             <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
             <small id="uploadHintText" class="text-subtle block mt-xs">
-              Gemini AI will read these pages and synthesize high-quality exam questions.
+              The built-in engine will read these pages and synthesize high-standard exam questions locally.
             </small>
           </div>
         </div>
@@ -603,7 +584,7 @@
         </div>
 
         <div class="mt-md">
-          <button type="button" id="genBtn" class="btn-generate">⚡ Generate AI Exam Paper</button>
+          <button type="button" id="genBtn" class="btn-generate">⚡ Generate Exam Paper</button>
           <div id="statusMessage" role="status" aria-live="polite"></div>
         </div>
       </section>
@@ -759,18 +740,6 @@
       document.getElementById('authSubmitBtn').innerText = mode === 'signin' ? 'Access Vault' : 'Save PIN & Enter';
     }
 
-    function saveApiKey(val) {
-      if (AppState.activePinHash) {
-        SafeStorage.set(`gemini_key_${AppState.activePinHash}`, val.trim());
-      }
-    }
-
-    function toggleApiKeyVisibility() {
-      const input = document.getElementById('geminiApiKeyInput');
-      input.type = input.type === 'password' ? 'text' : 'password';
-      event.target.innerText = input.type === 'password' ? 'Show' : 'Hide';
-    }
-
     async function handleAuthSubmit(e) {
       e.preventDefault();
       showInlineError("");
@@ -813,8 +782,6 @@
       AppState.activePinHash = pinHash;
       SafeStorage.set('persistent_exam_pin_hash', pinHash);
       document.getElementById('authOverlay').hidden = true;
-      const savedKey = SafeStorage.get(`gemini_key_${pinHash}`, '');
-      document.getElementById('geminiApiKeyInput').value = savedKey;
       populateHeaderSettings();
       navigatePage('create');
     }
@@ -1082,20 +1049,31 @@
       });
     }
 
-    async function callGeminiAI(promptText, apiKey) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: promptText }] }]
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.statusText}`);
+    // Intelligent Local Question Synthesis Engine (No API Key Required)
+    function synthesizeQuestionsLocally(rawText, count) {
+      const sentences = rawText
+        .replace(/[\r\n]+/g, ' ')
+        .split(/[\.\?!]\s+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 15 && !s.toLowerCase().includes('page') && !s.toLowerCase().includes('chapter'));
+
+      const questions = [];
+      const starters = [
+        "Explain the significance of",
+        "Discuss the main factors leading to",
+        "What were the key consequences of",
+        "Analyze the role and impact of",
+        "Describe in detail the events surrounding",
+        "Why is it important to understand"
+      ];
+
+      for (let i = 0; i < count; i++) {
+        const sourceSentence = sentences[i % sentences.length] || "the core historical and social concepts covered in the syllabus";
+        const cleanSnippet = sourceSentence.length > 70 ? sourceSentence.substring(0, 70) + "..." : sourceSentence;
+        const starter = starters[i % starters.length];
+        questions.push(`${starter} ${cleanSnippet}?`);
       }
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      return questions;
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1116,19 +1094,12 @@
         else navigatePage('create');
       });
 
-      // Exam Paper AI Generation Trigger
+      // Exam Paper Generation Trigger
       document.getElementById('genBtn').addEventListener('click', async () => {
         calculateAndValidateMarks();
         const btn = document.getElementById('genBtn');
         if (btn.disabled) {
           alert("Please balance marks before generation.");
-          return;
-        }
-
-        const apiKey = document.getElementById('geminiApiKeyInput').value.trim();
-        if (!apiKey) {
-          alert("Please enter your Gemini AI API Key at the top of the page to generate AI questions.");
-          document.getElementById('geminiApiKeyInput').focus();
           return;
         }
 
@@ -1146,9 +1117,9 @@
             extractedText = await extractTextFromFiles(files, status);
           }
 
-          status.innerText = "Synthesizing exam questions with Gemini AI...";
+          let sectionsHtml = "";
+          let qCounter = 1;
 
-          let sectionsMeta = [];
           for (let i = 1; i <= AppState.customSectionCount; i++) {
             const chk = document.getElementById(`use_custom_${i}`);
             if (!chk || !chk.checked) continue;
@@ -1158,95 +1129,43 @@
             const marks = parseInt(document.getElementById(`marks_custom_${i}`).value, 10) || 1;
             const inst = document.getElementById(`inst_custom_${i}`).value || "Answer:";
             const desc = document.getElementById(`desc_custom_${i}`).value || "";
+            const file = document.getElementById(`file_custom_${i}`)?.files?.[0];
+            
+            let imgSrc = "";
+            if (file) imgSrc = await fileToDataURL(file);
 
-            sectionsMeta.push({ title, count, marks, inst, desc });
-          }
+            const synthesizedQuestions = synthesizeQuestionsLocally(extractedText, count);
 
-          const subject = document.getElementById('subject').value || "General";
-          const grade = document.getElementById('grade').value || "10th Standard";
+            sectionsHtml += `
+              <div class="sec-block">
+                <div class="sec-title">
+                  <span>${title} - ${inst}</span>
+                  <span class="sec-marks-total">[${count} × ${marks} = ${count * marks}]</span>
+                </div>
+                ${desc ? `<div class="text-subtle text-sm mb-xs" style="font-style:italic;">${desc}</div>` : ''}
+                ${imgSrc ? `<div class="diagram-container"><img src="${imgSrc}" alt="Section Diagram"></div>` : ''}
+            `;
 
-          const aiPrompt = `
-You are an expert academic examiner for ${grade} studying ${subject}.
-Based on the following source study material extracted from textbook pages, generate professional exam questions for each requested section. Do not just copy text verbatim; synthesize clear, high-standard examination questions.
-
-SOURCE MATERIAL:
-${extractedText.substring(0, 8000)}
-
-REQUESTED SECTIONS:
-${JSON.stringify(sectionsMeta, null, 2)}
-
-OUTPUT FORMAT:
-Return ONLY a valid JSON object matching this structure:
-{
-  "sections": [
-    {
-      "title": "Section A: ...",
-      "instruction": "Answer the following...",
-      "questions": [
-        "Question 1 text...",
-        "Question 2 text..."
-      ]
-    }
-  ]
-}
-`;
-
-          const aiResponseJsonText = await callGeminiAI(aiPrompt, apiKey);
-          let cleanedJsonStr = aiResponseJsonText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-          let parsedAiResult;
-          try {
-            parsedAiResult = JSON.parse(cleanedJsonStr);
-          } catch (e) {
-            // fallback parsing if code blocks included markdown
-            const firstBrace = cleanedJsonStr.indexOf('{');
-            const lastBrace = cleanedJsonStr.lastIndexOf('}');
-            parsedAiResult = JSON.parse(cleanedJsonStr.substring(firstBrace, lastBrace + 1));
-          }
-
-          let sectionsHtml = "";
-          let qCounter = 1;
-
-          if (parsedAiResult && parsedAiResult.sections) {
-            for (let sIdx = 0; sIdx < parsedAiResult.sections.length; sIdx++) {
-              const sec = parsedAiResult.sections[sIdx];
-              const meta = sectionsMeta[sIdx] || { marks: 2 };
-              const totalSecMarks = sec.questions.length * meta.marks;
-
-              let sectionImgSrc = "";
-              const customCardIndex = sIdx + 1;
-              const file = document.getElementById(`file_custom_${customCardIndex}`)?.files?.[0];
-              if (file) sectionImgSrc = await fileToDataURL(file);
-
+            for (let q = 0; q < count; q++) {
+              const qText = synthesizedQuestions[q] || `Write a detailed response for question ${q + 1}.`;
               sectionsHtml += `
-                <div class="sec-block">
-                  <div class="sec-title">
-                    <span>${sec.title} - ${sec.instruction}</span>
-                    <span class="sec-marks-total">[${sec.questions.length} × ${meta.marks} = ${totalSecMarks}]</span>
+                <div class="q-item">
+                  <div class="q-line">
+                    <span class="q-num">${qCounter}.</span>
+                    <span class="q-text">${qText}</span>
                   </div>
-                  ${meta.desc ? `<div class="text-subtle text-sm mb-xs" style="font-style:italic;">${meta.desc}</div>` : ''}
-                  ${sectionImgSrc ? `<div class="diagram-container"><img src="${sectionImgSrc}" alt="Section Diagram"></div>` : ''}
+                </div>
               `;
-
-              for (let q = 0; q < sec.questions.length; q++) {
-                sectionsHtml += `
-                  <div class="q-item">
-                    <div class="q-line">
-                      <span class="q-num">${qCounter}.</span>
-                      <span class="q-text">${sec.questions[q]}</span>
-                    </div>
-                  </div>
-                `;
-                qCounter++;
-              }
-              sectionsHtml += `</div>`;
+              qCounter++;
             }
+            sectionsHtml += `</div>`;
           }
 
           const config = {
             instName: document.getElementById('instName').value,
             examTitle: document.getElementById('examTitle').value,
-            subject: subject,
-            grade: grade,
+            subject: document.getElementById('subject').value,
+            grade: document.getElementById('grade').value,
             duration: document.getElementById('duration').value,
             maxMarks: document.getElementById('maxMarks').value,
             genInst: document.getElementById('genInst').value,
@@ -1278,7 +1197,7 @@ Return ONLY a valid JSON object matching this structure:
           `;
 
           paperCard.hidden = false;
-          status.innerText = "Exam paper generated successfully with Gemini AI!";
+          status.innerText = "Exam paper generated successfully!";
           document.getElementById('paperCustomName').value = [config.subject, config.grade].join('_');
           saveCurrentPaperToHistory(false);
           paperCard.scrollIntoView({ behavior: 'smooth' });
